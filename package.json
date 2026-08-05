@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "tsx scripts/verificar-fugas-env-cliente.ts",
     "start": "next start",
     "lint": "eslint",
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
