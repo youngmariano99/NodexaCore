@@ -11,6 +11,7 @@
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.69.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.0",
     "next": "16.3.0",

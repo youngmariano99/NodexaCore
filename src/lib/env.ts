@@ -7,6 +7,10 @@ const esquemaEntornoCliente = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z
     .string({ message: "NEXT_PUBLIC_SUPABASE_ANON_KEY es obligatoria." })
     .min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY no puede estar vacía."),
+  NEXT_PUBLIC_SENTRY_DSN: z
+    .string()
+    .url("NEXT_PUBLIC_SENTRY_DSN debe ser una URL de DSN válida de Sentry.")
+    .optional(),
 });
 
 const esquemaEntornoServidor = esquemaEntornoCliente.extend({
