@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+/**
+ * .env.local con `CLAVE=` (sin valor) llega a process.env como "", no como
+ * undefined. Sin este preprocesador, z.string().optional() sigue rechazando
+ * esa cadena vacía contra .min(1)/.url() y tumba toda la app al importar
+ * entornoCliente — justamente el caso que una var "desactivada" debe tolerar.
+ */
+function opcional<T extends z.ZodTypeAny>(esquema: T) {
+  return z.preprocess((valor) => (valor === "" ? undefined : valor), esquema.optional());
+}
+
 const esquemaEntornoCliente = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z
     .string({ message: "NEXT_PUBLIC_SUPABASE_URL es obligatoria." })
@@ -7,10 +17,17 @@ const esquemaEntornoCliente = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z
     .string({ message: "NEXT_PUBLIC_SUPABASE_ANON_KEY es obligatoria." })
     .min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY no puede estar vacía."),
-  NEXT_PUBLIC_SENTRY_DSN: z
-    .string()
-    .url("NEXT_PUBLIC_SENTRY_DSN debe ser una URL de DSN válida de Sentry.")
-    .optional(),
+  NEXT_PUBLIC_SENTRY_DSN: opcional(
+    z.string().url("NEXT_PUBLIC_SENTRY_DSN debe ser una URL de DSN válida de Sentry."),
+  ),
+  /**
+   * Nave Nodriza (telemetría de negocio externa, agencia AppyStudio).
+   * Opcionales a propósito: sin ellos, src/lib/analytics/nave-nodriza.ts
+   * queda en no-op silencioso (criterio de "no debe fallar si está desactivado").
+   */
+  NEXT_PUBLIC_NN_CLIENT_ID: opcional(z.string().min(1)),
+  NEXT_PUBLIC_NN_API_KEY: opcional(z.string().min(1)),
+  NEXT_PUBLIC_NN_ENDPOINT: opcional(z.string().url("NEXT_PUBLIC_NN_ENDPOINT debe ser una URL válida.")),
 });
 
 const esquemaEntornoServidor = esquemaEntornoCliente.extend({
@@ -46,6 +63,10 @@ function validarEntorno<T>(esquema: z.ZodType<T>, fuente: Record<string, string 
 export const entornoCliente: EntornoCliente = validarEntorno(esquemaEntornoCliente, {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_NN_CLIENT_ID: process.env.NEXT_PUBLIC_NN_CLIENT_ID,
+  NEXT_PUBLIC_NN_API_KEY: process.env.NEXT_PUBLIC_NN_API_KEY,
+  NEXT_PUBLIC_NN_ENDPOINT: process.env.NEXT_PUBLIC_NN_ENDPOINT,
 });
 
 /**
@@ -56,6 +77,10 @@ export function obtenerEntornoServidor(): EntornoServidor {
   return validarEntorno(esquemaEntornoServidor, {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_NN_CLIENT_ID: process.env.NEXT_PUBLIC_NN_CLIENT_ID,
+    NEXT_PUBLIC_NN_API_KEY: process.env.NEXT_PUBLIC_NN_API_KEY,
+    NEXT_PUBLIC_NN_ENDPOINT: process.env.NEXT_PUBLIC_NN_ENDPOINT,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
 }
