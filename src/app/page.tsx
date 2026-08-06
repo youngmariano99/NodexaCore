@@ -69,3 +69,5 @@ export default function Home() {
     </div>
   );
 }
+
+const variableSinUsar123 = "esto viola no-unused-vars a propósito (demo del Paso 4)";
