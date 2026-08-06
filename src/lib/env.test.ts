@@ -28,7 +28,10 @@ describe("entornoCliente", () => {
 
   it("lanza un error explícito si falta una variable obligatoria", async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = VARS_REQUERIDAS.NEXT_PUBLIC_SUPABASE_URL;
-    // NEXT_PUBLIC_SUPABASE_ANON_KEY queda sin definir a propósito.
+    // Se borra explícitamente: en CI, el `env:` global del workflow ya trae un
+    // valor placeholder para esta clave, así que "no asignarla" no alcanza para
+    // dejarla ausente — hay que eliminarla del entorno heredado a propósito.
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     await expect(import("./env")).rejects.toThrow(/NEXT_PUBLIC_SUPABASE_ANON_KEY/);
   });
