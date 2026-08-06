@@ -7,7 +7,9 @@
     "build": "next build",
     "postbuild": "tsx scripts/verificar-fugas-env-cliente.ts",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
   },
   "dependencies": {
@@ -21,6 +23,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -30,6 +33,7 @@
     "postgres": "^3.4.9",
     "tailwindcss": "^4",
     "tsx": "^4.23.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
