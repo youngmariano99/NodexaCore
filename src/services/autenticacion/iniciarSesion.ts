@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { RUTA_POR_ROL } from "@/lib/auth/rutas-por-rol";
+import { verificarAuthLimiter } from "@/lib/rate-limit/authLimiter";
+import { obtenerIpSolicitante } from "@/lib/rate-limit/obtenerIpSolicitante";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { EstadoLogin, RolUsuario } from "@/services/autenticacion/tipos";
 
@@ -20,11 +22,14 @@ interface FilaUsuarioRol {
 
 /**
  * Server Action del formulario de login (Fail-Fast con Zod antes de llamar a
- * Supabase). El rol de redirección se lee de la tabla `usuarios` en vez de
- * decodificar el JWT directamente: el custom_access_token_hook que inyecta
- * `rol`/`cliente_id` como claims (docs/ROLES.md §3.1-3.2) requiere activación
- * manual en el Dashboard de Supabase, y esta lectura vía RLS (política
- * `auth_user_id = auth.uid()`) es correcta y determinística la ejecute o no.
+ * Supabase). Rate limiting (docs/lib/rate-limit/authLimiter.ts, NX-SYS-005)
+ * corre después de validar el formato del email pero ANTES de tocar Supabase
+ * Auth, con clave compuesta IP+email. El rol de redirección se lee de la
+ * tabla `usuarios` en vez de decodificar el JWT directamente: el
+ * custom_access_token_hook que inyecta `rol`/`cliente_id` como claims
+ * (docs/ROLES.md §3.1-3.2) requiere activación manual en el Dashboard de
+ * Supabase, y esta lectura vía RLS (política `auth_user_id = auth.uid()`) es
+ * correcta y determinística la ejecute o no.
  */
 export async function iniciarSesion(_estadoPrevio: EstadoLogin, formData: FormData): Promise<EstadoLogin> {
   const resultado = esquemaLogin.safeParse({
@@ -34,6 +39,13 @@ export async function iniciarSesion(_estadoPrevio: EstadoLogin, formData: FormDa
 
   if (!resultado.success) {
     return { error: "NX-SYS-006" };
+  }
+
+  const ip = await obtenerIpSolicitante();
+  const limite = await verificarAuthLimiter(ip, resultado.data.email);
+
+  if (!limite.permitido) {
+    return { error: "NX-SYS-005" };
   }
 
   const supabase = await crearClienteSupabaseServidor();
