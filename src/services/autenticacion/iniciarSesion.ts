@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { RUTA_POR_ROL } from "@/lib/auth/rutas-por-rol";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import type { EstadoLogin } from "@/services/autenticacion/tipos";
+import type { EstadoLogin, RolUsuario } from "@/services/autenticacion/tipos";
 
 const esquemaLogin = z.object({
   email: z
@@ -13,18 +14,8 @@ const esquemaLogin = z.object({
   password: z.string({ message: "La contraseña es obligatoria." }).min(1, "La contraseña es obligatoria."),
 });
 
-/**
- * Rutas de destino según docs/ROLES.md §1: admin_nodexa es soporte global
- * (no opera el día a día), comerciante/empleado operan su propio tenant.
- */
-const RUTA_POR_ROL: Record<string, string> = {
-  admin_nodexa: "/admin",
-  comerciante: "/dashboard",
-  empleado: "/dashboard",
-};
-
 interface FilaUsuarioRol {
-  rol: string;
+  rol: RolUsuario;
 }
 
 /**
