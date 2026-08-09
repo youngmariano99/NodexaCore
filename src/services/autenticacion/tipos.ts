@@ -4,6 +4,13 @@ export interface EstadoLogin {
 
 export const ESTADO_LOGIN_INICIAL: EstadoLogin = { error: null };
 
+export interface EstadoRecuperarContrasena {
+  error: string | null;
+  enviado: boolean;
+}
+
+export const ESTADO_RECUPERAR_CONTRASENA_INICIAL: EstadoRecuperarContrasena = { error: null, enviado: false };
+
 export type RolUsuario = "admin_nodexa" | "comerciante" | "empleado";
 
 /**

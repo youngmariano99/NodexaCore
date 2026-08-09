@@ -34,6 +34,18 @@ const esquemaEntornoServidor = esquemaEntornoCliente.extend({
   SUPABASE_SERVICE_ROLE_KEY: z
     .string({ message: "SUPABASE_SERVICE_ROLE_KEY es obligatoria." })
     .min(1, "SUPABASE_SERVICE_ROLE_KEY no puede estar vacía."),
+  /**
+   * Upstash Redis (rate limiting de rutas de autenticación —
+   * src/lib/rate-limit/authLimiter.ts). Obligatorias: a diferencia de Sentry
+   * o Nave Nodriza, esto es un control de seguridad activo, no telemetría
+   * opcional degradable a no-op.
+   */
+  UPSTASH_REDIS_REST_URL: z
+    .string({ message: "UPSTASH_REDIS_REST_URL es obligatoria." })
+    .url("UPSTASH_REDIS_REST_URL debe ser una URL válida del REST endpoint de Upstash."),
+  UPSTASH_REDIS_REST_TOKEN: z
+    .string({ message: "UPSTASH_REDIS_REST_TOKEN es obligatoria." })
+    .min(1, "UPSTASH_REDIS_REST_TOKEN no puede estar vacía."),
 });
 
 type EntornoCliente = z.infer<typeof esquemaEntornoCliente>;
@@ -82,5 +94,7 @@ export function obtenerEntornoServidor(): EntornoServidor {
     NEXT_PUBLIC_NN_API_KEY: process.env.NEXT_PUBLIC_NN_API_KEY,
     NEXT_PUBLIC_NN_ENDPOINT: process.env.NEXT_PUBLIC_NN_ENDPOINT,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   });
 }
