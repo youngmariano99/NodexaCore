@@ -10,9 +10,14 @@ import { ESTADO_LOGIN_INICIAL } from "@/services/autenticacion/tipos";
 const CLASES_CAMPO_BASE =
   "min-h-11 rounded-md border bg-slate-700 px-4 text-base text-slate-50 placeholder:text-slate-400 outline-none transition-colors duration-150 focus:border-blue-500";
 
-export function LoginForm() {
+interface LoginFormProps {
+  codigoErrorInicial?: string;
+}
+
+export function LoginForm({ codigoErrorInicial }: LoginFormProps) {
   const [estado, accionFormulario, estaEnviando] = useActionState(iniciarSesion, ESTADO_LOGIN_INICIAL);
-  const hayError = Boolean(estado.error);
+  const codigoError = estado.error ?? codigoErrorInicial ?? null;
+  const hayError = Boolean(codigoError);
 
   return (
     <form action={accionFormulario} className="flex w-full flex-col gap-5" noValidate>
@@ -48,10 +53,10 @@ export function LoginForm() {
         />
       </div>
 
-      {estado.error ? (
+      {codigoError ? (
         <p role="alert" className="flex items-start gap-2 text-sm text-red-500">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{obtenerMensajeError(estado.error)}</span>
+          <span>{obtenerMensajeError(codigoError)}</span>
         </p>
       ) : null}
 
