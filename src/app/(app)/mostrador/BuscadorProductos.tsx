@@ -1,15 +1,19 @@
 "use client";
 
 import { Plus, Search } from "lucide-react";
-import { useReducer, useState } from "react";
+import { useActionState, useReducer, useState } from "react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { useBuscarProductos } from "@/hooks/useBuscarProductos";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { calcularTotalVenta } from "@/lib/dominio/ventas/calcularTotalVenta";
 import { ESTADO_CARRITO_INICIAL, reducirCarrito } from "@/lib/dominio/ventas/carritoReducer";
 import type { FilaProductoBusqueda } from "@/repositories/productosRepository";
+import { confirmarVenta } from "@/services/ventas/confirmarVenta";
+import { ESTADO_CONFIRMAR_VENTA_INICIAL } from "@/services/ventas/tipos";
 
 import { CarritoVenta } from "@/app/(app)/mostrador/CarritoVenta";
+import { ConfirmarCobro } from "@/app/(app)/mostrador/ConfirmarCobro";
 import { ResumenTotal } from "@/app/(app)/mostrador/ResumenTotal";
 
 const FORMATO_PRECIO = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
@@ -17,21 +21,45 @@ const DEMORA_DEBOUNCE_MS = 300;
 
 /**
  * Panel de búsqueda + carrito del Mostrador (docs/BACKLOG.md "Componente de
- * búsqueda y carrito en Panel de Ventas"). El carrito vive acá como
- * `useReducer` en estado puramente local (Paso 2): no hay ningún
- * `localStorage`/`sessionStorage` de por medio, así que se pierde a
- * propósito al recargar la página — todavía no existe un flujo de "venta en
- * curso" persistente, eso es alcance de una historia futura (confirmación
- * de cobro, Sprint 6).
+ * búsqueda y carrito en Panel de Ventas" + "Server Action confirmarVenta con
+ * idempotency_key"). El carrito vive acá como `useReducer` en estado
+ * puramente local: no hay ningún `localStorage`/`sessionStorage` de por
+ * medio, así que se pierde a propósito al recargar la página a mitad de una
+ * venta.
  *
  * El término de búsqueda se debouncea (`useDebouncedValue`, 300ms) antes de
  * llegar a `useBuscarProductos`: escribir "yerba" dispara como máximo una
- * consulta a `/api/productos/buscar`, no una por tecla (Criterio de
- * Aceptación 1).
+ * consulta a `/api/productos/buscar`, no una por tecla.
+ *
+ * `idempotencyKey` se genera una sola vez por venta en curso
+ * (`crypto.randomUUID()`) y viaja igual en cada reintento del mismo envío;
+ * al confirmarse la venta con éxito se vacía el carrito y se genera una
+ * clave nueva para la próxima, ambos ajustes hechos durante el render (ver
+ * comentario más abajo) para que ocurran en el mismo ciclo que la respuesta
+ * de `confirmarVenta`, sin un `useEffect` de por medio.
  */
 export function BuscadorProductos() {
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [carrito, dispatch] = useReducer(reducirCarrito, ESTADO_CARRITO_INICIAL);
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [estadoVenta, accionConfirmarVenta, confirmandoVenta] = useActionState(
+    confirmarVenta,
+    ESTADO_CONFIRMAR_VENTA_INICIAL,
+  );
+  const [ultimoEstadoVentaVisto, setUltimoEstadoVentaVisto] = useState(estadoVenta);
+
+  // Ajuste de estado durante el render (patrón recomendado por React en vez
+  // de un efecto: https://react.dev/learn/you-might-not-need-an-effect):
+  // cada componente ajusta acá su PROPIO estado (carrito, idempotencyKey) —
+  // nunca el de un componente hijo/padre distinto — ante una venta recién
+  // confirmada.
+  if (estadoVenta !== ultimoEstadoVentaVisto) {
+    setUltimoEstadoVentaVisto(estadoVenta);
+    if (estadoVenta.exito) {
+      dispatch({ tipo: "VACIAR_CARRITO" });
+      setIdempotencyKey(crypto.randomUUID());
+    }
+  }
 
   const terminoDebounced = useDebouncedValue(terminoBusqueda, DEMORA_DEBOUNCE_MS);
   const { data: resultados, isFetching, isError } = useBuscarProductos(terminoDebounced);
@@ -138,6 +166,23 @@ export function BuscadorProductos() {
           <h2 className="text-sm font-medium text-slate-400">Venta en curso</h2>
           <CarritoVenta items={carrito} dispatch={dispatch} />
           <ResumenTotal items={carrito} />
+          <ConfirmarCobro
+            idempotencyKey={idempotencyKey}
+            items={JSON.stringify(
+              carrito.map((item) => ({ productoId: item.productoId, cantidad: item.cantidad })),
+            )}
+            total={calcularTotalVenta(
+              carrito.map((item) => ({
+                productoId: item.productoId,
+                precioUnitario: item.precio,
+                cantidad: item.cantidad,
+              })),
+            )}
+            carritoVacio={carrito.length === 0}
+            estado={estadoVenta}
+            estaEnviando={confirmandoVenta}
+            accionFormulario={accionConfirmarVenta}
+          />
         </section>
       </div>
     </div>

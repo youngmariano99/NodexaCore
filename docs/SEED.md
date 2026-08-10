@@ -203,16 +203,21 @@ DECLARE
   v_cantidad int;
 BEGIN
   FOR v_i IN 1..300 LOOP
-    -- Distribuir ventas entre los 3 tenants (100 cada uno aprox.)
+    -- Distribuir ventas entre los 3 tenants (100 cada uno aprox.). El
+    -- usuario_id es siempre el comerciante del tenant: verificado contra el
+    -- proyecto real antes de aplicar este bloque, los empleados de los
+    -- tenants A/B/C (d0000000-...-000000000003/5/6/8) nunca se sembraron —
+    -- solo demo-nodexa tiene sus 3 empleados. Usar esos IDs acá rompería el
+    -- FOREIGN KEY de ventas.usuario_id.
     IF v_i % 3 = 0 THEN
       v_cliente_id := 'a1111111-1111-4111-8111-111111111111';
-      v_usuario_id := (ARRAY['d0000000-0000-4000-8000-000000000002','d0000000-0000-4000-8000-000000000003'])[1 + (v_i % 2)]::uuid;
+      v_usuario_id := 'd0000000-0000-4000-8000-000000000002'::uuid;
     ELSIF v_i % 3 = 1 THEN
       v_cliente_id := 'b2222222-2222-4222-8222-222222222222';
-      v_usuario_id := (ARRAY['d0000000-0000-4000-8000-000000000004','d0000000-0000-4000-8000-000000000005','d0000000-0000-4000-8000-000000000006'])[1 + (v_i % 3)]::uuid;
+      v_usuario_id := 'd0000000-0000-4000-8000-000000000004'::uuid;
     ELSE
       v_cliente_id := 'c3333333-3333-4333-8333-333333333333';
-      v_usuario_id := (ARRAY['d0000000-0000-4000-8000-000000000007','d0000000-0000-4000-8000-000000000008'])[1 + (v_i % 2)]::uuid;
+      v_usuario_id := 'd0000000-0000-4000-8000-000000000007'::uuid;
     END IF;
 
     -- 1 de cada 6 ventas va a cuenta corriente (si el tenant tiene fiados)
