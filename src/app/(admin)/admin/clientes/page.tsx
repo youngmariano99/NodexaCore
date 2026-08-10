@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { MensajeError } from "@/components/errores/MensajeError";
 import { RUTA_POR_ROL } from "@/lib/auth/rutas-por-rol";
-import { obtenerMensajeError } from "@/lib/errores/catalogo";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { listarClientesPaginado } from "@/repositories/clientes";
 import { NOMBRE_MODULO_NODEXA } from "@/services/admin/tipos";
@@ -58,11 +58,8 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
 
   if (!resultado.ok) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-slate-950 px-6 text-center">
-        <AlertCircle className="h-6 w-6 text-red-500" aria-hidden="true" />
-        <p role="alert" className="text-base text-slate-50">
-          {obtenerMensajeError(resultado.error)}
-        </p>
+      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6">
+        <MensajeError codigo={resultado.error} className="max-w-md" />
       </div>
     );
   }
