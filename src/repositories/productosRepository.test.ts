@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { PRODUCTOS_POR_PAGINA, contarProductosActivos, insertarProducto, obtenerProductosPaginados } from "./productosRepository";
+import {
+  PRODUCTOS_POR_PAGINA,
+  contarProductosActivos,
+  insertarProducto,
+  insertarProductosEnLote,
+  obtenerProductosPaginados,
+} from "./productosRepository";
 
 interface ResultadoSupabase {
   data: unknown;
@@ -98,6 +104,77 @@ describe("insertarProducto", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await insertarProducto(supabase as never, datos);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderUpsert(resultado: ResultadoSupabase) {
+  const builder = {
+    upsert: vi.fn(() => builder),
+    select: vi.fn(() => builder),
+    returns: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("insertarProductosEnLote", () => {
+  const productos = [
+    { sku: "DP-001", nombre: "Yerba Mate 1kg", precio: 3500, categoria: "Almacén" },
+    { sku: "DP-002", nombre: "Fideos 500g", precio: 900, categoria: "Almacén" },
+  ];
+
+  it("retorna data vacía sin llamar a Supabase cuando el lote está vacío", async () => {
+    const supabase = { from: vi.fn() };
+
+    const resultado = await insertarProductosEnLote(supabase as never, CLIENTE_ID, []);
+
+    expect(resultado).toEqual({ ok: true, data: [] });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("hace upsert con ignoreDuplicates sobre (cliente_id, sku) fijando el cliente_id del servidor", async () => {
+    const builder = crearBuilderUpsert({
+      data: [
+        { producto_id: "p-1", sku: "DP-001" },
+        { producto_id: "p-2", sku: "DP-002" },
+      ],
+      error: null,
+    });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await insertarProductosEnLote(supabase as never, CLIENTE_ID, productos);
+
+    expect(resultado).toEqual({
+      ok: true,
+      data: [
+        { producto_id: "p-1", sku: "DP-001" },
+        { producto_id: "p-2", sku: "DP-002" },
+      ],
+    });
+    expect(builder.upsert).toHaveBeenCalledWith(
+      [
+        { cliente_id: CLIENTE_ID, sku: "DP-001", nombre: "Yerba Mate 1kg", precio: 3500, categoria: "Almacén" },
+        { cliente_id: CLIENTE_ID, sku: "DP-002", nombre: "Fideos 500g", precio: 900, categoria: "Almacén" },
+      ],
+      { onConflict: "cliente_id,sku", ignoreDuplicates: true },
+    );
+  });
+
+  it("solo devuelve las filas que efectivamente se insertaron, dejando fuera los SKU que ya existían", async () => {
+    const builder = crearBuilderUpsert({ data: [{ producto_id: "p-1", sku: "DP-001" }], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await insertarProductosEnLote(supabase as never, CLIENTE_ID, productos);
+
+    expect(resultado.ok && resultado.data).toEqual([{ producto_id: "p-1", sku: "DP-001" }]);
+  });
+
+  it("retorna NX-SYS-001 si Supabase devuelve error", async () => {
+    const builder = crearBuilderUpsert({ data: null, error: { message: "fallo" } });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await insertarProductosEnLote(supabase as never, CLIENTE_ID, productos);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });
