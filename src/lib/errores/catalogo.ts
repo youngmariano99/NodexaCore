@@ -14,6 +14,10 @@ export const CATALOGO_ERRORES = {
   "NX-SYS-007": "Este recurso pertenece a otro comercio y no podés acceder a él.",
   "NX-ADM-001": "Ya existe un comercio registrado con este slug o dominio.",
   "NX-ADM-003": "No podés ampliar el catálogo por debajo del uso actual de productos.",
+  "NX-PRD-001":
+    "Alcanzaste el límite de productos de tu plan actual. Contamos con un pack para seguir sumando catálogo sin perder nada de lo que ya cargaste.",
+  "NX-PRD-002": "Ya tenés un producto cargado con este SKU. Revisá el código o modificá el existente.",
+  "NX-PRD-003": "El precio ingresado no es válido. Tiene que ser un número mayor o igual a cero.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;
