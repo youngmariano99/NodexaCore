@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 
 /**
  * Tablas de negocio con guard de pertenencia habilitado en esta estación
@@ -43,7 +43,7 @@ export async function verificarPertenenciaTenant(
   opciones: OpcionesVerificarPertenenciaTenant,
 ): Promise<ResultadoVerificacionTenant> {
   if (!clienteIdJwt) {
-    await registrarIntentoAccesoCruzado(recursoId, clienteIdJwt, opciones);
+    registrarIntentoAccesoCruzado(recursoId, clienteIdJwt, opciones);
     return { perteneceAlTenant: false, error: "NX-SYS-007" };
   }
 
@@ -57,18 +57,18 @@ export async function verificarPertenenciaTenant(
     .maybeSingle<Record<string, string>>();
 
   if (error || !data) {
-    await registrarIntentoAccesoCruzado(recursoId, clienteIdJwt, opciones);
+    registrarIntentoAccesoCruzado(recursoId, clienteIdJwt, opciones);
     return { perteneceAlTenant: false, error: "NX-SYS-007" };
   }
 
   return { perteneceAlTenant: true, error: null };
 }
 
-async function registrarIntentoAccesoCruzado(
+function registrarIntentoAccesoCruzado(
   recursoId: string,
   clienteIdJwt: string | null,
   { tabla, usuarioId }: OpcionesVerificarPertenenciaTenant,
-): Promise<void> {
+): void {
   Sentry.captureMessage("Intento de acceso IDOR/BOLA bloqueado por verificarPertenenciaTenant", {
     level: "warning",
     tags: { modulo: "seguridad", codigo_error: "NX-SYS-007", tabla },
@@ -76,7 +76,7 @@ async function registrarIntentoAccesoCruzado(
   });
 
   if (clienteIdJwt && usuarioId) {
-    await registrarDiffAuditoria({
+    registrarDiff({
       clienteId: clienteIdJwt,
       usuarioId,
       tablaAfectada: tabla,

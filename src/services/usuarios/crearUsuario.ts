@@ -1,10 +1,9 @@
 "use server";
 
-import { after } from "next/server";
 import { z } from "zod";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 import type { EstadoCrearUsuario } from "@/services/usuarios/tipos";
 
@@ -104,20 +103,18 @@ export async function crearUsuario(
     return { error: "NX-SYS-001", exito: false };
   }
 
-  after(async () => {
-    await registrarDiffAuditoria({
-      clienteId: clienteIdSolicitante,
-      usuarioId: solicitante.usuario_id,
-      tablaAfectada: "usuarios",
-      registroId: usuarioCreado.usuario_id,
-      campoModificado: "alta",
-      valorAnterior: null,
-      valorNuevo: JSON.stringify({
-        nombre: resultado.data.nombre,
-        email: resultado.data.email,
-        rol: resultado.data.rol,
-      }),
-    });
+  registrarDiff({
+    clienteId: clienteIdSolicitante,
+    usuarioId: solicitante.usuario_id,
+    tablaAfectada: "usuarios",
+    registroId: usuarioCreado.usuario_id,
+    campoModificado: "alta",
+    valorAnterior: null,
+    valorNuevo: JSON.stringify({
+      nombre: resultado.data.nombre,
+      email: resultado.data.email,
+      rol: resultado.data.rol,
+    }),
   });
 
   return { error: null, exito: true };

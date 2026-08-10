@@ -1,10 +1,9 @@
 "use server";
 
-import { after } from "next/server";
 import { z } from "zod";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 import { MODULOS_NODEXA, type ModuloNodexa } from "@/services/admin/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
@@ -92,16 +91,14 @@ export async function activarModulosIniciales(
 
   const modulosActivados = (filasActivadas ?? []).map((fila) => fila.modulo);
 
-  after(async () => {
-    await registrarDiffAuditoria({
-      clienteId: resultado.data.clienteId,
-      usuarioId: solicitante.usuario_id,
-      tablaAfectada: "tenant_modules",
-      registroId: resultado.data.clienteId,
-      campoModificado: "activacion_inicial",
-      valorAnterior: null,
-      valorNuevo: JSON.stringify({ modulos: modulosUnicos }),
-    });
+  registrarDiff({
+    clienteId: resultado.data.clienteId,
+    usuarioId: solicitante.usuario_id,
+    tablaAfectada: "tenant_modules",
+    registroId: resultado.data.clienteId,
+    campoModificado: "activacion_inicial",
+    valorAnterior: null,
+    valorNuevo: JSON.stringify({ modulos: modulosUnicos }),
   });
 
   return { ok: true, data: { modulosActivados } };

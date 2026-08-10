@@ -1,22 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 
 import { crearCliente } from "./crearCliente";
 import { ESTADO_CREAR_CLIENTE_INICIAL } from "./tipos";
-
-vi.mock("next/server", () => ({
-  after: vi.fn((callback: () => unknown) => callback()),
-}));
 
 vi.mock("@/lib/supabase/server", () => ({
   crearClienteSupabaseServidor: vi.fn(),
   crearClienteSupabaseAdmin: vi.fn(),
 }));
 
-vi.mock("@/repositories/auditoria", () => ({
-  registrarDiffAuditoria: vi.fn(async () => undefined),
+vi.mock("@/lib/auditoria/registrarDiff", () => ({
+  registrarDiff: vi.fn(),
 }));
 
 interface ResultadoSupabase {
@@ -124,7 +120,7 @@ describe("crearCliente", () => {
       }),
     );
 
-    expect(registrarDiffAuditoria).toHaveBeenCalledWith(
+    expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: "c-nuevo-cliente",
         usuarioId: USUARIO_ID_ADMIN,
@@ -157,6 +153,6 @@ describe("crearCliente", () => {
     const resultado = await crearCliente(ESTADO_CREAR_CLIENTE_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: "NX-ADM-001", exito: false });
-    expect(registrarDiffAuditoria).not.toHaveBeenCalled();
+    expect(registrarDiff).not.toHaveBeenCalled();
   });
 });

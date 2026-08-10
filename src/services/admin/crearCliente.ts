@@ -1,10 +1,9 @@
 "use server";
 
-import { after } from "next/server";
 import { z } from "zod";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 import type { EstadoCrearCliente } from "@/services/admin/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
@@ -115,22 +114,20 @@ export async function crearCliente(
     return { error: "NX-SYS-001", exito: false };
   }
 
-  after(async () => {
-    await registrarDiffAuditoria({
-      clienteId: clienteCreado.cliente_id,
-      usuarioId: solicitante.usuario_id,
-      tablaAfectada: "clientes",
-      registroId: clienteCreado.cliente_id,
-      campoModificado: "alta",
-      valorAnterior: null,
-      valorNuevo: JSON.stringify({
-        nombre_comercio: resultado.data.nombre_comercio,
-        slug: resultado.data.slug,
-        telefono_whatsapp: resultado.data.telefono_whatsapp,
-        estado_pago: true,
-        limite_sku: LIMITE_SKU_INICIAL,
-      }),
-    });
+  registrarDiff({
+    clienteId: clienteCreado.cliente_id,
+    usuarioId: solicitante.usuario_id,
+    tablaAfectada: "clientes",
+    registroId: clienteCreado.cliente_id,
+    campoModificado: "alta",
+    valorAnterior: null,
+    valorNuevo: JSON.stringify({
+      nombre_comercio: resultado.data.nombre_comercio,
+      slug: resultado.data.slug,
+      telefono_whatsapp: resultado.data.telefono_whatsapp,
+      estado_pago: true,
+      limite_sku: LIMITE_SKU_INICIAL,
+    }),
   });
 
   return { error: null, exito: true };

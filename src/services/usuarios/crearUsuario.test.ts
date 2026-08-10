@@ -1,22 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 
 import { crearUsuario } from "./crearUsuario";
 import { ESTADO_CREAR_USUARIO_INICIAL } from "./tipos";
-
-vi.mock("next/server", () => ({
-  after: vi.fn((callback: () => unknown) => callback()),
-}));
 
 vi.mock("@/lib/supabase/server", () => ({
   crearClienteSupabaseServidor: vi.fn(),
   crearClienteSupabaseAdmin: vi.fn(),
 }));
 
-vi.mock("@/repositories/auditoria", () => ({
-  registrarDiffAuditoria: vi.fn(async () => undefined),
+vi.mock("@/lib/auditoria/registrarDiff", () => ({
+  registrarDiff: vi.fn(),
 }));
 
 interface ResultadoSupabase {
@@ -135,7 +131,7 @@ describe("crearUsuario", () => {
     );
     expect(adminMock.auth.admin.deleteUser).not.toHaveBeenCalled();
 
-    expect(registrarDiffAuditoria).toHaveBeenCalledWith(
+    expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: CLIENTE_ID_SOLICITANTE,
         usuarioId: "u-comerciante",
@@ -175,6 +171,6 @@ describe("crearUsuario", () => {
 
     expect(resultado).toEqual({ error: "NX-SYS-001", exito: false });
     expect(adminMock.auth.admin.deleteUser).toHaveBeenCalledWith(nuevoAuthUserId);
-    expect(registrarDiffAuditoria).not.toHaveBeenCalled();
+    expect(registrarDiff).not.toHaveBeenCalled();
   });
 });
