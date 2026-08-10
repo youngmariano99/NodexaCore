@@ -29,6 +29,7 @@ CREATE TYPE origen_alta_producto AS ENUM ('manual', 'excel', 'ia_vision');
 | `slug` | `text` | `NOT NULL`, `UNIQUE` (usado en `/c/[clienteSlug]`) |
 | `estado_pago` | `boolean` | `NOT NULL`, `DEFAULT true` |
 | `limite_sku` | `integer` | `NOT NULL`, `DEFAULT 1000`, `CHECK (limite_sku > 0)` |
+| `packs_sku_contratados` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (packs_sku_contratados >= 0)` (packs de ampliación de SKU contratados; base para calcular el próximo período de facturación) |
 | `cuota_mensual_ia` | `integer` | `NOT NULL`, `DEFAULT 40` |
 | `ia_consultas_usadas` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (ia_consultas_usadas >= 0)` |
 | `ia_periodo_actual` | `date` | `NOT NULL`, `DEFAULT date_trunc('month', now())` (para reset mensual) |
