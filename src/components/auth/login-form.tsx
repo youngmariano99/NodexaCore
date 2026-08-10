@@ -1,9 +1,8 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
 import { useActionState } from "react";
 
-import { obtenerMensajeError } from "@/lib/errores/catalogo";
+import { MensajeError } from "@/components/errores/MensajeError";
 import { iniciarSesion } from "@/services/autenticacion/iniciarSesion";
 import { ESTADO_LOGIN_INICIAL } from "@/services/autenticacion/tipos";
 
@@ -53,12 +52,7 @@ export function LoginForm({ codigoErrorInicial }: LoginFormProps) {
         />
       </div>
 
-      {codigoError ? (
-        <p role="alert" className="flex items-start gap-2 text-sm text-red-500">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{obtenerMensajeError(codigoError)}</span>
-        </p>
-      ) : null}
+      <MensajeError codigo={codigoError} />
 
       <button
         type="submit"
