@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  LIMITE_BUSQUEDA_PRODUCTOS,
   PRODUCTOS_POR_PAGINA,
+  buscarProductosParaVenta,
   contarProductosActivos,
   insertarProducto,
   insertarProductosEnLote,
@@ -175,6 +177,98 @@ describe("insertarProductosEnLote", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await insertarProductosEnLote(supabase as never, CLIENTE_ID, productos);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderBusqueda(resultado: { data: unknown; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    is: vi.fn(() => builder),
+    or: vi.fn(() => builder),
+    order: vi.fn(() => builder),
+    limit: vi.fn(() => builder),
+    returns: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("buscarProductosParaVenta", () => {
+  it("retorna [] sin consultar Supabase cuando el término está vacío", async () => {
+    const supabase = { from: vi.fn() };
+
+    const resultado = await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "   ");
+
+    expect(resultado).toEqual({ ok: true, data: [] });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("retorna [] sin consultar Supabase cuando el término sanitizado queda vacío (solo caracteres de control del filtro)", async () => {
+    const supabase = { from: vi.fn() };
+
+    const resultado = await buscarProductosParaVenta(supabase as never, CLIENTE_ID, ",()" );
+
+    expect(resultado).toEqual({ ok: true, data: [] });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("busca por sku o nombre con ILIKE, scopeado al tenant y sin productos eliminados", async () => {
+    const builder = crearBuilderBusqueda({ data: [], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba");
+
+    expect(builder.eq).toHaveBeenCalledWith("cliente_id", CLIENTE_ID);
+    expect(builder.is).toHaveBeenCalledWith("eliminado_en", null);
+    expect(builder.or).toHaveBeenCalledWith("sku.ilike.%yerba%,nombre.ilike.%yerba%");
+  });
+
+  it("elimina comas y paréntesis del término (romperían la sintaxis del filtro .or())", async () => {
+    const builder = crearBuilderBusqueda({ data: [], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba(1kg),oferta");
+
+    expect(builder.or).toHaveBeenCalledWith("sku.ilike.%yerba1kgoferta%,nombre.ilike.%yerba1kgoferta%");
+  });
+
+  it("escapa los comodines % y _ de LIKE para que se busquen de forma literal", async () => {
+    const builder = crearBuilderBusqueda({ data: [], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "50%_off");
+
+    expect(builder.or).toHaveBeenCalledWith("sku.ilike.%50\\%\\_off%,nombre.ilike.%50\\%\\_off%");
+  });
+
+  it("aplica LIMITE_BUSQUEDA_PRODUCTOS por defecto y nunca deja pedir más que ese tope", async () => {
+    const builder = crearBuilderBusqueda({ data: [], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba");
+    expect(builder.limit).toHaveBeenCalledWith(LIMITE_BUSQUEDA_PRODUCTOS);
+
+    await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba", 500);
+    expect(builder.limit).toHaveBeenCalledWith(LIMITE_BUSQUEDA_PRODUCTOS);
+  });
+
+  it("retorna las filas encontradas", async () => {
+    const filas = [{ producto_id: "p-1", sku: "DP-00001", nombre: "Yerba Mate 1kg", precio: 3500, stock_actual: 12 }];
+    const builder = crearBuilderBusqueda({ data: filas, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba");
+
+    expect(resultado).toEqual({ ok: true, data: filas });
+  });
+
+  it("retorna NX-SYS-001 si Supabase devuelve error", async () => {
+    const builder = crearBuilderBusqueda({ data: null, error: { message: "fallo" } });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba");
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });

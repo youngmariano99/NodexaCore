@@ -164,6 +164,74 @@ export async function insertarProductosEnLote(
   return { ok: true, data };
 }
 
+export const LIMITE_BUSQUEDA_PRODUCTOS = 10;
+
+export interface FilaProductoBusqueda {
+  producto_id: string;
+  sku: string;
+  nombre: string;
+  precio: number;
+  stock_actual: number;
+}
+
+/**
+ * El filtro `.or()` de PostgREST usa `,`/`(`/`)` como caracteres de control
+ * de su propia sintaxis (separador de condiciones y agrupación) — un
+ * término de búsqueda que los contenga rompería el filtro compuesto en vez
+ * de buscarse literalmente. Ningún SKU/nombre real de este dominio los
+ * necesita, así que se descartan directamente en vez de intentar un
+ * escapado con comillas (más frágil de mantener correcto). `%`/`_` son
+ * wildcards de `LIKE`/`ILIKE`: se escapan para que, por ejemplo, buscar
+ * "50%" no matchee cualquier cosa que empiece con "50".
+ */
+function sanitizarTerminoBusqueda(termino: string): string {
+  return termino.replace(/[,()]/g, "").trim();
+}
+
+function escaparComodinesLike(valor: string): string {
+  return valor.replace(/[%_\\]/g, (caracter) => `\\${caracter}`);
+}
+
+/**
+ * Búsqueda de productos por `sku` o `nombre` para el buscador del Mostrador
+ * (docs/BACKLOG.md "Componente de búsqueda y carrito en Panel de Ventas").
+ * Acotada con `.limit()` en vez de paginada: es un buscador tipo-adelante
+ * (autocomplete) para armar el carrito, no un listado a recorrer — nunca un
+ * `SELECT *` sin límite (CLAUDE.md §4 "escalabilidad"). Un término vacío
+ * (o que queda vacío tras sanitizarse) retorna `[]` sin consultar la base.
+ */
+export async function buscarProductosParaVenta(
+  supabase: SupabaseClient,
+  clienteId: string,
+  termino: string,
+  limite: number = LIMITE_BUSQUEDA_PRODUCTOS,
+): Promise<ResultadoRepositorio<FilaProductoBusqueda[]>> {
+  const terminoSanitizado = sanitizarTerminoBusqueda(termino);
+
+  if (terminoSanitizado.length === 0) {
+    return { ok: true, data: [] };
+  }
+
+  const limiteSeguro = Number.isInteger(limite) && limite > 0 ? Math.min(limite, LIMITE_BUSQUEDA_PRODUCTOS) : LIMITE_BUSQUEDA_PRODUCTOS;
+  const patron = `%${escaparComodinesLike(terminoSanitizado)}%`;
+
+  const { data, error } = await supabase
+    .from("productos")
+    .select("producto_id, sku, nombre, precio, stock_actual")
+    .eq("cliente_id", clienteId)
+    .is("eliminado_en", null)
+    .or(`sku.ilike.${patron},nombre.ilike.${patron}`)
+    .order("nombre", { ascending: true })
+    .limit(limiteSeguro)
+    .returns<FilaProductoBusqueda[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data };
+}
+
 /**
  * Listado paginado de productos activos de un tenant (docs/SITEMAP.md
  * "/productos → Listado paginado de productos (Core)"). Usa `.range()`

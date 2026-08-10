@@ -89,7 +89,9 @@
 │
 └── api/
     ├── productos/
-    │   └── route.ts                            → Route Handler: listado paginado / mutaciones
+    │   ├── route.ts                            → Route Handler: listado paginado / mutaciones
+    │   └── buscar/
+    │       └── route.ts                        → Route Handler: búsqueda por SKU/nombre (Mostrador)
     ├── stock/
     │   └── route.ts                            → Route Handler: listado paginado de movimientos de stock
     ├── ventas/
