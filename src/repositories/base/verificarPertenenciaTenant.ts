@@ -7,12 +7,13 @@ import { registrarDiff } from "@/lib/auditoria/registrarDiff";
  * Tablas de negocio con guard de pertenencia habilitado en esta estación
  * (docs/ROLES.md §3.8). Todas tienen columna `cliente_id` propia.
  */
-export type TablaConGuardTenant = "ventas" | "devoluciones" | "clientes_finales";
+export type TablaConGuardTenant = "ventas" | "devoluciones" | "clientes_finales" | "productos";
 
 const COLUMNA_ID_POR_TABLA: Record<TablaConGuardTenant, string> = {
   ventas: "venta_id",
   devoluciones: "devolucion_id",
   clientes_finales: "cliente_final_id",
+  productos: "producto_id",
 };
 
 export interface OpcionesVerificarPertenenciaTenant {
