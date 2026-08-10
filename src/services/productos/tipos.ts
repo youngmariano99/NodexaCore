@@ -11,3 +11,10 @@ export interface EstadoActualizarProducto {
 }
 
 export const ESTADO_ACTUALIZAR_PRODUCTO_INICIAL: EstadoActualizarProducto = { error: null, exito: false };
+
+export interface EstadoEliminarProducto {
+  error: string | null;
+  exito: boolean;
+}
+
+export const ESTADO_ELIMINAR_PRODUCTO_INICIAL: EstadoEliminarProducto = { error: null, exito: false };

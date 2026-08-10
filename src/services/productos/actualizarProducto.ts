@@ -34,6 +34,10 @@ interface FilaProductoValores {
   precio: number;
 }
 
+interface FilaProductoValoresConBaja extends FilaProductoValores {
+  eliminado_en: string | null;
+}
+
 interface FilaProductoActualizado extends FilaProductoValores {
   producto_id: string;
   actualizado_en: string;
@@ -54,6 +58,14 @@ function campoOpcional(formData: FormData, clave: string): string | undefined {
  * refresca solo en un UPDATE de Postgres). Se registra un diff por cada
  * campo efectivamente modificado con `registrarDiff` (encola vía `after()`,
  * no retrasa la respuesta ya armada para el cliente).
+ *
+ * Si el producto ya tiene `eliminado_en` seteado (baja lógica, ver
+ * `eliminarProducto.ts`), corta con `NX-PRD-006` antes de construir el
+ * UPDATE: la política RLS `productos_update_tenant` solo bloquea esto para
+ * `empleado` (su `WITH CHECK` exige `eliminado_en IS NULL`), no para
+ * `comerciante` — este chequeo de aplicación es necesario para que ambos
+ * roles reciban el mismo error de negocio normalizado en vez de que
+ * `comerciante` edite en silencio un producto dado de baja.
  */
 export async function actualizarProducto(
   productoId: string,
@@ -114,9 +126,13 @@ export async function actualizarProducto(
 
   const { data: filaAnterior } = await supabase
     .from("productos")
-    .select("nombre, descripcion, categoria, precio")
+    .select("nombre, descripcion, categoria, precio, eliminado_en")
     .eq("producto_id", productoId)
-    .maybeSingle<FilaProductoValores>();
+    .maybeSingle<FilaProductoValoresConBaja>();
+
+  if (filaAnterior?.eliminado_en) {
+    return { error: "NX-PRD-006", exito: false };
+  }
 
   const cambios: Partial<FilaProductoValores> = {};
   camposModificados.forEach((campo) => {
