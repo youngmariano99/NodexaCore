@@ -105,6 +105,65 @@ export async function insertarProducto(
   return { ok: true, data };
 }
 
+export interface DatosProductoImportado {
+  sku: string;
+  nombre: string;
+  precio: number;
+  categoria: string;
+}
+
+export interface FilaProductoInsertadoLote {
+  producto_id: string;
+  sku: string;
+}
+
+/**
+ * Inserción en lote de la importación de catálogo por Excel
+ * (docs/BACKLOG.md "Route Handler de importación de catálogo por Excel",
+ * Paso 3: "Ejecutar inserts en lote"). Usa el mismo patrón que
+ * `activarModulosIniciales` (estación de onboarding): `upsert(...,
+ * { onConflict: 'cliente_id,sku', ignoreDuplicates: true })` en vez de un
+ * `insert` simple envuelto en try/catch de `23505`. Esto genera un único
+ * `INSERT ... ON CONFLICT (cliente_id, sku) DO NOTHING RETURNING ...`
+ * atómico: si una fila del lote ya existe en el tenant, Postgres la omite
+ * sin abortar el resto de la sentencia (a diferencia de un `INSERT`
+ * multi-fila común, que revierte el lote completo ante cualquier violación
+ * de UNIQUE). `RETURNING` con `DO NOTHING` únicamente devuelve las filas que
+ * efectivamente se insertaron, lo que le permite al llamador (route handler
+ * de importación) diferenciar por SKU qué filas del reporte fueron altas
+ * reales y cuáles se rechazaron por ya existir en el catálogo del tenant.
+ */
+export async function insertarProductosEnLote(
+  supabase: SupabaseClient,
+  clienteId: string,
+  productos: DatosProductoImportado[],
+): Promise<ResultadoRepositorio<FilaProductoInsertadoLote[]>> {
+  if (productos.length === 0) {
+    return { ok: true, data: [] };
+  }
+
+  const { data, error } = await supabase
+    .from("productos")
+    .upsert(
+      productos.map((producto) => ({
+        cliente_id: clienteId,
+        sku: producto.sku,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        categoria: producto.categoria,
+      })),
+      { onConflict: "cliente_id,sku", ignoreDuplicates: true },
+    )
+    .select("producto_id, sku")
+    .returns<FilaProductoInsertadoLote[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data };
+}
+
 /**
  * Listado paginado de productos activos de un tenant (docs/SITEMAP.md
  * "/productos → Listado paginado de productos (Core)"). Usa `.range()`
