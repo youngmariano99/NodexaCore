@@ -4,12 +4,13 @@ import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import type { EstadoRegistrarEntradaStock } from "@/services/stock/tipos";
+import type { EstadoRegistrarSalidaStock } from "@/services/stock/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 const CODIGO_POSTGRES_NO_DATA_FOUND = "P0002";
+const CODIGO_STOCK_INSUFICIENTE = "NX004";
 
-const esquemaRegistrarEntradaStock = z.object({
+const esquemaRegistrarSalidaStock = z.object({
   producto_id: z.string().uuid("El producto es obligatorio."),
   cantidad: z.coerce
     .number({ message: "La cantidad es obligatoria." })
@@ -38,29 +39,28 @@ interface ErrorPostgres {
 }
 
 /**
- * Registro de entrada de stock (docs/ROLES.md §2, fila "movimientos_stock":
- * `C·L` para comerciante y empleado). El cálculo de `saldo_resultante` y el
- * `UPDATE` de `productos.stock_actual` viven en la función RPC genérica
- * `fn_registrar_movimiento_stock` (supabase/migrations/20260810120000_...,
- * compartida con `registrarSalidaStock.ts`), no acá: un `UPDATE` con la
- * condición de saldo en el propio `WHERE` es atómico en Postgres, evitando
- * la ventana de carrera de leer `stock_actual` en la app y recién después
- * escribir el nuevo valor (dos movimientos concurrentes al mismo producto
- * perderían una actualización con ese patrón).
+ * Registro de salida de stock (docs/ROLES.md §2, fila "movimientos_stock":
+ * `C·L` para comerciante y empleado). Comparte la función RPC
+ * `fn_registrar_movimiento_stock` con `registrarEntradaStock.ts`
+ * (supabase/migrations/20260810120000_...): la validación de saldo
+ * suficiente (`NX-PRD-004`) vive en la misma cláusula `WHERE` del `UPDATE`
+ * dentro del RPC, no en una lectura previa desde esta Server Action — así
+ * se evita la ventana de carrera entre "leer stock_actual", "decidir si
+ * alcanza" y "descontar" que dos salidas concurrentes sobre el mismo
+ * producto podrían explotar para dejar el stock en negativo.
  *
- * El RPC corre `SECURITY INVOKER` y deriva `cliente_id`/`usuario_id` del JWT
- * de sesión adentro de la función: un producto de otro tenant no matchea su
- * `WHERE` y falla con `NO_DATA_FOUND` (SQLSTATE `P0002`), que acá se traduce
- * a `NX-SYS-007` — mismo criterio de "no distinguir no-existe de es-de-otro-
- * tenant" que `verificarPertenenciaTenant` (docs/ROLES.md §3.8), sin
- * necesitar una consulta de guard separada porque el RPC ya lo resuelve
- * dentro de la misma transacción que la escritura.
+ * El RPC distingue por `SQLSTATE` el motivo de una falla del `UPDATE`
+ * atómico: `NX004` (custom, definido en la función) para saldo
+ * insuficiente → `NX-PRD-004`; `P0002` (`NO_DATA_FOUND`, reservado de
+ * PL/pgSQL) para producto de otro tenant o inexistente → `NX-SYS-007`,
+ * mismo criterio de `verificarPertenenciaTenant` (docs/ROLES.md §3.8) de no
+ * distinguir "no existe" de "es de otro comercio".
  */
-export async function registrarEntradaStock(
-  _estadoPrevio: EstadoRegistrarEntradaStock,
+export async function registrarSalidaStock(
+  _estadoPrevio: EstadoRegistrarSalidaStock,
   formData: FormData,
-): Promise<EstadoRegistrarEntradaStock> {
-  const resultado = esquemaRegistrarEntradaStock.safeParse({
+): Promise<EstadoRegistrarSalidaStock> {
+  const resultado = esquemaRegistrarSalidaStock.safeParse({
     producto_id: formData.get("producto_id"),
     cantidad: formData.get("cantidad"),
   });
@@ -96,13 +96,18 @@ export async function registrarEntradaStock(
 
   const { data: datoRpc, error: errorRpc } = await supabase.rpc("fn_registrar_movimiento_stock", {
     p_producto_id: resultado.data.producto_id,
-    p_tipo: "entrada",
+    p_tipo: "salida",
     p_cantidad: resultado.data.cantidad,
   });
   const movimiento = datoRpc as FilaMovimientoStock | null;
 
   if (errorRpc || !movimiento) {
-    if ((errorRpc as ErrorPostgres | null)?.code === CODIGO_POSTGRES_NO_DATA_FOUND) {
+    const codigoPostgres = (errorRpc as ErrorPostgres | null)?.code;
+
+    if (codigoPostgres === CODIGO_STOCK_INSUFICIENTE) {
+      return { error: "NX-PRD-004", exito: false };
+    }
+    if (codigoPostgres === CODIGO_POSTGRES_NO_DATA_FOUND) {
       return { error: "NX-SYS-007", exito: false };
     }
     return { error: "NX-SYS-001", exito: false };
@@ -113,7 +118,7 @@ export async function registrarEntradaStock(
     usuarioId: solicitante.usuario_id,
     tablaAfectada: "movimientos_stock",
     registroId: movimiento.movimiento_id,
-    campoModificado: "entrada",
+    campoModificado: "salida",
     valorAnterior: null,
     valorNuevo: String(movimiento.saldo_resultante),
   });

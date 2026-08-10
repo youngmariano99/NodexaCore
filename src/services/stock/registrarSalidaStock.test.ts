@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 
-import { registrarEntradaStock } from "./registrarEntradaStock";
-import { ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL } from "./tipos";
+import { registrarSalidaStock } from "./registrarSalidaStock";
+import { ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL } from "./tipos";
 
 vi.mock("@/lib/supabase/server", () => ({
   crearClienteSupabaseServidor: vi.fn(),
@@ -44,34 +44,26 @@ const CLIENTE_ID = "a1111111-1111-4111-8111-111111111111";
 const USUARIO_ID = "u-comerciante";
 const PRODUCTO_ID = "b1111111-1111-4111-8111-111111111111";
 
-const DATOS_VALIDOS = { producto_id: PRODUCTO_ID, cantidad: "20" };
+const DATOS_VALIDOS = { producto_id: PRODUCTO_ID, cantidad: "5" };
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("registrarEntradaStock", () => {
+describe("registrarSalidaStock", () => {
   it("rechaza una cantidad igual a cero con NX-SYS-006 sin consultar Supabase", async () => {
     const formData = crearFormData({ ...DATOS_VALIDOS, cantidad: "0" });
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, formData);
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, formData);
 
     expect(resultado).toEqual({ error: "NX-SYS-006", exito: false });
     expect(crearClienteSupabaseServidor).not.toHaveBeenCalled();
   });
 
-  it("rechaza una cantidad negativa con NX-SYS-006", async () => {
-    const formData = crearFormData({ ...DATOS_VALIDOS, cantidad: "-5" });
-
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, formData);
-
-    expect(resultado).toEqual({ error: "NX-SYS-006", exito: false });
-  });
-
   it("rechaza sin sesión activa con NX-SYS-002", async () => {
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(mockearSesion(null) as never);
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: "NX-SYS-002", exito: false });
   });
@@ -88,25 +80,46 @@ describe("registrarEntradaStock", () => {
     };
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: "NX-SYS-003", exito: false });
     expect(supabaseMock.rpc).not.toHaveBeenCalled();
   });
 
-  it("calcula el saldo resultante (50 + 20 = 70) y registra el diff de forma asíncrona", async () => {
+  it("retorna NX-PRD-004 sin modificar el stock cuando la cantidad supera el saldo (10 en stock, sale 15)", async () => {
     const solicitanteBuilder = crearBuilderSolicitante({
       data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID },
       error: null,
     });
+    const supabaseMock = {
+      ...mockearSesion({ id: AUTH_USER_ID }),
+      from: vi.fn(() => solicitanteBuilder),
+      rpc: vi.fn(async () => ({ data: null, error: { code: "NX004", message: "No podés dejar stock en negativo." } })),
+    };
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const resultado = await registrarSalidaStock(
+      ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL,
+      crearFormData({ producto_id: PRODUCTO_ID, cantidad: "15" }),
+    );
+
+    expect(resultado).toEqual({ error: "NX-PRD-004", exito: false });
+    expect(registrarDiff).not.toHaveBeenCalled();
+  });
+
+  it("descuenta el stock (10 - 5 = 5) y registra el diff con tipo salida", async () => {
+    const solicitanteBuilder = crearBuilderSolicitante({
+      data: { usuario_id: USUARIO_ID, rol: "empleado", cliente_id: CLIENTE_ID },
+      error: null,
+    });
     const movimiento = {
-      movimiento_id: "m-1",
+      movimiento_id: "m-2",
       cliente_id: CLIENTE_ID,
       producto_id: PRODUCTO_ID,
       usuario_id: USUARIO_ID,
-      tipo: "entrada",
-      cantidad: 20,
-      saldo_resultante: 70,
+      tipo: "salida",
+      cantidad: 5,
+      saldo_resultante: 5,
     };
     const supabaseMock = {
       ...mockearSesion({ id: AUTH_USER_ID }),
@@ -115,23 +128,23 @@ describe("registrarEntradaStock", () => {
     };
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: null, exito: true });
     expect(supabaseMock.rpc).toHaveBeenCalledWith("fn_registrar_movimiento_stock", {
       p_producto_id: PRODUCTO_ID,
-      p_tipo: "entrada",
-      p_cantidad: 20,
+      p_tipo: "salida",
+      p_cantidad: 5,
     });
     expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: CLIENTE_ID,
         usuarioId: USUARIO_ID,
         tablaAfectada: "movimientos_stock",
-        registroId: "m-1",
-        campoModificado: "entrada",
+        registroId: "m-2",
+        campoModificado: "salida",
         valorAnterior: null,
-        valorNuevo: "70",
+        valorNuevo: "5",
       }),
     );
   });
@@ -148,15 +161,14 @@ describe("registrarEntradaStock", () => {
     };
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: "NX-SYS-007", exito: false });
-    expect(registrarDiff).not.toHaveBeenCalled();
   });
 
   it("retorna NX-SYS-001 ante cualquier otro error del RPC", async () => {
     const solicitanteBuilder = crearBuilderSolicitante({
-      data: { usuario_id: USUARIO_ID, rol: "empleado", cliente_id: CLIENTE_ID },
+      data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID },
       error: null,
     });
     const supabaseMock = {
@@ -166,7 +178,7 @@ describe("registrarEntradaStock", () => {
     };
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
-    const resultado = await registrarEntradaStock(ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
+    const resultado = await registrarSalidaStock(ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL, crearFormData(DATOS_VALIDOS));
 
     expect(resultado).toEqual({ error: "NX-SYS-001", exito: false });
   });
