@@ -232,6 +232,47 @@ export async function buscarProductosParaVenta(
   return { ok: true, data };
 }
 
+export interface FilaPrecioProducto {
+  producto_id: string;
+  precio: number;
+}
+
+/**
+ * Precios reales (autoritativos) de un lote de productos, scopeados al
+ * tenant (docs/BACKLOG.md "Cálculo automático del total de la venta", Paso 3:
+ * "validación final" en servidor). Usado por
+ * `POST /api/ventas/previsualizar` para recalcular el total de una venta
+ * SIN confiar en ningún `precioUnitario` que pueda llegar desde el cliente —
+ * un usuario podría manipular el request y mandar precios distintos a los
+ * reales; acá siempre se lee el `precio` vigente en `productos`. Un producto
+ * eliminado lógicamente o de otro tenant simplemente no aparece en el
+ * resultado, sin distinguir el motivo (mismo criterio de
+ * `verificarPertenenciaTenant`, docs/ROLES.md §3.8).
+ */
+export async function obtenerPreciosProductosPorIds(
+  supabase: SupabaseClient,
+  clienteId: string,
+  productoIds: string[],
+): Promise<ResultadoRepositorio<FilaPrecioProducto[]>> {
+  if (productoIds.length === 0) {
+    return { ok: true, data: [] };
+  }
+
+  const { data, error } = await supabase
+    .from("productos")
+    .select("producto_id, precio")
+    .eq("cliente_id", clienteId)
+    .is("eliminado_en", null)
+    .in("producto_id", productoIds)
+    .returns<FilaPrecioProducto[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data };
+}
+
 /**
  * Listado paginado de productos activos de un tenant (docs/SITEMAP.md
  * "/productos → Listado paginado de productos (Core)"). Usa `.range()`
