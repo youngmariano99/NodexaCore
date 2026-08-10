@@ -90,6 +90,8 @@
 └── api/
     ├── productos/
     │   └── route.ts                            → Route Handler: listado paginado / mutaciones
+    ├── stock/
+    │   └── route.ts                            → Route Handler: listado paginado de movimientos de stock
     ├── ventas/
     │   └── route.ts                             → Route Handler: registro de venta (idempotente)
     ├── carga-ia/
