@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   title: "Detalle de comercio — Panel NODEXA",
 };
 
+/**
+ * Ver app/(app)/dashboard/page.tsx: `crearClienteSupabaseServidor()` valida
+ * el entorno de servidor completo antes de `await cookies()`, así que un
+ * build sin variables server-only no relacionadas (ej. Upstash) puede
+ * abortar en CI si Next intenta prerenderizar esta página.
+ */
+export const dynamic = "force-dynamic";
+
 interface DetalleComercioPageProps {
   params: Promise<{ clienteId: string }>;
 }

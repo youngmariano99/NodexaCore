@@ -17,6 +17,20 @@ export const metadata: Metadata = {
   title: "Dashboard — Nodexa Core",
 };
 
+/**
+ * `crearClienteSupabaseServidor()` valida el entorno de servidor completo
+ * (`obtenerEntornoServidor()` en src/lib/env.ts) ANTES de llegar a
+ * `await cookies()` — es decir, antes de que Next.js pueda detectar por sí
+ * solo que la ruta depende de una API dinámica. Sin este `force-dynamic`
+ * explícito, Next puede intentar prerenderizar la página en build (según
+ * cómo su analizador estático interprete el árbol de imports) y abortar
+ * todo el build si faltan variables server-only no relacionadas con esta
+ * página (ej. SUPABASE_SERVICE_ROLE_KEY, Upstash) en el entorno de CI, que
+ * no carga `.env.local` — reproducido y confirmado en local corriendo
+ * `next build` sin ese archivo.
+ */
+export const dynamic = "force-dynamic";
+
 interface FilaUsuarioSolicitante {
   rol: RolUsuario;
   cliente_id: string | null;
