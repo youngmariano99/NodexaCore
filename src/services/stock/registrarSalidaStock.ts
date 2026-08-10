@@ -3,6 +3,8 @@
 import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
+import { calcularNuevoSaldo } from "@/lib/dominio/stock/calcularNuevoSaldo";
+import { ErrorDeDominio, mapearError } from "@/lib/errores/mapearError";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { EstadoRegistrarSalidaStock } from "@/services/stock/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
@@ -55,6 +57,17 @@ interface ErrorPostgres {
  * PL/pgSQL) para producto de otro tenant o inexistente → `NX-SYS-007`,
  * mismo criterio de `verificarPertenenciaTenant` (docs/ROLES.md §3.8) de no
  * distinguir "no existe" de "es de otro comercio".
+ *
+ * Antes de llamar al RPC se agrega un chequeo Fail-Fast con
+ * `calcularNuevoSaldo` (src/lib/dominio/stock/): si el `stock_actual` leído
+ * en ese momento ya alcanza para saber que la salida dejaría el saldo
+ * negativo, se corta acá con `NX-PRD-004` sin ni siquiera intentar el RPC.
+ * Es una optimización de UX, no la garantía real: bajo concurrencia ese
+ * `stock_actual` puede quedar desactualizado entre esta lectura y el
+ * `UPDATE`, así que el `WHERE stock_actual + v_delta >= 0` del RPC sigue
+ * siendo la única fuente de verdad. Si el producto no aparece en esta
+ * lectura (de otro tenant o inexistente), se omite el chequeo y se deja que
+ * el RPC informe `NX-SYS-007` — no se duplica esa decisión acá.
  */
 export async function registrarSalidaStock(
   _estadoPrevio: EstadoRegistrarSalidaStock,
@@ -92,6 +105,25 @@ export async function registrarSalidaStock(
 
   if ((solicitante.rol !== "comerciante" && solicitante.rol !== "empleado") || !solicitante.cliente_id) {
     return { error: "NX-SYS-003", exito: false };
+  }
+
+  const { data: productoActual } = await supabase
+    .from("productos")
+    .select("stock_actual")
+    .eq("producto_id", resultado.data.producto_id)
+    .eq("cliente_id", solicitante.cliente_id)
+    .is("eliminado_en", null)
+    .maybeSingle<{ stock_actual: number }>();
+
+  if (productoActual) {
+    try {
+      calcularNuevoSaldo(productoActual.stock_actual, resultado.data.cantidad, "salida");
+    } catch (error) {
+      if (error instanceof ErrorDeDominio) {
+        return { error: mapearError(error).codigo, exito: false };
+      }
+      throw error;
+    }
   }
 
   const { data: datoRpc, error: errorRpc } = await supabase.rpc("fn_registrar_movimiento_stock", {
