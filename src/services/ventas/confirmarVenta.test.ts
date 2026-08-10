@@ -144,6 +144,21 @@ describe("confirmarVenta", () => {
     });
   });
 
+  it("retorna NX-VTA-001 sin registrar nada cuando el RPC reporta stock insuficiente en algún ítem", async () => {
+    const supabaseMock = mockearSupabaseCompleto({
+      solicitante: { data: { rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
+      rpc: vi.fn(async () => ({
+        data: null,
+        error: { code: "NX001", message: "No hay stock suficiente de este producto para completar la venta." },
+      })),
+    });
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const resultado = await confirmarVenta(ESTADO_CONFIRMAR_VENTA_INICIAL, crearFormData(DATOS_VALIDOS));
+
+    expect(resultado).toEqual({ error: "NX-VTA-001", exito: false, ventaId: null });
+  });
+
   it("retorna NX-VTA-002 sin duplicar el registro cuando el mismo idempotency_key se envía dos veces", async () => {
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
