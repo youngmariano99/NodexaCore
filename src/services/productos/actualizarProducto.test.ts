@@ -110,6 +110,43 @@ describe("actualizarProducto", () => {
     expect(registrarDiff).toHaveBeenCalledWith(expect.objectContaining({ campoModificado: "intento_acceso_cruzado" }));
   });
 
+  it("retorna NX-PRD-006 sin aplicar cambios cuando el producto ya fue dado de baja", async () => {
+    const solicitanteBuilder = crearBuilderSingle({
+      data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID },
+      error: null,
+    });
+    const guardBuilder = crearBuilderSingle({ data: { producto_id: PRODUCTO_ID }, error: null });
+    const valoresAnterioresBuilder = crearBuilderSingle({
+      data: {
+        nombre: "Yerba Mate 1kg",
+        descripcion: "ej.",
+        categoria: "Almacén",
+        precio: 3500,
+        eliminado_en: "2026-08-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const supabaseMock = {
+      ...mockearSesion({ id: AUTH_USER_ID }),
+      from: vi
+        .fn()
+        .mockReturnValueOnce(solicitanteBuilder)
+        .mockReturnValueOnce(guardBuilder)
+        .mockReturnValueOnce(valoresAnterioresBuilder),
+    };
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const resultado = await actualizarProducto(
+      PRODUCTO_ID,
+      ESTADO_ACTUALIZAR_PRODUCTO_INICIAL,
+      crearFormData({ precio: "4200" }),
+    );
+
+    expect(resultado).toEqual({ error: "NX-PRD-006", exito: false });
+    expect(registrarDiff).not.toHaveBeenCalled();
+  });
+
   it("actualiza el precio, refresca actualizado_en y registra el diff campo por campo", async () => {
     const solicitanteBuilder = crearBuilderSingle({
       data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID },
