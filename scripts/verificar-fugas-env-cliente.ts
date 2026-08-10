@@ -7,7 +7,7 @@ try {
   // Sin .env.local (build en Vercel): las variables ya están en process.env.
 }
 
-const SECRETOS_A_AUDITAR = ["SUPABASE_SERVICE_ROLE_KEY", "UPSTASH_REDIS_REST_TOKEN"] as const;
+const SECRETOS_A_AUDITAR = ["SUPABASE_SERVICE_ROLE_KEY", "UPSTASH_REDIS_REST_TOKEN", "CLOUDINARY_API_SECRET"] as const;
 
 type SecretoAAuditar = (typeof SECRETOS_A_AUDITAR)[number];
 
