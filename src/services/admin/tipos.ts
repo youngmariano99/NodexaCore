@@ -15,3 +15,12 @@ export const MODULOS_NODEXA: readonly ModuloNodexa[] = [
   "devoluciones",
   "bot_whatsapp",
 ];
+
+/** Etiqueta en español para mostrar en UI (docs/DESIGN.md: cero tecnicismos crudos). */
+export const NOMBRE_MODULO_NODEXA: Record<ModuloNodexa, string> = {
+  catalogo_web: "Catálogo Web",
+  carga_ia: "Carga con IA",
+  fiados: "Fiados",
+  devoluciones: "Devoluciones",
+  bot_whatsapp: "Bot de WhatsApp",
+};
