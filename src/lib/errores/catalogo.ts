@@ -11,6 +11,7 @@ export const CATALOGO_ERRORES = {
   "NX-SYS-005": "Estás enviando demasiadas solicitudes seguidas. Esperá un momento y volvé a intentar.",
   "NX-SYS-006": "Los datos que enviaste no son válidos. Revisá los campos marcados y volvé a intentar.",
   "NX-SYS-007": "Este recurso pertenece a otro comercio y no podés acceder a él.",
+  "NX-ADM-001": "Ya existe un comercio registrado con este slug o dominio.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;
