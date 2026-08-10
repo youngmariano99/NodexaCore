@@ -32,7 +32,7 @@ select
   round((200 + random() * 14800)::numeric, 2),
   (5 + (n % 200)),
   (n % 2 = 0),
-  case when n % 5 = 0 then 'ia_vision' when n % 7 = 0 then 'excel' else 'manual' end
+  (case when n % 5 = 0 then 'ia_vision' when n % 7 = 0 then 'excel' else 'manual' end)::origen_alta_producto
 from generate_series(1, 910) n
 on conflict (cliente_id, sku) do nothing;
 
@@ -46,6 +46,6 @@ select
   round((300 + random() * 19700)::numeric, 2),
   (0 + (n % 60)),
   (n % 2 = 0),
-  case when n % 9 = 0 then 'excel' else 'manual' end
+  (case when n % 9 = 0 then 'excel' else 'manual' end)::origen_alta_producto
 from generate_series(1, 1000) n
 on conflict (cliente_id, sku) do nothing;

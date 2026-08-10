@@ -4,6 +4,25 @@ import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 
 const CODIGO_UNIQUE_VIOLATION_POSTGRES = "23505";
 
+export const PRODUCTOS_POR_PAGINA = 25;
+
+export interface FilaProductoListado {
+  producto_id: string;
+  sku: string;
+  nombre: string;
+  categoria: string | null;
+  precio: number;
+  stock_actual: number;
+  publicado: boolean;
+}
+
+export interface ResultadoProductosPaginados {
+  productos: FilaProductoListado[];
+  total: number;
+  pagina: number;
+  porPagina: number;
+}
+
 export interface DatosNuevoProducto {
   clienteId: string;
   sku: string;
@@ -84,4 +103,50 @@ export async function insertarProducto(
   }
 
   return { ok: true, data };
+}
+
+/**
+ * Listado paginado de productos activos de un tenant (docs/SITEMAP.md
+ * "/productos → Listado paginado de productos (Core)"). Usa `.range()`
+ * sobre un `count: "exact"` — nunca un `SELECT *` sin `LIMIT`
+ * (CLAUDE.md §4 "escalabilidad") — y filtra siempre `eliminado_en IS NULL`:
+ * un producto dado de baja lógica (`eliminarProducto.ts`) nunca aparece acá.
+ *
+ * El `order()` incluye `producto_id` como desempate: varias filas insertadas
+ * en el mismo lote comparten literalmente el mismo `creado_en` (Postgres
+ * evalúa `DEFAULT now()` una sola vez por sentencia en un INSERT masivo, no
+ * por fila), y ordenar solo por una columna con empates hace que Postgres no
+ * garantice el mismo orden entre dos ejecuciones de `.range()` distintas —
+ * verificado en vivo contra el seed volumétrico: sin el desempate, la misma
+ * fila podía aparecer repetida en dos páginas consecutivas.
+ */
+export async function obtenerProductosPaginados(
+  supabase: SupabaseClient,
+  clienteId: string,
+  pagina: number,
+  porPagina: number = PRODUCTOS_POR_PAGINA,
+): Promise<ResultadoRepositorio<ResultadoProductosPaginados>> {
+  const paginaSegura = Number.isInteger(pagina) && pagina > 0 ? pagina : 1;
+  const porPaginaSeguro = Number.isInteger(porPagina) && porPagina > 0 ? porPagina : PRODUCTOS_POR_PAGINA;
+  const desde = (paginaSegura - 1) * porPaginaSeguro;
+  const hasta = desde + porPaginaSeguro - 1;
+
+  const { data, error, count } = await supabase
+    .from("productos")
+    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado", { count: "exact" })
+    .eq("cliente_id", clienteId)
+    .is("eliminado_en", null)
+    .order("creado_en", { ascending: false })
+    .order("producto_id", { ascending: true })
+    .range(desde, hasta)
+    .returns<FilaProductoListado[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return {
+    ok: true,
+    data: { productos: data, total: count ?? 0, pagina: paginaSegura, porPagina: porPaginaSeguro },
+  };
 }
