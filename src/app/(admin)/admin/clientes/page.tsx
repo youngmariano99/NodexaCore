@@ -14,6 +14,16 @@ export const metadata: Metadata = {
   title: "Comercios — Panel NODEXA",
 };
 
+/**
+ * `crearClienteSupabaseServidor()` valida el entorno de servidor completo
+ * antes de llegar a `await cookies()`, antes de que Next pueda detectar por
+ * sí solo que la ruta depende de una API dinámica — sin este marcador
+ * explícito, un build sin las variables server-only no relacionadas con
+ * esta página (ej. Upstash) puede abortar en CI. Ver detalle en
+ * app/(app)/dashboard/page.tsx, donde se reprodujo y confirmó el problema.
+ */
+export const dynamic = "force-dynamic";
+
 interface AdminClientesPageProps {
   searchParams: Promise<{ page?: string }>;
 }
