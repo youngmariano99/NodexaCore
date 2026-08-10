@@ -95,7 +95,9 @@
     ├── stock/
     │   └── route.ts                            → Route Handler: listado paginado de movimientos de stock
     ├── ventas/
-    │   └── route.ts                             → Route Handler: registro de venta (idempotente)
+    │   ├── route.ts                             → Route Handler: registro de venta (idempotente)
+    │   └── previsualizar/
+    │       └── route.ts                         → Route Handler: recálculo server-side del total (Mostrador)
     ├── carga-ia/
     │   └── route.ts                             → Route Handler: procesamiento de imagen por IA (rate-limited)
     ├── webhooks/

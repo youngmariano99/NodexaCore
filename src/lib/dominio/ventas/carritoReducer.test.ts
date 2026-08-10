@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  ESTADO_CARRITO_INICIAL,
-  calcularTotalCarrito,
-  reducirCarrito,
-  type ItemCarrito,
-  type ProductoParaCarrito,
-} from "./carritoReducer";
+import { ESTADO_CARRITO_INICIAL, reducirCarrito, type ItemCarrito, type ProductoParaCarrito } from "./carritoReducer";
 
 const YERBA: ProductoParaCarrito = {
   productoId: "p-1",
@@ -102,20 +96,5 @@ describe("reducirCarrito", () => {
     const estado = reducirCarrito(conVarios, { tipo: "VACIAR_CARRITO" });
 
     expect(estado).toEqual([]);
-  });
-});
-
-describe("calcularTotalCarrito", () => {
-  it("retorna 0 con el carrito vacío", () => {
-    expect(calcularTotalCarrito(ESTADO_CARRITO_INICIAL)).toBe(0);
-  });
-
-  it("suma precio * cantidad de todos los ítems (3500*2 + 900*3 = 9700)", () => {
-    const items: ItemCarrito[] = [
-      { ...YERBA, cantidad: 2 },
-      { ...FIDEOS, cantidad: 3 },
-    ];
-
-    expect(calcularTotalCarrito(items)).toBe(9700);
   });
 });

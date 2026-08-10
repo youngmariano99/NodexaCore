@@ -79,8 +79,3 @@ export function reducirCarrito(estado: ItemCarrito[], accion: AccionCarrito): It
       return estado;
   }
 }
-
-/** Suma `precio * cantidad` de todos los ítems del carrito (ResumenTotal.tsx). */
-export function calcularTotalCarrito(items: ItemCarrito[]): number {
-  return items.reduce((total, item) => total + item.precio * item.cantidad, 0);
-}

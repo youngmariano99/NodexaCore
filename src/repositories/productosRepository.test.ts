@@ -7,6 +7,7 @@ import {
   contarProductosActivos,
   insertarProducto,
   insertarProductosEnLote,
+  obtenerPreciosProductosPorIds,
   obtenerProductosPaginados,
 } from "./productosRepository";
 
@@ -269,6 +270,61 @@ describe("buscarProductosParaVenta", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await buscarProductosParaVenta(supabase as never, CLIENTE_ID, "yerba");
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderPrecios(resultado: { data: unknown; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    is: vi.fn(() => builder),
+    in: vi.fn(() => builder),
+    returns: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("obtenerPreciosProductosPorIds", () => {
+  const PRODUCTO_ID_1 = "b1111111-1111-4111-8111-111111111111";
+  const PRODUCTO_ID_2 = "b2222222-2222-4222-8222-222222222222";
+
+  it("retorna [] sin consultar Supabase cuando la lista de IDs está vacía", async () => {
+    const supabase = { from: vi.fn() };
+
+    const resultado = await obtenerPreciosProductosPorIds(supabase as never, CLIENTE_ID, []);
+
+    expect(resultado).toEqual({ ok: true, data: [] });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("filtra por cliente_id, sin eliminados, y por los IDs pedidos", async () => {
+    const builder = crearBuilderPrecios({ data: [], error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await obtenerPreciosProductosPorIds(supabase as never, CLIENTE_ID, [PRODUCTO_ID_1, PRODUCTO_ID_2]);
+
+    expect(builder.eq).toHaveBeenCalledWith("cliente_id", CLIENTE_ID);
+    expect(builder.is).toHaveBeenCalledWith("eliminado_en", null);
+    expect(builder.in).toHaveBeenCalledWith("producto_id", [PRODUCTO_ID_1, PRODUCTO_ID_2]);
+  });
+
+  it("retorna los precios reales encontrados", async () => {
+    const filas = [{ producto_id: PRODUCTO_ID_1, precio: 3500 }];
+    const builder = crearBuilderPrecios({ data: filas, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerPreciosProductosPorIds(supabase as never, CLIENTE_ID, [PRODUCTO_ID_1]);
+
+    expect(resultado).toEqual({ ok: true, data: filas });
+  });
+
+  it("retorna NX-SYS-001 si Supabase devuelve error", async () => {
+    const builder = crearBuilderPrecios({ data: null, error: { message: "fallo" } });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerPreciosProductosPorIds(supabase as never, CLIENTE_ID, [PRODUCTO_ID_1]);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });
