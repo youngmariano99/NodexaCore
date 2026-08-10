@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 
 import { ampliarLimiteSku } from "./ampliarLimiteSku";
-
-vi.mock("next/server", () => ({
-  after: vi.fn((callback: () => unknown) => callback()),
-}));
 
 vi.mock("@/lib/supabase/server", () => ({
   crearClienteSupabaseServidor: vi.fn(),
   crearClienteSupabaseAdmin: vi.fn(),
 }));
 
-vi.mock("@/repositories/auditoria", () => ({
-  registrarDiffAuditoria: vi.fn(async () => undefined),
+vi.mock("@/lib/auditoria/registrarDiff", () => ({
+  registrarDiff: vi.fn(),
 }));
 
 interface ResultadoSupabase {
@@ -171,7 +167,7 @@ describe("ampliarLimiteSku", () => {
 
     expect(actualizacionBuilder.update).toHaveBeenCalledWith({ limite_sku: 2000, packs_sku_contratados: 1 });
 
-    expect(registrarDiffAuditoria).toHaveBeenCalledWith(
+    expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: CLIENTE_ID,
         usuarioId: USUARIO_ID_ADMIN,

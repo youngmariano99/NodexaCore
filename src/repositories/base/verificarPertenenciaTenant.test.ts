@@ -7,7 +7,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { actualizarClienteFinal } from "@/repositories/clientesFinales";
 import { actualizarEstadoDevolucion } from "@/repositories/devoluciones";
 import { actualizarEstadoVenta } from "@/repositories/ventas";
@@ -18,8 +18,8 @@ vi.mock("@sentry/nextjs", () => ({
   captureMessage: vi.fn(),
 }));
 
-vi.mock("@/repositories/auditoria", () => ({
-  registrarDiffAuditoria: vi.fn(async () => undefined),
+vi.mock("@/lib/auditoria/registrarDiff", () => ({
+  registrarDiff: vi.fn(),
 }));
 
 const TENANT_A = "a1111111-1111-4111-8111-111111111111";
@@ -90,7 +90,7 @@ describe("verificarPertenenciaTenant", () => {
       expect.objectContaining({ level: "warning", tags: expect.objectContaining({ codigo_error: "NX-SYS-007" }) }),
     );
 
-    expect(registrarDiffAuditoria).toHaveBeenCalledWith(
+    expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: TENANT_A,
         usuarioId: USUARIO_A,
@@ -115,6 +115,28 @@ describe("guard aplicado en el repositorio de ventas", () => {
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-007" });
     expect(supabase.from).toHaveBeenCalledTimes(1); // solo la consulta del guard, nunca el update
   });
+
+  it("registra el diff de estado tras una transición exitosa, sin retrasar la respuesta", async () => {
+    const supabase = crearMockSupabase({ venta_id: "venta-propia", estado: "confirmada" });
+
+    const resultado = await actualizarEstadoVenta("venta-propia", "devuelta_total", {
+      supabase: supabase as never,
+      clienteIdJwt: TENANT_A,
+      usuarioId: USUARIO_A,
+    });
+
+    expect(resultado.ok).toBe(true);
+    expect(registrarDiff).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clienteId: TENANT_A,
+        usuarioId: USUARIO_A,
+        tablaAfectada: "ventas",
+        campoModificado: "estado",
+        valorAnterior: "confirmada",
+        valorNuevo: "procesada",
+      }),
+    );
+  });
 });
 
 describe("guard aplicado en el repositorio de devoluciones", () => {
@@ -131,8 +153,8 @@ describe("guard aplicado en el repositorio de devoluciones", () => {
     expect(supabase._builderUpdate.eq).not.toHaveBeenCalled();
   });
 
-  it("permite la mutación cuando la devolución pertenece al tenant autenticado", async () => {
-    const supabase = crearMockSupabase({ devolucion_id: "devolucion-propia" });
+  it("permite la mutación cuando la devolución pertenece al tenant autenticado y registra el diff", async () => {
+    const supabase = crearMockSupabase({ devolucion_id: "devolucion-propia", estado: "registrada" });
 
     const resultado = await actualizarEstadoDevolucion("devolucion-propia", "procesada", {
       supabase: supabase as never,
@@ -141,6 +163,16 @@ describe("guard aplicado en el repositorio de devoluciones", () => {
     });
 
     expect(resultado.ok).toBe(true);
+    expect(registrarDiff).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clienteId: TENANT_A,
+        usuarioId: USUARIO_A,
+        tablaAfectada: "devoluciones",
+        campoModificado: "estado",
+        valorAnterior: "registrada",
+        valorNuevo: "procesada",
+      }),
+    );
   });
 });
 
@@ -156,5 +188,30 @@ describe("guard aplicado en el repositorio de clientesFinales", () => {
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-007" });
     expect(supabase._builderUpdate.eq).not.toHaveBeenCalled();
+  });
+
+  it("registra un diff por cada campo modificado tras una edición exitosa", async () => {
+    const supabase = crearMockSupabase({
+      cliente_final_id: "cliente-final-propio",
+      nombre: "Nombre Viejo",
+      telefono: "+5490000000000",
+    });
+
+    const resultado = await actualizarClienteFinal(
+      "cliente-final-propio",
+      { telefono: "+5491111111111" },
+      { supabase: supabase as never, clienteIdJwt: TENANT_A, usuarioId: USUARIO_A },
+    );
+
+    expect(resultado.ok).toBe(true);
+    expect(registrarDiff).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clienteId: TENANT_A,
+        usuarioId: USUARIO_A,
+        tablaAfectada: "clientes_finales",
+        campoModificado: "telefono",
+        valorAnterior: "+5490000000000",
+      }),
+    );
   });
 });

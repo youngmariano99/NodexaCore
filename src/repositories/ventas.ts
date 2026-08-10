@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { verificarPertenenciaTenant } from "@/repositories/base/verificarPertenenciaTenant";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 
@@ -21,6 +22,10 @@ interface FilaVentaActualizada {
  * al confirmarse una devolución — docs/SCHEMA.md §7). Guard IDOR/BOLA
  * (docs/ROLES.md §3.8) antes de tocar la base: si la venta no pertenece al
  * tenant del solicitante, corta en NX-SYS-007 sin ejecutar el UPDATE.
+ *
+ * Registra el diff con `registrarDiff` (src/lib/auditoria/): corre después de
+ * confirmar el UPDATE, vía `after()`, sin retrasar ni depender de la
+ * respuesta ya armada para el cliente (CLAUDE.md §4 "trazabilidad").
  */
 export async function actualizarEstadoVenta(
   ventaId: string,
@@ -28,6 +33,10 @@ export async function actualizarEstadoVenta(
   contexto: ContextoRepositorioVentas,
 ): Promise<ResultadoRepositorio<FilaVentaActualizada>> {
   const { supabase, clienteIdJwt, usuarioId } = contexto;
+
+  if (!clienteIdJwt) {
+    return { ok: false, error: "NX-SYS-007" };
+  }
 
   const verificacion = await verificarPertenenciaTenant(ventaId, clienteIdJwt, {
     supabase,
@@ -39,6 +48,12 @@ export async function actualizarEstadoVenta(
     return { ok: false, error: verificacion.error ?? "NX-SYS-007" };
   }
 
+  const { data: filaAnterior } = await supabase
+    .from("ventas")
+    .select("estado")
+    .eq("venta_id", ventaId)
+    .maybeSingle<{ estado: EstadoVenta }>();
+
   const { data, error } = await supabase
     .from("ventas")
     .update({ estado: nuevoEstado })
@@ -49,6 +64,16 @@ export async function actualizarEstadoVenta(
   if (error || !data) {
     return { ok: false, error: "NX-SYS-001" };
   }
+
+  registrarDiff({
+    clienteId: clienteIdJwt,
+    usuarioId,
+    tablaAfectada: "ventas",
+    registroId: data.venta_id,
+    campoModificado: "estado",
+    valorAnterior: filaAnterior?.estado ?? null,
+    valorNuevo: data.estado,
+  });
 
   return { ok: true, data };
 }

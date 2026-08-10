@@ -1,10 +1,9 @@
 "use server";
 
-import { after } from "next/server";
 import { z } from "zod";
 
+import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { registrarDiffAuditoria } from "@/repositories/auditoria";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
@@ -138,16 +137,14 @@ export async function ampliarLimiteSku(
     return { ok: false, error: "NX-SYS-001" };
   }
 
-  after(async () => {
-    await registrarDiffAuditoria({
-      clienteId: resultado.data.clienteId,
-      usuarioId: solicitante.usuario_id,
-      tablaAfectada: "clientes",
-      registroId: resultado.data.clienteId,
-      campoModificado: "limite_sku",
-      valorAnterior: String(limiteAnterior),
-      valorNuevo: String(resultado.data.nuevoLimiteSku),
-    });
+  registrarDiff({
+    clienteId: resultado.data.clienteId,
+    usuarioId: solicitante.usuario_id,
+    tablaAfectada: "clientes",
+    registroId: resultado.data.clienteId,
+    campoModificado: "limite_sku",
+    valorAnterior: String(limiteAnterior),
+    valorNuevo: String(resultado.data.nuevoLimiteSku),
   });
 
   return {
