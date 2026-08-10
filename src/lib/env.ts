@@ -46,6 +46,22 @@ const esquemaEntornoServidor = esquemaEntornoCliente.extend({
   UPSTASH_REDIS_REST_TOKEN: z
     .string({ message: "UPSTASH_REDIS_REST_TOKEN es obligatoria." })
     .min(1, "UPSTASH_REDIS_REST_TOKEN no puede estar vacía."),
+  /**
+   * Cloudinary (compresión/almacenamiento de imágenes de producto —
+   * src/repositories/imagenesRepository.ts). Obligatorias como Upstash: es
+   * un servicio activo del pipeline de alta de producto, no telemetría
+   * opcional degradable a no-op. `API_SECRET` nunca lleva prefijo
+   * NEXT_PUBLIC_ — firma las subidas server-side.
+   */
+  CLOUDINARY_CLOUD_NAME: z
+    .string({ message: "CLOUDINARY_CLOUD_NAME es obligatoria." })
+    .min(1, "CLOUDINARY_CLOUD_NAME no puede estar vacía."),
+  CLOUDINARY_API_KEY: z
+    .string({ message: "CLOUDINARY_API_KEY es obligatoria." })
+    .min(1, "CLOUDINARY_API_KEY no puede estar vacía."),
+  CLOUDINARY_API_SECRET: z
+    .string({ message: "CLOUDINARY_API_SECRET es obligatoria." })
+    .min(1, "CLOUDINARY_API_SECRET no puede estar vacía."),
 });
 
 type EntornoCliente = z.infer<typeof esquemaEntornoCliente>;
@@ -96,5 +112,8 @@ export function obtenerEntornoServidor(): EntornoServidor {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   });
 }
