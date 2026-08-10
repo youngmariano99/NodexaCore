@@ -18,6 +18,7 @@ export const CATALOGO_ERRORES = {
     "Alcanzaste el límite de productos de tu plan actual. Contamos con un pack para seguir sumando catálogo sin perder nada de lo que ya cargaste.",
   "NX-PRD-002": "Ya tenés un producto cargado con este SKU. Revisá el código o modificá el existente.",
   "NX-PRD-003": "El precio ingresado no es válido. Tiene que ser un número mayor o igual a cero.",
+  "NX-PRD-004": "No podés dejar stock en negativo. Revisá la cantidad que estás por descontar.",
   "NX-PRD-006": "Este producto ya fue dado de baja y no se puede modificar.",
   "NX-PRD-008": "Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual.",
 } as const;

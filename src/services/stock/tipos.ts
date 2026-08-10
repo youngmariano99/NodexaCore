@@ -4,3 +4,10 @@ export interface EstadoRegistrarEntradaStock {
 }
 
 export const ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL: EstadoRegistrarEntradaStock = { error: null, exito: false };
+
+export interface EstadoRegistrarSalidaStock {
+  error: string | null;
+  exito: boolean;
+}
+
+export const ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL: EstadoRegistrarSalidaStock = { error: null, exito: false };
