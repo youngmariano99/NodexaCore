@@ -13,6 +13,7 @@ import {
   obtenerProductoPublicoPorId,
   obtenerProductosPaginados,
   obtenerProductosPublicadosPaginados,
+  obtenerTodosLosProductosActivos,
 } from "./productosRepository";
 
 interface ResultadoSupabase {
@@ -448,6 +449,67 @@ describe("obtenerProductosPaginados", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await obtenerProductosPaginados(supabase as never, CLIENTE_ID, 1, PRODUCTOS_POR_PAGINA);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearProductoListado(indice: number) {
+  return {
+    producto_id: `p-${indice}`,
+    sku: `SKU-${indice}`,
+    nombre: `Producto ${indice}`,
+    categoria: null,
+    precio: 100,
+    stock_actual: 5,
+    publicado: true,
+  };
+}
+
+describe("obtenerTodosLosProductosActivos", () => {
+  it("acumula una sola página cuando el catálogo entra en una sola consulta", async () => {
+    const productos = [crearProductoListado(1), crearProductoListado(2)];
+    const builder = crearBuilderListado({ data: productos, error: null, count: 2 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerTodosLosProductosActivos(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: true, data: productos });
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+  });
+
+  it("pagina internamente hasta agotar el total real (2 páginas de 500 con total 600)", async () => {
+    const pagina1 = Array.from({ length: 500 }, (_, i) => crearProductoListado(i + 1));
+    const pagina2 = Array.from({ length: 100 }, (_, i) => crearProductoListado(i + 501));
+
+    const builderPagina1 = crearBuilderListado({ data: pagina1, error: null, count: 600 });
+    const builderPagina2 = crearBuilderListado({ data: pagina2, error: null, count: 600 });
+    const supabase = { from: vi.fn().mockReturnValueOnce(builderPagina1).mockReturnValueOnce(builderPagina2) };
+
+    const resultado = await obtenerTodosLosProductosActivos(supabase as never, CLIENTE_ID);
+
+    expect(resultado.ok).toBe(true);
+    expect(resultado.ok && resultado.data).toHaveLength(600);
+    expect(supabase.from).toHaveBeenCalledTimes(2);
+  });
+
+  it("retorna un arreglo vacío para un tenant sin productos, sin loopear", async () => {
+    const builder = crearBuilderListado({ data: [], error: null, count: 0 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerTodosLosProductosActivos(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: true, data: [] });
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+  });
+
+  it("propaga NX-SYS-001 si alguna página intermedia falla", async () => {
+    const pagina1 = Array.from({ length: 500 }, (_, i) => crearProductoListado(i + 1));
+    const builderPagina1 = crearBuilderListado({ data: pagina1, error: null, count: 600 });
+    const builderPagina2 = crearBuilderListado({ data: null, error: { message: "fallo" }, count: null });
+    const supabase = { from: vi.fn().mockReturnValueOnce(builderPagina1).mockReturnValueOnce(builderPagina2) };
+
+    const resultado = await obtenerTodosLosProductosActivos(supabase as never, CLIENTE_ID);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });

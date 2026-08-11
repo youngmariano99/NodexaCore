@@ -363,6 +363,49 @@ export async function obtenerProductosPaginados(
   };
 }
 
+const TAMANIO_PAGINA_EXPORTACION = 500;
+const LIMITE_ITERACIONES_EXPORTACION = 200; // tope defensivo: 200 * 500 = 100.000 productos
+
+/**
+ * Trae el catálogo activo completo de un tenant paginando internamente
+ * sobre `obtenerProductosPaginados` (docs/SITEMAP.md "/api/export → Route
+ * Handler de exportación de productos", Paso 1). Nunca hace un
+ * `SELECT` sin límite (CLAUDE.md §4): en vez de una sola consulta gigante
+ * que podría hacer timeout con catálogos de miles de productos (Criterio de
+ * Aceptación 4), acumula páginas de `TAMANIO_PAGINA_EXPORTACION` filas hasta
+ * agotar el total real reportado por Postgres. El tope de iteraciones es
+ * puramente defensivo (nunca debería alcanzarse con un tenant real) para
+ * que un bug futuro en el criterio de corte no derive en un loop infinito.
+ */
+export async function obtenerTodosLosProductosActivos(
+  supabase: SupabaseClient,
+  clienteId: string,
+): Promise<ResultadoRepositorio<FilaProductoListado[]>> {
+  const productos: FilaProductoListado[] = [];
+  let pagina = 1;
+
+  while (pagina <= LIMITE_ITERACIONES_EXPORTACION) {
+    const resultado = await obtenerProductosPaginados(supabase, clienteId, pagina, TAMANIO_PAGINA_EXPORTACION);
+
+    if (!resultado.ok) {
+      return resultado;
+    }
+
+    productos.push(...resultado.data.productos);
+
+    const seAgotoElTotal = productos.length >= resultado.data.total;
+    const ultimaPaginaIncompleta = resultado.data.productos.length < TAMANIO_PAGINA_EXPORTACION;
+
+    if (seAgotoElTotal || ultimaPaginaIncompleta) {
+      break;
+    }
+
+    pagina += 1;
+  }
+
+  return { ok: true, data: productos };
+}
+
 export const PRODUCTOS_PUBLICOS_POR_PAGINA = 24;
 
 export interface FilaProductoPublico {
