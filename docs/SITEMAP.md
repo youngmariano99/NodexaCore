@@ -10,7 +10,7 @@
 │   │   └── page.tsx                          → Inicio de sesión (Comerciante / Admin)
 │   └── c/
 │       └── [clienteSlug]/
-│           ├── page.tsx                      → Vidriera pública (Catálogo Web)
+│           ├── page.tsx                      → Vidriera pública (Catálogo Web) + FAQ del Bot de WhatsApp (BotFaqCatalogo)
 │           └── producto/
 │               └── [productoId]/
 │                   └── page.tsx               → Ficha de producto pública
@@ -100,9 +100,6 @@
     │       └── route.ts                         → Route Handler: recálculo server-side del total (Mostrador)
     ├── carga-ia/
     │   └── route.ts                             → Route Handler: procesamiento de imagen por IA (rate-limited)
-    ├── webhooks/
-    │   └── whatsapp/
-    │       └── route.ts                         → Webhook entrante del Bot de WhatsApp
     └── export/
         └── route.ts                             → Exportación CSV/JSON de catálogo y transacciones
 ```
@@ -128,7 +125,7 @@
 | `/configuracion/*` | ✦ | — | — | — |
 | `/configuracion/facturacion` | ✦ | — | ✦ (soporte) | — |
 | `/admin/*` | — | — | ✦ | — |
-| `/api/*` | Según JWT + `cliente_id` (IDOR/BOLA) | Según JWT | Según rol admin | Solo `webhooks` y lectura pública de catálogo |
+| `/api/*` | Según JWT + `cliente_id` (IDOR/BOLA) | Según JWT | Según rol admin | Solo lectura pública de catálogo |
 
 > **Nota de acceso:** Todo acceso a rutas del grupo `(app)` requiere sesión activa validada por middleware global (JWT ≤ 1 hora) y verificación de `tenant_modules` según el módulo solicitado. El grupo `(admin)` exige rol `admin` explícito además de sesión válida; ningún comerciante puede acceder a rutas de otro `cliente_id` (RLS + verificación de servidor).
 
@@ -143,7 +140,7 @@ El comerciante busca o escanea el producto, el sistema valida stock disponible e
 El comerciante ingresa los datos manualmente o sube una foto de etiqueta (Módulo Carga IA). El sistema valida el payload con Zod (Fail-Fast), verifica el conteo de SKUs activos contra el límite contratado (aviso al 90%, bloqueo al 100% con modal de upsell) y comprime automáticamente la imagen a WebP antes de guardar.
 
 **Flujo de Consulta Pública del Catálogo (`/c/[clienteSlug]`)**
-Un cliente final accede sin autenticación, navega los productos con `publicado = true`, y desde la ficha de producto es dirigido a WhatsApp para consultar o realizar el pedido. La vista se sirve con caché de Edge para minimizar carga sobre PostgreSQL.
+Un cliente final accede sin autenticación, navega los productos con `publicado = true`, y desde la ficha de producto es dirigido a WhatsApp para consultar o realizar el pedido. Si el comercio tiene el Módulo Bot de WhatsApp activo, la vidriera además muestra un FAQ con las preguntas predefinidas por el comerciante (horarios, ubicación, catálogo); si ninguna resuelve la consulta, un botón "Seguir por WhatsApp" deriva a una conversación real vía `wa.me` — visible solo si el comerciante lo habilitó (`permite_derivar_whatsapp`). La vista se sirve con caché de Edge para minimizar carga sobre PostgreSQL.
 
 **Flujo de Devolución (`/devoluciones/nueva`)**
 El comerciante selecciona una venta previa, indica los ítems a devolver total o parcialmente, el sistema genera la nota de crédito asociada sin alterar el registro original de la venta y reintegra automáticamente el stock correspondiente.

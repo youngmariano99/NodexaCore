@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BotFaqCatalogo } from "@/components/catalogoWeb/BotFaqCatalogo";
 import { RegistradorVistaVidriera } from "@/components/analytics/registrador-vista-vidriera";
+import { armarPreguntasBot } from "@/lib/dominio/botWhatsapp/armarPreguntasBot";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
+import { obtenerConfiguracionBotPublica } from "@/repositories/configuracionBotRepository";
 import { obtenerClientePublicoPorSlug } from "@/repositories/clientes";
 import { obtenerProductosPublicadosPaginados, PRODUCTOS_PUBLICOS_POR_PAGINA } from "@/repositories/productosRepository";
 
@@ -68,6 +71,9 @@ export default async function VidrieraPublica({ params, searchParams }: PageProp
   const total = resultadoProductos.ok ? resultadoProductos.data.total : 0;
   const totalPaginas = Math.max(1, Math.ceil(total / PRODUCTOS_PUBLICOS_POR_PAGINA));
 
+  const configuracionBot = await obtenerConfiguracionBotPublica(supabase, cliente.cliente_id);
+  const preguntasBot = configuracionBot ? armarPreguntasBot(configuracionBot) : [];
+
   return (
     <div className="flex flex-1 flex-col bg-white text-slate-900">
       <RegistradorVistaVidriera clienteId={cliente.cliente_id} />
@@ -86,6 +92,16 @@ export default async function VidrieraPublica({ params, searchParams }: PageProp
       </header>
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
+        {preguntasBot.length > 0 ? (
+          <BotFaqCatalogo
+            clienteId={cliente.cliente_id}
+            nombreComercio={cliente.nombre_comercio}
+            numeroWhatsapp={cliente.telefono_whatsapp}
+            preguntas={preguntasBot}
+            permiteDerivarWhatsapp={configuracionBot?.permite_derivar_whatsapp ?? false}
+          />
+        ) : null}
+
         {productos.length === 0 ? (
           <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-slate-300 px-6 py-16 text-center">
             <p className="text-base text-slate-900">Este comercio todavía no tiene productos publicados.</p>

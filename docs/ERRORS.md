@@ -97,7 +97,7 @@
 | :--- | :--- | :--- | :--- |
 | `NX-BOT-001` | Este módulo todavía no está activo en tu cuenta. | Feature Flag / 403 | Redirigir a `/configuracion/modulos` con la ficha del Módulo Bot de WhatsApp. |
 | `NX-BOT-002` | Los mensajes automáticos no pueden quedar vacíos. Completá al menos uno para activar el bot. | Validación / 400 | Resaltar los campos de mensaje vacíos antes de permitir `activo = true`. |
-| `NX-BOT-003` | No pudimos recibir este mensaje entrante por un problema momentáneo. | Webhook / 502 | Registrar el evento fallido para reintento; no afecta el uso del panel del comerciante. |
+| `NX-BOT-003` | No pudimos cargar las respuestas automáticas del bot en este momento. | Repositorio / Vidriera pública / interno (no bloqueante) | Registrar el fallo en Sentry sin interrumpir la carga del catálogo; el resto de la vidriera se sigue sirviendo con normalidad. |
 
 ---
 

@@ -259,7 +259,12 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `mensaje_horarios` | `text` | `NULL` |
 | `mensaje_ubicacion` | `text` | `NULL` |
 | `mensaje_catalogo` | `text` | `NULL` |
+| `permite_derivar_whatsapp` | `boolean` | `NOT NULL`, `DEFAULT true` |
 | `actualizado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+
+`permite_derivar_whatsapp`: controla si el FAQ del bot en la vidriera pública (`/c/[clienteSlug]`) ofrece al cliente final continuar la conversación por WhatsApp real (`wa.me` + `clientes.telefono_whatsapp`) cuando ninguna de las preguntas predefinidas resuelve su consulta. Columna agregada en la estación "Webhook de recepción de mensajes de WhatsApp" (redefinida como FAQ en catálogo + fallback a WhatsApp, ver docs/SITEMAP.md).
+
+**Lectura pública:** `configuracion_bot_whatsapp_lectura_publica` (`activo = true`) y `tenant_modules_lectura_publica_bot` (`modulo = 'bot_whatsapp' AND activo = true`) exponen exclusivamente lo necesario para el FAQ de `cliente_final`, sin autenticación — mismo patrón que `productos_lectura_publica`/`clientes_lectura_publica` (docs/ROLES.md §3.5).
 
 ---
 

@@ -47,6 +47,7 @@ export const CATALOGO_ERRORES = {
   "NX-DEV-004": "No pudimos generar la nota de crédito. Probá de nuevo en unos minutos.",
   "NX-BOT-001": "Este módulo todavía no está activo en tu cuenta.",
   "NX-BOT-002": "Los mensajes automáticos no pueden quedar vacíos. Completá al menos uno para activar el bot.",
+  "NX-BOT-003": "No pudimos cargar las respuestas automáticas del bot en este momento.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;
