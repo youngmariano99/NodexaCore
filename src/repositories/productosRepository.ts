@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { calcularPorcentajeUsoSku } from "@/lib/dominio/productos/calcularPorcentajeUsoSku";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 
 const CODIGO_UNIQUE_VIOLATION_POSTGRES = "23505";
@@ -69,6 +70,49 @@ export async function contarProductosActivos(
   }
 
   return { ok: true, data: count };
+}
+
+export interface UsoSku {
+  activos: number;
+  limiteSku: number;
+  porcentaje: number;
+}
+
+/**
+ * Uso de SKU frente al límite contratado (docs/SITEMAP.md "Widget de
+ * consumo en /configuracion/facturacion", Paso 1). Combina
+ * `contarProductosActivos` (ya existente, estación de `crearProducto`) con
+ * `clientes.limite_sku` y `calcularPorcentajeUsoSku` (ya existente, estación
+ * del aviso de 90%, `/dashboard`) en una sola función — mismo cálculo que ya
+ * usa `/dashboard`, consolidado acá bajo el nombre que pide el checklist de
+ * esta actividad en vez de duplicar la consulta combinada en cada página que
+ * lo necesite.
+ */
+export async function obtenerPorcentajeUsoSku(
+  supabase: SupabaseClient,
+  clienteId: string,
+): Promise<ResultadoRepositorio<UsoSku>> {
+  const [{ data: cliente, error: errorCliente }, conteoActivos] = await Promise.all([
+    supabase.from("clientes").select("limite_sku").eq("cliente_id", clienteId).single<{ limite_sku: number }>(),
+    contarProductosActivos(supabase, clienteId),
+  ]);
+
+  if (errorCliente || !cliente) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  if (!conteoActivos.ok) {
+    return { ok: false, error: conteoActivos.error };
+  }
+
+  return {
+    ok: true,
+    data: {
+      activos: conteoActivos.data,
+      limiteSku: cliente.limite_sku,
+      porcentaje: calcularPorcentajeUsoSku(conteoActivos.data, cliente.limite_sku),
+    },
+  };
 }
 
 /**
