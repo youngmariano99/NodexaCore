@@ -19,13 +19,24 @@ export const CATALOGO_ERRORES = {
   "NX-PRD-002": "Ya tenés un producto cargado con este SKU. Revisá el código o modificá el existente.",
   "NX-PRD-003": "El precio ingresado no es válido. Tiene que ser un número mayor o igual a cero.",
   "NX-PRD-004": "No podés dejar stock en negativo. Revisá la cantidad que estás por descontar.",
+  "NX-PRD-005": "No pudimos guardar la imagen del producto. Probá con otro archivo o intentá de nuevo.",
   "NX-PRD-006": "Este producto ya fue dado de baja y no se puede modificar.",
   "NX-PRD-007": "El archivo Excel no tiene el formato esperado. Descargá la plantilla y volvé a intentar.",
   "NX-PRD-008": "Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual.",
   "NX-VTA-001": "No hay stock suficiente de este producto para completar la venta.",
+  "NX-WEB-001": "Este módulo todavía no está activo en tu cuenta. Activalo para publicar tu vidriera.",
+  "NX-WEB-002": "No pudimos publicar este producto. Verificá que tenga nombre, precio e imagen cargados.",
+  "NX-WEB-004": "Esta vidriera no está disponible en este momento.",
+  "NX-IA-001": "Este módulo todavía no está activo en tu cuenta.",
+  "NX-IA-002":
+    "Ya usaste todas tus cargas por IA de este mes. Podés seguir cargando productos de forma manual mientras tanto.",
+  "NX-IA-003": "No pudimos leer los datos de la foto que subiste. Probá con una imagen más clara o cargá el producto manualmente.",
+  "NX-IA-004": "El archivo que subiste no es una imagen válida.",
   "NX-VTA-002": "Esta venta ya fue registrada. No hace falta confirmarla de nuevo.",
   "NX-VTA-003": "El total de la venta no puede ser negativo. Revisá los productos y cantidades cargadas.",
   "NX-VTA-005": "No pudimos procesar el cobro por un problema momentáneo. Probá de nuevo.",
+  "NX-FIA-001": "Este módulo todavía no está activo en tu cuenta.",
+  "NX-FIA-005": "Ya existe un cliente cargado con estos datos de contacto.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;

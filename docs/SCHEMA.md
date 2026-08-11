@@ -168,7 +168,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
 
-**Índices:** `idx_clientesfinales_cliente (cliente_id) WHERE eliminado_en IS NULL`
+**Índices:** `idx_clientesfinales_cliente (cliente_id) WHERE eliminado_en IS NULL`, `idx_clientesfinales_telefono_unico UNIQUE (cliente_id, telefono) WHERE telefono IS NOT NULL AND eliminado_en IS NULL` (docs/ERRORS.md `NX-FIA-005`: un alta sin `telefono` nunca colisiona)
 
 ---
 

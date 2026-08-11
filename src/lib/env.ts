@@ -62,6 +62,15 @@ const esquemaEntornoServidor = esquemaEntornoCliente.extend({
   CLOUDINARY_API_SECRET: z
     .string({ message: "CLOUDINARY_API_SECRET es obligatoria." })
     .min(1, "CLOUDINARY_API_SECRET no puede estar vacía."),
+  /**
+   * OpenAI (extracción de nombre/precio/categoría desde la foto de etiqueta —
+   * src/lib/openai/extraerDatosEtiqueta.ts, Módulo Carga con IA). Obligatoria
+   * como Cloudinary/Upstash: es un servicio activo del pipeline, no
+   * telemetría opcional degradable a no-op.
+   */
+  OPENAI_API_KEY: z
+    .string({ message: "OPENAI_API_KEY es obligatoria." })
+    .min(1, "OPENAI_API_KEY no puede estar vacía."),
 });
 
 type EntornoCliente = z.infer<typeof esquemaEntornoCliente>;
@@ -115,5 +124,6 @@ export function obtenerEntornoServidor(): EntornoServidor {
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   });
 }
