@@ -37,6 +37,7 @@ env:
   CLOUDINARY_CLOUD_NAME: ci-placeholder-cloud-name
   CLOUDINARY_API_KEY: ci-placeholder-api-key
   CLOUDINARY_API_SECRET: ci-placeholder-api-secret
+  OPENAI_API_KEY: ci-placeholder-openai-key
 
 jobs:
   lint:
