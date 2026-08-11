@@ -8,6 +8,7 @@ import {
   contarProductosActivos,
   insertarProducto,
   insertarProductosEnLote,
+  obtenerPorcentajeUsoSku,
   obtenerPreciosProductosPorIds,
   obtenerProductoPublicoPorId,
   obtenerProductosPaginados,
@@ -68,6 +69,53 @@ describe("contarProductosActivos", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await contarProductosActivos(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderSingle(resultado: { data: unknown; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    single: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("obtenerPorcentajeUsoSku", () => {
+  it("calcula el 91% de uso con 910 activos sobre un límite de 1000", async () => {
+    const clienteBuilder = crearBuilderSingle({ data: { limite_sku: 1000 }, error: null });
+    const conteoBuilder = crearBuilderConteo({ count: 910, error: null });
+    const supabase = {
+      from: vi.fn((tabla: string) => (tabla === "clientes" ? clienteBuilder : conteoBuilder)),
+    };
+
+    const resultado = await obtenerPorcentajeUsoSku(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: true, data: { activos: 910, limiteSku: 1000, porcentaje: 91 } });
+  });
+
+  it("retorna NX-SYS-001 si no encuentra el cliente", async () => {
+    const clienteBuilder = crearBuilderSingle({ data: null, error: { message: "no encontrado" } });
+    const conteoBuilder = crearBuilderConteo({ count: 910, error: null });
+    const supabase = {
+      from: vi.fn((tabla: string) => (tabla === "clientes" ? clienteBuilder : conteoBuilder)),
+    };
+
+    const resultado = await obtenerPorcentajeUsoSku(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+
+  it("propaga el error de contarProductosActivos si falla el conteo", async () => {
+    const clienteBuilder = crearBuilderSingle({ data: { limite_sku: 1000 }, error: null });
+    const conteoBuilder = crearBuilderConteo({ count: null, error: { message: "fallo" } });
+    const supabase = {
+      from: vi.fn((tabla: string) => (tabla === "clientes" ? clienteBuilder : conteoBuilder)),
+    };
+
+    const resultado = await obtenerPorcentajeUsoSku(supabase as never, CLIENTE_ID);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });
