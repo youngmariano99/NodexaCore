@@ -45,6 +45,8 @@ export const CATALOGO_ERRORES = {
   "NX-DEV-002": "No podés devolver más unidades de las que se vendieron originalmente.",
   "NX-DEV-003": "Esta venta ya fue devuelta por completo.",
   "NX-DEV-004": "No pudimos generar la nota de crédito. Probá de nuevo en unos minutos.",
+  "NX-BOT-001": "Este módulo todavía no está activo en tu cuenta.",
+  "NX-BOT-002": "Los mensajes automáticos no pueden quedar vacíos. Completá al menos uno para activar el bot.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;
