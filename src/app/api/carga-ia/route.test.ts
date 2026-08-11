@@ -58,13 +58,21 @@ function mockearSesion(usuario: { id: string } | null) {
   return { auth: { getUser: vi.fn(async () => ({ data: { user: usuario } })) } };
 }
 
-function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; modulo?: ResultadoSupabase }) {
+function mockearSupabaseCompleto(opciones: {
+  solicitante: ResultadoSupabase;
+  modulo?: ResultadoSupabase;
+  clienteCuota?: ResultadoSupabase;
+}) {
   const solicitanteBuilder = crearBuilderSingle(opciones.solicitante);
   const moduloBuilder = crearBuilderMaybeSingle(opciones.modulo ?? { data: { activo: true }, error: null });
+  const clienteCuotaBuilder = crearBuilderSingle(
+    opciones.clienteCuota ?? { data: { ia_consultas_usadas: 34, cuota_mensual_ia: 40 }, error: null },
+  );
 
   const from = vi.fn((tabla: string) => {
     if (tabla === "usuarios") return solicitanteBuilder;
     if (tabla === "tenant_modules") return moduloBuilder;
+    if (tabla === "clientes") return clienteCuotaBuilder;
     throw new Error(`tabla no mockeada en el test: ${tabla}`);
   });
 
@@ -202,9 +210,28 @@ describe("POST /api/carga-ia", () => {
     expect(await respuesta.json()).toEqual(expect.objectContaining({ codigo: "NX-IA-001" }));
   });
 
-  it("retorna 429 con NX-IA-002 si ya se agotó la cuota mensual, sin llegar a subir la imagen", async () => {
+  it("retorna 429 con NX-IA-002 si ia_consultas_usadas ya iguala cuota_mensual_ia (Fail-Fast, Paso 1-2), sin invocar el RPC ni subir la imagen", async () => {
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
+      clienteCuota: { data: { ia_consultas_usadas: 40, cuota_mensual_ia: 40 }, error: null },
+    });
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const respuesta = await POST(crearRequestConImagen(crearImagenValida()));
+
+    expect(respuesta.status).toBe(429);
+    expect(await respuesta.json()).toEqual(
+      expect.objectContaining({ codigo: "NX-IA-002", iaConsultasUsadas: 40, cuotaMensualIa: 40 }),
+    );
+    expect(registrarConsumoIa).not.toHaveBeenCalled();
+    expect(subirImagenComoWebp).not.toHaveBeenCalled();
+    expect(extraerDatosEtiqueta).not.toHaveBeenCalled();
+  });
+
+  it("retorna 429 con NX-IA-002 si el RPC rechaza por concurrencia aunque la lectura previa mostraba cupo disponible", async () => {
+    const supabaseMock = mockearSupabaseCompleto({
+      solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
+      clienteCuota: { data: { ia_consultas_usadas: 39, cuota_mensual_ia: 40 }, error: null },
     });
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
     vi.mocked(registrarConsumoIa).mockResolvedValue({ ok: false, error: "NX-IA-002" });
@@ -215,6 +242,19 @@ describe("POST /api/carga-ia", () => {
     expect(await respuesta.json()).toEqual(expect.objectContaining({ codigo: "NX-IA-002" }));
     expect(subirImagenComoWebp).not.toHaveBeenCalled();
     expect(extraerDatosEtiqueta).not.toHaveBeenCalled();
+  });
+
+  it("retorna 500 con NX-SYS-001 si la lectura previa de cuota falla", async () => {
+    const supabaseMock = mockearSupabaseCompleto({
+      solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
+      clienteCuota: { data: null, error: { message: "fallo" } },
+    });
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const respuesta = await POST(crearRequestConImagen(crearImagenValida()));
+
+    expect(respuesta.status).toBe(500);
+    expect(await respuesta.json()).toEqual(expect.objectContaining({ codigo: "NX-SYS-001" }));
   });
 
   it("retorna 502 con NX-PRD-005 si falla la subida a Cloudinary", async () => {
