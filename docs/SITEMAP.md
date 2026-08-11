@@ -101,8 +101,10 @@
     ├── carga-ia/
     │   └── route.ts                             → Route Handler: procesamiento de imagen por IA (rate-limited)
     └── export/
-        └── productos/
-            └── route.ts                         → Route Handler: exportación CSV/JSON del catálogo (comerciante)
+        ├── productos/
+        │   └── route.ts                         → Route Handler: exportación CSV/JSON del catálogo (comerciante)
+        └── ventas/
+            └── route.ts                         → Route Handler: exportación CSV/JSON de ventas + venta_items (comerciante)
 ```
 
 ---
