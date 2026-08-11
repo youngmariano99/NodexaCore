@@ -143,6 +143,21 @@ CREATE POLICY productos_lectura_publica ON productos
 
 > Esta política coexiste con `productos_select_tenant`; PostgreSQL evalúa políticas `SELECT` con `OR`, permitiendo acceso anónimo restringido sin necesidad de rol `authenticated`.
 
+Mismo patrón para el FAQ del bot en la vidriera (`cliente_final`, fila "configuracion_bot_whatsapp": `L (respuesta automática, sin ver config)`):
+
+```sql
+CREATE POLICY configuracion_bot_whatsapp_lectura_publica ON configuracion_bot_whatsapp
+  FOR SELECT USING (activo = true);
+
+CREATE POLICY tenant_modules_lectura_publica_bot ON tenant_modules
+  FOR SELECT USING (
+    modulo = 'bot_whatsapp'
+    AND activo = true
+  );
+```
+
+> `tenant_modules` solo se abre para `modulo = 'bot_whatsapp'`: el resto de los módulos sigue sin lectura pública. Un bot desactivado (`activo = false`) o un módulo no contratado no exponen ninguna fila — ni siquiera para confirmar que existen.
+
 ### 3.6 Tabla Exclusiva de `admin_nodexa` (`clientes`, `estado_pago`, `limite_sku`)
 
 ```sql
