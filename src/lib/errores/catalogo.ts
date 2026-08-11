@@ -24,6 +24,7 @@ export const CATALOGO_ERRORES = {
   "NX-PRD-008": "Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual.",
   "NX-WEB-001": "Este módulo todavía no está activo en tu cuenta. Activalo para publicar tu vidriera.",
   "NX-WEB-002": "No pudimos publicar este producto. Verificá que tenga nombre, precio e imagen cargados.",
+  "NX-WEB-004": "Esta vidriera no está disponible en este momento.",
   "NX-VTA-002": "Esta venta ya fue registrada. No hace falta confirmarla de nuevo.",
   "NX-VTA-003": "El total de la venta no puede ser negativo. Revisá los productos y cantidades cargadas.",
   "NX-VTA-005": "No pudimos procesar el cobro por un problema momentáneo. Probá de nuevo.",

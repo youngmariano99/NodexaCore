@@ -318,3 +318,67 @@ export async function obtenerProductosPaginados(
     data: { productos: data, total: count ?? 0, pagina: paginaSegura, porPagina: porPaginaSeguro },
   };
 }
+
+export const PRODUCTOS_PUBLICOS_POR_PAGINA = 24;
+
+export interface FilaProductoPublico {
+  producto_id: string;
+  sku: string;
+  nombre: string;
+  descripcion: string | null;
+  categoria: string | null;
+  precio: number;
+  imagen_url: string | null;
+}
+
+export interface ResultadoProductosPublicosPaginados {
+  productos: FilaProductoPublico[];
+  total: number;
+  pagina: number;
+  porPagina: number;
+}
+
+/**
+ * Catálogo público de un comercio (docs/BACKLOG.md "Página estática con ISR
+ * de vidriera pública", Paso 2). El filtro real de seguridad es la política
+ * RLS `productos_lectura_publica` (`publicado = true AND eliminado_en IS
+ * NULL`, docs/SCHEMA.md §18) — a diferencia de esa política, que no conoce
+ * ningún tenant, esta consulta agrega `cliente_id` explícito: sin ese
+ * filtro, la vidriera de un comercio mostraría los productos publicados de
+ * TODOS los comercios, porque `productos_lectura_publica` está deliberadamente
+ * scopeada solo por fila pública, no por tenant. `.eq('publicado', true)` y
+ * `.is('eliminado_en', null)` se repiten acá como defensa en profundidad
+ * explícita (mismo criterio que el resto del repo: nunca confiar
+ * únicamente en RLS), aunque ya sean redundantes con la política.
+ */
+export async function obtenerProductosPublicadosPaginados(
+  supabase: SupabaseClient,
+  clienteId: string,
+  pagina: number,
+  porPagina: number = PRODUCTOS_PUBLICOS_POR_PAGINA,
+): Promise<ResultadoRepositorio<ResultadoProductosPublicosPaginados>> {
+  const paginaSegura = Number.isInteger(pagina) && pagina > 0 ? pagina : 1;
+  const porPaginaSeguro = Number.isInteger(porPagina) && porPagina > 0 ? porPagina : PRODUCTOS_PUBLICOS_POR_PAGINA;
+  const desde = (paginaSegura - 1) * porPaginaSeguro;
+  const hasta = desde + porPaginaSeguro - 1;
+
+  const { data, error, count } = await supabase
+    .from("productos")
+    .select("producto_id, sku, nombre, descripcion, categoria, precio, imagen_url", { count: "exact" })
+    .eq("cliente_id", clienteId)
+    .eq("publicado", true)
+    .is("eliminado_en", null)
+    .order("creado_en", { ascending: false })
+    .order("producto_id", { ascending: true })
+    .range(desde, hasta)
+    .returns<FilaProductoPublico[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return {
+    ok: true,
+    data: { productos: data, total: count ?? 0, pagina: paginaSegura, porPagina: porPaginaSeguro },
+  };
+}
