@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { cuotaIaAgotada } from "@/lib/dominio/cargaIa/validarCuotaIa";
 import { obtenerMensajeError } from "@/lib/errores/catalogo";
 import { extraerDatosEtiqueta } from "@/lib/openai/extraerDatosEtiqueta";
 import { verificarCargaIaLimiter } from "@/lib/rate-limit/cargaIaLimiter";
@@ -22,6 +23,11 @@ interface FilaModuloCargaIa {
   activo: boolean;
 }
 
+interface FilaClienteCuotaIa {
+  ia_consultas_usadas: number;
+  cuota_mensual_ia: number;
+}
+
 function respuestaError(codigo: string, status: number, detalle?: Record<string, unknown>) {
   return NextResponse.json({ codigo, mensaje: obtenerMensajeError(codigo), ...detalle }, { status });
 }
@@ -36,9 +42,21 @@ function respuestaError(codigo: string, status: number, detalle?: Record<string,
  * Orden de los guards, de más barato a más caro (Fail-Fast antes de gastar
  * en Cloudinary/OpenAI): sesión → rol/tenant → rate limit (NX-SYS-005,
  * ráfagas) → formato de archivo (NX-IA-004) → módulo activo (NX-IA-001) →
- * cuota mensual (NX-IA-002, vía RPC atómico `fn_registrar_consumo_ia` —
- * reserva el cupo ANTES de subir a Cloudinary o llamar a OpenAI) → subida a
- * Cloudinary (NX-PRD-005) → extracción con OpenAI Vision (NX-IA-003).
+ * cuota mensual, en dos capas (NX-IA-002) → subida a Cloudinary
+ * (NX-PRD-005) → extracción con OpenAI Vision (NX-IA-003).
+ *
+ * Las dos capas de cuota (docs/BACKLOG.md "Validación de cuota mensual de IA
+ * antes de invocar OpenAI"): (1) una lectura simple de
+ * `clientes.ia_consultas_usadas`/`cuota_mensual_ia` + `cuotaIaAgotada()`
+ * (Fail-Fast, corta ANTES de gastar siquiera el round-trip del RPC en el
+ * camino feliz — "verificar antes de invocar OpenAI" del Paso 1 literal); y
+ * (2) el RPC atómico `fn_registrar_consumo_ia`, que sigue siendo la única
+ * fuente de verdad bajo concurrencia (reserva el cupo ANTES de subir a
+ * Cloudinary o llamar a OpenAI) — mismo patrón "chequeo aditivo, RPC
+ * autoritativo" ya usado por `calcularNuevoSaldo` sobre
+ * `fn_registrar_movimiento_stock`. La lectura previa puede quedar
+ * desactualizada por una carga concurrente entre el `SELECT` y el `UPDATE`
+ * del RPC; en ese caso el RPC igual rechaza con el mismo `NX-IA-002`.
  *
  * La cuota ya se consumió si Cloudinary o OpenAI fallan después del RPC: es
  * el costo real de haber intentado la operación (el cupo mensual modela
@@ -105,6 +123,23 @@ export async function POST(request: NextRequest) {
 
   if (!moduloCargaIa?.activo) {
     return respuestaError("NX-IA-001", 403);
+  }
+
+  const { data: clienteCuota, error: errorClienteCuota } = await supabase
+    .from("clientes")
+    .select("ia_consultas_usadas, cuota_mensual_ia")
+    .eq("cliente_id", clienteId)
+    .single<FilaClienteCuotaIa>();
+
+  if (errorClienteCuota || !clienteCuota) {
+    return respuestaError("NX-SYS-001", 500);
+  }
+
+  if (cuotaIaAgotada(clienteCuota.ia_consultas_usadas, clienteCuota.cuota_mensual_ia)) {
+    return respuestaError("NX-IA-002", 429, {
+      iaConsultasUsadas: clienteCuota.ia_consultas_usadas,
+      cuotaMensualIa: clienteCuota.cuota_mensual_ia,
+    });
   }
 
   const consumo = await registrarConsumoIa(supabase);

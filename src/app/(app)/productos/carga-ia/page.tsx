@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FormularioCargaIa } from "@/app/(app)/productos/carga-ia/FormularioCargaIa";
 import { ContadorCuotaIA } from "@/components/productos/ContadorCuotaIA";
 import { MensajeError } from "@/components/errores/MensajeError";
 import { RUTA_POR_ROL } from "@/lib/auth/rutas-por-rol";
+import { cuotaIaAgotada } from "@/lib/dominio/cargaIa/validarCuotaIa";
 import { obtenerMensajeError } from "@/lib/errores/catalogo";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { obtenerUsoCuotaIA } from "@/repositories/cargasIaRepository";
@@ -33,10 +35,16 @@ interface FilaModuloCargaIa {
   activo: boolean;
 }
 
+interface FilaClienteCuotaIa {
+  ia_consultas_usadas: number;
+  cuota_mensual_ia: number;
+}
+
 /**
- * Página del contador de cuota de Carga con IA (docs/SITEMAP.md
- * "Componente de contador de cuota de IA", Paso 2). Criterio de Aceptación 4:
- * sin el módulo `carga_ia` activo, no se muestra el contador — se indica que
+ * Página de Carga con IA: contador de cuota (docs/SITEMAP.md "Componente de
+ * contador de cuota de IA") + formulario de subida (docs/BACKLOG.md
+ * "Bloqueo y oferta de recarga al agotar la cuota de IA", Paso 3-4). Sin el
+ * módulo `carga_ia` activo, no se muestra ninguno de los dos — se indica que
  * el módulo no está contratado (`NX-IA-001`), mismo criterio que el gate de
  * `/api/carga-ia` (Route Handler de procesamiento de imagen).
  */
@@ -93,25 +101,39 @@ export default async function CargaIaPage() {
             </Link>
           </div>
         ) : (
-          <ContadorCuotaSeccion supabase={supabase} clienteId={clienteId} />
+          <CargaIaSeccion supabase={supabase} clienteId={clienteId} />
         )}
       </div>
     </div>
   );
 }
 
-async function ContadorCuotaSeccion({
+async function CargaIaSeccion({
   supabase,
   clienteId,
 }: {
   supabase: Awaited<ReturnType<typeof crearClienteSupabaseServidor>>;
   clienteId: string;
 }) {
-  const uso = await obtenerUsoCuotaIA(supabase, clienteId);
+  const [uso, { data: clienteCuota, error: errorClienteCuota }] = await Promise.all([
+    obtenerUsoCuotaIA(supabase, clienteId),
+    supabase
+      .from("clientes")
+      .select("ia_consultas_usadas, cuota_mensual_ia")
+      .eq("cliente_id", clienteId)
+      .single<FilaClienteCuotaIa>(),
+  ]);
 
-  if (!uso.ok) {
-    return <MensajeError codigo={uso.error} className="max-w-md" />;
+  if (!uso.ok || errorClienteCuota || !clienteCuota) {
+    return <MensajeError codigo={!uso.ok ? uso.error : "NX-SYS-001"} className="max-w-md" />;
   }
 
-  return <ContadorCuotaIA usadas={uso.data.usadas} cuotaMensualIa={uso.data.cuotaMensualIa} />;
+  return (
+    <>
+      <ContadorCuotaIA usadas={uso.data.usadas} cuotaMensualIa={uso.data.cuotaMensualIa} />
+      <FormularioCargaIa
+        cuotaAgotadaInicial={cuotaIaAgotada(clienteCuota.ia_consultas_usadas, clienteCuota.cuota_mensual_ia)}
+      />
+    </>
+  );
 }
