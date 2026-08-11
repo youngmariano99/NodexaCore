@@ -3,8 +3,10 @@
 import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
+import { calcularCostoPacksSkuAgregados } from "@/lib/dominio/facturacion/calcularCostoPackSku";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
+import { actualizarFacturacionRecurrente } from "@/services/admin/actualizarFacturacionRecurrente";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 /**
@@ -37,6 +39,7 @@ interface ResultadoAmpliarLimiteSku {
   limiteSku: number;
   packsSkuContratados: number;
   packsAgregados: number;
+  ajusteFacturacion: { monto: number; periodoFacturado: string } | null;
 }
 
 /**
@@ -51,13 +54,26 @@ interface ResultadoAmpliarLimiteSku {
  * únicamente la forma del input (UUID, entero positivo), no puede conocer un
  * valor que depende de una consulta a otra tabla.
  *
- * "Sumar el valor del pack al próximo período de facturación" (Paso 4) se
- * modela acumulando `packs_sku_contratados` en vez de un monto: no existe
- * todavía una entidad de facturación/planes en docs/SCHEMA.md que persista
- * montos, así que este contador es la base sobre la que una estación futura
- * de facturación puede calcular abono_base + packs_sku_contratados * precio.
- * Solo se suman packs ante un aumento real del límite; una reducción no resta
- * packs ya contratados (se dan de baja por un flujo de cancelación aparte).
+ * "Sumar el valor del pack al próximo período de facturación" ya no es un
+ * contador sin monto: la estación "Actualización del próximo período de
+ * facturación en ampliaciones" agregó `ajustes_facturacion` (docs/SCHEMA.md
+ * §17) y esta función ahora invoca `actualizarFacturacionRecurrente` con el
+ * costo real de cada pack agregado (`calcularCostoPacksSkuAgregados`,
+ * esquema escalonado decreciente). `packs_sku_contratados` se sigue
+ * incrementando igual que antes (útil para mostrar el conteo sin tener que
+ * sumar filas de `ajustes_facturacion`), pero el monto a cobrar vive en la
+ * tabla nueva, no se infiere de ese contador. Solo se suman packs/se genera
+ * el ajuste ante un aumento real del límite; una reducción no resta packs
+ * ya contratados ni genera un ajuste negativo (se da de baja por un flujo de
+ * cancelación aparte, fuera de alcance).
+ *
+ * Si `actualizarFacturacionRecurrente` falla, la función retorna ese error
+ * en vez de `ok: true` aunque el `UPDATE` de `limite_sku` ya haya tenido
+ * éxito: no hay una transacción real entre ambas escrituras (dos llamadas
+ * PostgREST separadas, no un RPC), así que revertir el límite ya ampliado
+ * sería peor para el comercio que dejarlo ampliado con la facturación
+ * pendiente de reintento manual — se prefiere superficie el error real en
+ * vez de ocultar que el ajuste no quedó registrado.
  */
 export async function ampliarLimiteSku(
   clienteId: string,
@@ -147,12 +163,35 @@ export async function ampliarLimiteSku(
     valorNuevo: String(resultado.data.nuevoLimiteSku),
   });
 
+  let ajusteFacturacion: { monto: number; periodoFacturado: string } | null = null;
+
+  if (packsAgregados > 0) {
+    const montoAjuste = calcularCostoPacksSkuAgregados(cliente.packs_sku_contratados, packsAgregados);
+
+    const resultadoAjuste = await actualizarFacturacionRecurrente(supabase, {
+      clienteId: resultado.data.clienteId,
+      usuarioId: solicitante.usuario_id,
+      concepto: "pack_sku",
+      monto: montoAjuste,
+    });
+
+    if (!resultadoAjuste.ok) {
+      return { ok: false, error: resultadoAjuste.error };
+    }
+
+    ajusteFacturacion = {
+      monto: resultadoAjuste.data.monto,
+      periodoFacturado: resultadoAjuste.data.periodo_facturado,
+    };
+  }
+
   return {
     ok: true,
     data: {
       limiteSku: clienteActualizado.limite_sku,
       packsSkuContratados: clienteActualizado.packs_sku_contratados,
       packsAgregados,
+      ajusteFacturacion,
     },
   };
 }

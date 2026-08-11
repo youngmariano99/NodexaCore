@@ -39,6 +39,15 @@ function crearBuilderConteo(resultado: { count: number | null; error: unknown })
   return builder;
 }
 
+function crearBuilderInsert(resultado: ResultadoSupabase) {
+  const builder = {
+    insert: vi.fn(() => builder),
+    select: vi.fn(() => builder),
+    single: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
 function mockearSesion(usuario: { id: string } | null) {
   return { auth: { getUser: vi.fn(async () => ({ data: { user: usuario } })) } };
 }
@@ -132,7 +141,7 @@ describe("ampliarLimiteSku", () => {
     expect(resultado).toEqual({ ok: false, error: "NX-ADM-003" });
   });
 
-  it("amplía el límite de 1000 a 2000, suma 1 pack y registra la auditoría", async () => {
+  it("amplía el límite de 1000 a 2000, suma 1 pack, registra la auditoría y factura $5.000", async () => {
     const solicitanteBuilder = crearBuilderSingle({
       data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
       error: null,
@@ -146,6 +155,16 @@ describe("ampliarLimiteSku", () => {
       data: { limite_sku: 2000, packs_sku_contratados: 1 },
       error: null,
     });
+    const ajusteBuilder = crearBuilderInsert({
+      data: {
+        ajuste_facturacion_id: "e1111111-1111-4111-8111-111111111111",
+        cliente_id: CLIENTE_ID,
+        concepto: "pack_sku",
+        monto: 5000,
+        periodo_facturado: "2026-09-01",
+      },
+      error: null,
+    });
 
     const supabaseMock = {
       ...mockearSesion({ id: AUTH_USER_ID }),
@@ -154,7 +173,8 @@ describe("ampliarLimiteSku", () => {
         .mockReturnValueOnce(solicitanteBuilder)
         .mockReturnValueOnce(clienteBuilder)
         .mockReturnValueOnce(conteoBuilder)
-        .mockReturnValueOnce(actualizacionBuilder),
+        .mockReturnValueOnce(actualizacionBuilder)
+        .mockReturnValueOnce(ajusteBuilder),
     };
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
@@ -162,10 +182,16 @@ describe("ampliarLimiteSku", () => {
 
     expect(resultado).toEqual({
       ok: true,
-      data: { limiteSku: 2000, packsSkuContratados: 1, packsAgregados: 1 },
+      data: {
+        limiteSku: 2000,
+        packsSkuContratados: 1,
+        packsAgregados: 1,
+        ajusteFacturacion: { monto: 5000, periodoFacturado: "2026-09-01" },
+      },
     });
 
     expect(actualizacionBuilder.update).toHaveBeenCalledWith({ limite_sku: 2000, packs_sku_contratados: 1 });
+    expect(ajusteBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ concepto: "pack_sku", monto: 5000 }));
 
     expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -179,7 +205,85 @@ describe("ampliarLimiteSku", () => {
     );
   });
 
-  it("no suma packs ni cambia el contador cuando el nuevo límite no supera al anterior", async () => {
+  it("una segunda ampliación (1 pack previo, 1 pack agregado) factura el costo marginal decreciente de $4.000", async () => {
+    const solicitanteBuilder = crearBuilderSingle({
+      data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
+      error: null,
+    });
+    const clienteBuilder = crearBuilderSingle({
+      data: { limite_sku: 2000, packs_sku_contratados: 1 },
+      error: null,
+    });
+    const conteoBuilder = crearBuilderConteo({ count: 2000, error: null });
+    const actualizacionBuilder = crearBuilderSingle({
+      data: { limite_sku: 3000, packs_sku_contratados: 2 },
+      error: null,
+    });
+    const ajusteBuilder = crearBuilderInsert({
+      data: {
+        ajuste_facturacion_id: "e2222222-2222-4222-8222-222222222222",
+        cliente_id: CLIENTE_ID,
+        concepto: "pack_sku",
+        monto: 4000,
+        periodo_facturado: "2026-09-01",
+      },
+      error: null,
+    });
+
+    const supabaseMock = {
+      ...mockearSesion({ id: AUTH_USER_ID }),
+      from: vi
+        .fn()
+        .mockReturnValueOnce(solicitanteBuilder)
+        .mockReturnValueOnce(clienteBuilder)
+        .mockReturnValueOnce(conteoBuilder)
+        .mockReturnValueOnce(actualizacionBuilder)
+        .mockReturnValueOnce(ajusteBuilder),
+    };
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const resultado = await ampliarLimiteSku(CLIENTE_ID, 3000);
+
+    expect(resultado.ok).toBe(true);
+    if (!resultado.ok) throw new Error("esperado ok=true");
+    expect(resultado.data.ajusteFacturacion).toEqual({ monto: 4000, periodoFacturado: "2026-09-01" });
+    expect(ajusteBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ monto: 4000 }));
+  });
+
+  it("propaga el error si falla el registro del ajuste de facturación", async () => {
+    const solicitanteBuilder = crearBuilderSingle({
+      data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
+      error: null,
+    });
+    const clienteBuilder = crearBuilderSingle({
+      data: { limite_sku: 1000, packs_sku_contratados: 0 },
+      error: null,
+    });
+    const conteoBuilder = crearBuilderConteo({ count: 1000, error: null });
+    const actualizacionBuilder = crearBuilderSingle({
+      data: { limite_sku: 2000, packs_sku_contratados: 1 },
+      error: null,
+    });
+    const ajusteBuilder = crearBuilderInsert({ data: null, error: { message: "fallo de conexión" } });
+
+    const supabaseMock = {
+      ...mockearSesion({ id: AUTH_USER_ID }),
+      from: vi
+        .fn()
+        .mockReturnValueOnce(solicitanteBuilder)
+        .mockReturnValueOnce(clienteBuilder)
+        .mockReturnValueOnce(conteoBuilder)
+        .mockReturnValueOnce(actualizacionBuilder)
+        .mockReturnValueOnce(ajusteBuilder),
+    };
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const resultado = await ampliarLimiteSku(CLIENTE_ID, 2000);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+
+  it("no suma packs, no genera ajuste de facturación ni cambia el contador cuando el nuevo límite no supera al anterior", async () => {
     const solicitanteBuilder = crearBuilderSingle({
       data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
       error: null,
@@ -209,7 +313,7 @@ describe("ampliarLimiteSku", () => {
 
     expect(resultado).toEqual({
       ok: true,
-      data: { limiteSku: 1500, packsSkuContratados: 1, packsAgregados: 0 },
+      data: { limiteSku: 1500, packsSkuContratados: 1, packsAgregados: 0, ajusteFacturacion: null },
     });
     expect(actualizacionBuilder.update).toHaveBeenCalledWith({ limite_sku: 1500, packs_sku_contratados: 1 });
   });
