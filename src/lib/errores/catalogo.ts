@@ -23,6 +23,7 @@ export const CATALOGO_ERRORES = {
   "NX-PRD-006": "Este producto ya fue dado de baja y no se puede modificar.",
   "NX-PRD-007": "El archivo Excel no tiene el formato esperado. Descargá la plantilla y volvé a intentar.",
   "NX-PRD-008": "Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual.",
+  "NX-VTA-001": "No hay stock suficiente de este producto para completar la venta.",
   "NX-WEB-001": "Este módulo todavía no está activo en tu cuenta. Activalo para publicar tu vidriera.",
   "NX-WEB-002": "No pudimos publicar este producto. Verificá que tenga nombre, precio e imagen cargados.",
   "NX-WEB-004": "Esta vidriera no está disponible en este momento.",

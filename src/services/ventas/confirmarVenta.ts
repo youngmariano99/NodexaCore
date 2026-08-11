@@ -8,6 +8,7 @@ import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 const CODIGO_POSTGRES_NO_DATA_FOUND = "P0002";
 const CODIGO_VENTA_DUPLICADA = "NX002";
+const CODIGO_STOCK_INSUFICIENTE = "NX001";
 
 const esquemaItemVenta = z.object({
   productoId: z.string().uuid(),
@@ -73,6 +74,13 @@ function parsearItems(valorCrudo: FormDataEntryValue | null): unknown {
  * `precio` real de `productos` del tenant (mismo criterio de zero-trust que
  * `POST /api/ventas/previsualizar`), así que un `total` manipulado en el
  * cliente no puede alterar lo que se guarda.
+ *
+ * `fn_confirmar_venta` (docs/BACKLOG.md "Función RPC transaccional de venta
+ * con descuento de stock") también descuenta `productos.stock_actual` con
+ * bloqueo optimista y registra el `movimientos_stock` de tipo `salida` por
+ * cada ítem, dentro de la misma transacción que la `venta`. Si algún ítem no
+ * tiene stock suficiente, el `SQLSTATE` custom `NX001` se traduce acá a
+ * `NX-VTA-001` — la transacción completa ya se revirtió en el RPC.
  */
 export async function confirmarVenta(
   _estadoPrevio: EstadoConfirmarVenta,
@@ -132,6 +140,9 @@ export async function confirmarVenta(
 
     if (codigoPostgres === CODIGO_VENTA_DUPLICADA) {
       return { error: "NX-VTA-002", exito: false, ventaId: null };
+    }
+    if (codigoPostgres === CODIGO_STOCK_INSUFICIENTE) {
+      return { error: "NX-VTA-001", exito: false, ventaId: null };
     }
     if (codigoPostgres === CODIGO_POSTGRES_NO_DATA_FOUND) {
       return { error: "NX-SYS-007", exito: false, ventaId: null };
