@@ -36,6 +36,9 @@ export const CATALOGO_ERRORES = {
   "NX-VTA-003": "El total de la venta no puede ser negativo. Revisá los productos y cantidades cargadas.",
   "NX-VTA-005": "No pudimos procesar el cobro por un problema momentáneo. Probá de nuevo.",
   "NX-FIA-001": "Este módulo todavía no está activo en tu cuenta.",
+  "NX-FIA-002": "No encontramos este cliente en tu comercio.",
+  "NX-FIA-003": "El monto del pago no puede ser mayor a la deuda actual del cliente.",
+  "NX-FIA-004": "El monto ingresado tiene que ser mayor a cero.",
   "NX-FIA-005": "Ya existe un cliente cargado con estos datos de contacto.",
 } as const;
 
