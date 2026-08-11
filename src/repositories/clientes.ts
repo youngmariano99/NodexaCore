@@ -90,3 +90,43 @@ export async function obtenerClientePorId(
 
   return { ok: true, data };
 }
+
+export interface FilaClientePublico {
+  cliente_id: string;
+  nombre_comercio: string;
+  slug: string;
+  logo_url: string | null;
+  color_primario: string | null;
+  telefono_whatsapp: string;
+}
+
+/**
+ * Resuelve `clienteSlug -> cliente` para la vidriera pública (docs/BACKLOG.md
+ * "Página estática con ISR de vidriera pública"), vía la política RLS
+ * `clientes_lectura_publica` (solo comercios con `estado_pago = true` y no
+ * eliminados). No distingue "el slug no existe" de "el comercio está
+ * suspendido" — ambos casos caen en el mismo `NX-WEB-004`, mismo criterio
+ * que `verificarPertenenciaTenant` de no filtrar existencia de recursos
+ * (docs/ROLES.md §3.8). Selecciona únicamente columnas seguras para
+ * exponer públicamente — nunca `packs_sku_contratados`, `ia_consultas_usadas`
+ * ni otras columnas administrativas, aunque RLS ya filtre filas (RLS no
+ * filtra columnas).
+ */
+export async function obtenerClientePublicoPorSlug(
+  supabase: SupabaseClient,
+  clienteSlug: string,
+): Promise<ResultadoRepositorio<FilaClientePublico>> {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("cliente_id, nombre_comercio, slug, logo_url, color_primario, telefono_whatsapp")
+    .eq("slug", clienteSlug)
+    .eq("estado_pago", true)
+    .is("eliminado_en", null)
+    .maybeSingle<FilaClientePublico>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-WEB-004" };
+  }
+
+  return { ok: true, data };
+}

@@ -21,6 +21,22 @@ env:
   # no credenciales. La conexión real a Supabase no se ejercita en este pipeline.
   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+  # obtenerEntornoServidor() (src/lib/env.ts) valida TODO el esquema de entorno
+  # server-only en conjunto la primera vez que cualquier Server Component llama a
+  # crearClienteSupabaseServidor() — no solo las variables que esa página puntual
+  # usa. Antes de la vidriera pública ningún test E2E ejercitaba ese código path
+  # sin sesión, así que la ausencia de estas variables nunca se notó en CI. No
+  # necesitan ser reales: alcanza con que el esquema Zod las vea presentes: la
+  # URL de Supabase de arriba ya es un placeholder no conectable, así que
+  # cualquier request real a Supabase/Upstash/Cloudinary falla por red, no por
+  # falta de configuración — el código ya maneja ese caso (NX-WEB-004/degradación
+  # controlada), que es justamente lo que e2e/vidriera-publica.spec.ts verifica.
+  SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
+  UPSTASH_REDIS_REST_URL: https://ci-placeholder.upstash.io
+  UPSTASH_REDIS_REST_TOKEN: ci-placeholder-upstash-token
+  CLOUDINARY_CLOUD_NAME: ci-placeholder-cloud-name
+  CLOUDINARY_API_KEY: ci-placeholder-api-key
+  CLOUDINARY_API_SECRET: ci-placeholder-api-secret
 
 jobs:
   lint:

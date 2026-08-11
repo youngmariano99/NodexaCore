@@ -3,12 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import {
   LIMITE_BUSQUEDA_PRODUCTOS,
   PRODUCTOS_POR_PAGINA,
+  PRODUCTOS_PUBLICOS_POR_PAGINA,
   buscarProductosParaVenta,
   contarProductosActivos,
   insertarProducto,
   insertarProductosEnLote,
   obtenerPreciosProductosPorIds,
   obtenerProductosPaginados,
+  obtenerProductosPublicadosPaginados,
 } from "./productosRepository";
 
 interface ResultadoSupabase {
@@ -397,6 +399,70 @@ describe("obtenerProductosPaginados", () => {
     const supabase = { from: vi.fn(() => builder) };
 
     const resultado = await obtenerProductosPaginados(supabase as never, CLIENTE_ID, 1, PRODUCTOS_POR_PAGINA);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+describe("obtenerProductosPublicadosPaginados", () => {
+  it("filtra siempre por cliente_id, publicado=true y eliminado_en IS NULL", async () => {
+    const builder = crearBuilderListado({ data: [], error: null, count: 0 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 1);
+
+    expect(builder.eq).toHaveBeenCalledWith("cliente_id", CLIENTE_ID);
+    expect(builder.eq).toHaveBeenCalledWith("publicado", true);
+    expect(builder.is).toHaveBeenCalledWith("eliminado_en", null);
+  });
+
+  it("usa .range() según PRODUCTOS_PUBLICOS_POR_PAGINA, nunca trae todo sin límite", async () => {
+    const builder = crearBuilderListado({ data: [], error: null, count: 0 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 2);
+
+    expect(builder.range).toHaveBeenCalledWith(PRODUCTOS_PUBLICOS_POR_PAGINA, PRODUCTOS_PUBLICOS_POR_PAGINA * 2 - 1);
+  });
+
+  it("ordena con producto_id como desempate, mismo criterio que el listado interno", async () => {
+    const builder = crearBuilderListado({ data: [], error: null, count: 0 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 1);
+
+    expect(builder.order).toHaveBeenNthCalledWith(1, "creado_en", { ascending: false });
+    expect(builder.order).toHaveBeenNthCalledWith(2, "producto_id", { ascending: true });
+  });
+
+  it("retorna los productos, el total y el tamaño de página", async () => {
+    const filas = [
+      {
+        producto_id: "p-1",
+        sku: "DP-00001",
+        nombre: "Yerba Mate 1kg",
+        descripcion: "ej. Yerba mate 1kg",
+        categoria: "Almacén",
+        precio: 3500,
+        imagen_url: "https://cdn.nodexa.app/productos/yerba.webp",
+      },
+    ];
+    const builder = crearBuilderListado({ data: filas, error: null, count: 1 });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 1);
+
+    expect(resultado).toEqual({
+      ok: true,
+      data: { productos: filas, total: 1, pagina: 1, porPagina: PRODUCTOS_PUBLICOS_POR_PAGINA },
+    });
+  });
+
+  it("retorna NX-SYS-001 si Supabase devuelve error", async () => {
+    const builder = crearBuilderListado({ data: null, error: { message: "fallo" }, count: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 1);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
   });

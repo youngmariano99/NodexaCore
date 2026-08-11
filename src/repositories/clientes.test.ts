@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { CLIENTES_POR_PAGINA, listarClientesPaginado, obtenerClientePorId } from "./clientes";
+import { CLIENTES_POR_PAGINA, listarClientesPaginado, obtenerClientePorId, obtenerClientePublicoPorSlug } from "./clientes";
 
 interface ResultadoSupabase {
   data: unknown;
@@ -112,5 +112,57 @@ describe("obtenerClientePorId", () => {
     const resultado = await obtenerClientePorId(supabase as never, "no-existe");
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-004" });
+  });
+});
+
+function crearBuilderPublico(resultado: ResultadoSupabase) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    is: vi.fn(() => builder),
+    maybeSingle: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("obtenerClientePublicoPorSlug", () => {
+  const SLUG = "almacen-don-pedro";
+
+  it("retorna solo columnas públicas cuando el comercio existe y está activo", async () => {
+    const filaPublica = {
+      cliente_id: CLIENTE_ID,
+      nombre_comercio: "Almacén Don Pedro",
+      slug: SLUG,
+      logo_url: "https://cdn.nodexa.app/logos/don-pedro.webp",
+      color_primario: "#10B981",
+      telefono_whatsapp: "+5492920000001",
+    };
+    const builder = crearBuilderPublico({ data: filaPublica, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerClientePublicoPorSlug(supabase as never, SLUG);
+
+    expect(resultado).toEqual({ ok: true, data: filaPublica });
+    expect(builder.eq).toHaveBeenCalledWith("slug", SLUG);
+    expect(builder.eq).toHaveBeenCalledWith("estado_pago", true);
+    expect(builder.is).toHaveBeenCalledWith("eliminado_en", null);
+  });
+
+  it("retorna NX-WEB-004 cuando el slug no existe", async () => {
+    const builder = crearBuilderPublico({ data: null, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerClientePublicoPorSlug(supabase as never, "no-existe");
+
+    expect(resultado).toEqual({ ok: false, error: "NX-WEB-004" });
+  });
+
+  it("retorna NX-WEB-004 (mismo código, sin distinguir el motivo) ante cualquier error de Supabase", async () => {
+    const builder = crearBuilderPublico({ data: null, error: { message: "fallo" } });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerClientePublicoPorSlug(supabase as never, SLUG);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-WEB-004" });
   });
 });
