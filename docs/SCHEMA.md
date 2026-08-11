@@ -227,7 +227,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `devolucion_id` | `uuid` | `NOT NULL`, `REFERENCES devoluciones(devolucion_id)`, `UNIQUE` |
 | `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
 | `monto` | `numeric(12,2)` | `NOT NULL`, `CHECK (monto >= 0)` |
-| `numero_comprobante` | `text` | `NOT NULL`, `UNIQUE` |
+| `numero_comprobante` | `text` | `NOT NULL`, `UNIQUE`, formato `NC-{cliente_id_corto}-{correlativo}`, generado por `fn_registrar_devolucion` vía `nextval('notas_credito_correlativo_seq')` (correlativo atómico, sin ventana de carrera) |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 
 **Índices:** `idx_notascredito_cliente (cliente_id)`
