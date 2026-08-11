@@ -39,6 +39,7 @@
 | Exportación CSV/JSON (catálogo/transacciones) | L (soporte a pedido) | C (ejecuta exportación) | — | — |
 | Facturación / `estado_pago` | C·M | L | — | — |
 | Ampliación `limite_sku` / cuota IA | M | L (solicita ampliación) | — | — |
+| `ajustes_facturacion` | C (único que genera cargos) | L (propio tenant) | — | — |
 
 **Notas de matriz:**
 - `empleado` nunca ejecuta baja lógica de `productos`, `clientes_finales` ni gestiona `devoluciones` sin flujo de confirmación explícita del `comerciante` (control operativo, no técnico — a reforzar en UI/Server Action).
@@ -178,7 +179,14 @@ CREATE POLICY clientes_update_admin ON clientes
 -- vía Server Action con columnas explícitas, nunca UPDATE directo de fila completa desde el cliente
 ```
 
-### 3.7 Tabla Append-Only sin `UPDATE`/`DELETE` (`auditoria_diffs`, `movimientos_stock`, `movimientos_cuenta_corriente`)
+Mismo criterio sobre `ajustes_facturacion` (docs/SCHEMA.md §17): el `SELECT` sigue el patrón genérico de tenant (§3.3), pero el `INSERT` es exclusivo de `admin_nodexa` — nunca `cliente_id = auth_cliente_id()`, ya que un comercio jamás debe poder generar sus propios cargos:
+
+```sql
+CREATE POLICY ajustes_facturacion_insert_admin ON ajustes_facturacion
+  FOR INSERT WITH CHECK (es_admin_nodexa());
+```
+
+### 3.7 Tabla Append-Only sin `UPDATE`/`DELETE` (`auditoria_diffs`, `movimientos_stock`, `movimientos_cuenta_corriente`, `ajustes_facturacion`)
 
 ```sql
 ALTER TABLE auditoria_diffs ENABLE ROW LEVEL SECURITY;

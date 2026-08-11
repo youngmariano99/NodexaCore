@@ -287,7 +287,25 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 
 ---
 
-## 17. Relaciones (Resumen de Claves Foráneas)
+## 17. Entidad: `ajustes_facturacion` (Facturación Recurrente)
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `ajuste_facturacion_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `concepto` | `text` | `NOT NULL`, `CHECK (concepto IN ('pack_sku', 'recarga_ia'))` |
+| `monto` | `numeric(12,2)` | `NOT NULL`, `CHECK (monto >= 0)` |
+| `periodo_facturado` | `date` | `NOT NULL` (primer día del mes que corresponde cobrar el ajuste — siempre el período SIGUIENTE al de la ampliación) |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+
+**Índices:** `idx_ajustesfacturacion_cliente_periodo (cliente_id, periodo_facturado)`
+**Append-only:** sin `UPDATE`/`DELETE` — un ajuste ya emitido no se corrige ni se borra, mismo criterio que `auditoria_diffs`/`movimientos_stock`.
+
+**Modelo comercial de `concepto = 'pack_sku'` (escalonado decreciente, docs/BACKLOG.md "Actualización del próximo período de facturación en ampliaciones"):** pack 1 = $5.000 ARS, cada pack siguiente descuenta $1.000 ARS respecto del anterior, con piso de $2.000 ARS a partir del pack 4 en adelante (`calcularCostoPackSku`, `src/lib/dominio/facturacion/calcularCostoPackSku.ts`). `concepto = 'recarga_ia'` es un monto fijo de $3.000 ARS por paquete de +40 consultas (`COSTO_RECARGA_IA_ARS`) — ninguno de los dos montos estaba documentado antes de esta estación; se confirmaron explícitamente con el usuario por tratarse de datos de facturación real.
+
+---
+
+## 18. Relaciones (Resumen de Claves Foráneas)
 
 ```
 clientes (1) ──< usuarios
@@ -298,6 +316,7 @@ clientes (1) ──< ventas
 clientes (1) ──< devoluciones
 clientes (1) ──< cargas_ia
 clientes (1) ──1 configuracion_bot_whatsapp
+clientes (1) ──< ajustes_facturacion
 
 productos (1) ──< movimientos_stock
 productos (1) ──< venta_items
@@ -317,7 +336,7 @@ venta_items (1) ──< devolucion_items
 
 ---
 
-## 18. Políticas RLS (Directriz de Aislamiento Multi-Tenant)
+## 19. Políticas RLS (Directriz de Aislamiento Multi-Tenant)
 
 ```sql
 -- Patrón aplicado a toda tabla con columna cliente_id (ejemplo: productos)
@@ -339,3 +358,5 @@ CREATE POLICY productos_lectura_publica ON productos
 ```
 
 > Aplicar el mismo patrón (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `movimientos_cuenta_corriente`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`. Ninguna política de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
+>
+> `ajustes_facturacion` es un caso especial dentro de este patrón: `SELECT` sigue la regla genérica (`cliente_id = auth_cliente_id() OR es_admin_nodexa()`), pero `INSERT` es exclusivo de `es_admin_nodexa()` (nunca `cliente_id = auth_cliente_id()`) — un comercio nunca genera sus propios cargos, mismo criterio ya aplicado a `clientes_update_admin`.
