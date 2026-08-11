@@ -34,6 +34,8 @@ export const CATALOGO_ERRORES = {
   "NX-VTA-002": "Esta venta ya fue registrada. No hace falta confirmarla de nuevo.",
   "NX-VTA-003": "El total de la venta no puede ser negativo. Revisá los productos y cantidades cargadas.",
   "NX-VTA-005": "No pudimos procesar el cobro por un problema momentáneo. Probá de nuevo.",
+  "NX-FIA-001": "Este módulo todavía no está activo en tu cuenta.",
+  "NX-FIA-005": "Ya existe un cliente cargado con estos datos de contacto.",
 } as const;
 
 export type CodigoError = keyof typeof CATALOGO_ERRORES;
