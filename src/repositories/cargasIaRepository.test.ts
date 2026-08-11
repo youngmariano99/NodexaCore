@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { registrarCargaIa, registrarConsumoIa } from "./cargasIaRepository";
+import { obtenerUsoCuotaIA, registrarCargaIa, registrarConsumoIa } from "./cargasIaRepository";
 
 const CLIENTE_ID = "b2222222-2222-4222-8222-222222222222";
 const USUARIO_ID = "d0000000-0000-4000-8000-000000000004";
@@ -107,5 +107,82 @@ describe("registrarCargaIa", () => {
     const resultado = await registrarCargaIa(supabase as never, datos);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderClienteCuota(resultado: { data: unknown; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    single: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+function crearBuilderConteoCargas(resultado: { count: number | null; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    gte: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+function crearSupabasePorTabla(builders: { clientes: unknown; cargas_ia: unknown }) {
+  return {
+    from: vi.fn((tabla: string) => (tabla === "clientes" ? builders.clientes : builders.cargas_ia)),
+  };
+}
+
+describe("obtenerUsoCuotaIA", () => {
+  it("cuenta filas de cargas_ia filtradas por cliente_id y por el ia_periodo_actual vigente del tenant", async () => {
+    const builderClientes = crearBuilderClienteCuota({
+      data: { cuota_mensual_ia: 40, ia_periodo_actual: "2026-08-01" },
+      error: null,
+    });
+    const builderCargas = crearBuilderConteoCargas({ count: 34, error: null });
+    const supabase = crearSupabasePorTabla({ clientes: builderClientes, cargas_ia: builderCargas });
+
+    const resultado = await obtenerUsoCuotaIA(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: true, data: { usadas: 34, cuotaMensualIa: 40 } });
+    expect(builderCargas.eq).toHaveBeenCalledWith("cliente_id", CLIENTE_ID);
+    expect(builderCargas.gte).toHaveBeenCalledWith("creado_en", "2026-08-01");
+  });
+
+  it("retorna NX-SYS-001 si no encuentra al cliente", async () => {
+    const builderClientes = crearBuilderClienteCuota({ data: null, error: { message: "no encontrado" } });
+    const builderCargas = crearBuilderConteoCargas({ count: 0, error: null });
+    const supabase = crearSupabasePorTabla({ clientes: builderClientes, cargas_ia: builderCargas });
+
+    const resultado = await obtenerUsoCuotaIA(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+
+  it("retorna NX-SYS-001 si el conteo de cargas_ia falla", async () => {
+    const builderClientes = crearBuilderClienteCuota({
+      data: { cuota_mensual_ia: 40, ia_periodo_actual: "2026-08-01" },
+      error: null,
+    });
+    const builderCargas = crearBuilderConteoCargas({ count: null, error: { message: "fallo" } });
+    const supabase = crearSupabasePorTabla({ clientes: builderClientes, cargas_ia: builderCargas });
+
+    const resultado = await obtenerUsoCuotaIA(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+
+  it("refleja el reinicio a 0 cuando cambia el período mensual vigente", async () => {
+    const builderClientes = crearBuilderClienteCuota({
+      data: { cuota_mensual_ia: 40, ia_periodo_actual: "2026-09-01" },
+      error: null,
+    });
+    const builderCargas = crearBuilderConteoCargas({ count: 0, error: null });
+    const supabase = crearSupabasePorTabla({ clientes: builderClientes, cargas_ia: builderCargas });
+
+    const resultado = await obtenerUsoCuotaIA(supabase as never, CLIENTE_ID);
+
+    expect(resultado).toEqual({ ok: true, data: { usadas: 0, cuotaMensualIa: 40 } });
   });
 });

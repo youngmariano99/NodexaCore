@@ -49,6 +49,54 @@ export async function registrarConsumoIa(supabase: SupabaseClient): Promise<Resu
   return { ok: true, data: null };
 }
 
+export interface UsoCuotaIa {
+  usadas: number;
+  cuotaMensualIa: number;
+}
+
+interface FilaClienteCuotaIa {
+  cuota_mensual_ia: number;
+  ia_periodo_actual: string;
+}
+
+/**
+ * Uso del contador de cuota de IA (docs/SITEMAP.md "Componente de contador de
+ * cuota de IA", Paso 1 del checklist). A diferencia de `ia_consultas_usadas`
+ * (contador incremental en `clientes`, fuente de verdad para BLOQUEAR una
+ * carga en `fn_registrar_consumo_ia`), acá se pide explícitamente un
+ * `COUNT(*)` real sobre `cargas_ia` filtrado por el `ia_periodo_actual`
+ * vigente del tenant — un número para MOSTRAR, no para aplicar la cuota.
+ * `ia_periodo_actual` es `date` (docs/SCHEMA.md §1, `date_trunc('month', ...)`
+ * ), así que una fila de `cargas_ia` "pertenece" al período vigente cuando su
+ * `creado_en` es posterior o igual a esa fecha.
+ */
+export async function obtenerUsoCuotaIA(
+  supabase: SupabaseClient,
+  clienteId: string,
+): Promise<ResultadoRepositorio<UsoCuotaIa>> {
+  const { data: cliente, error: errorCliente } = await supabase
+    .from("clientes")
+    .select("cuota_mensual_ia, ia_periodo_actual")
+    .eq("cliente_id", clienteId)
+    .single<FilaClienteCuotaIa>();
+
+  if (errorCliente || !cliente) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  const { count, error: errorConteo } = await supabase
+    .from("cargas_ia")
+    .select("carga_ia_id", { count: "exact", head: true })
+    .eq("cliente_id", clienteId)
+    .gte("creado_en", cliente.ia_periodo_actual);
+
+  if (errorConteo || count === null) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data: { usadas: count, cuotaMensualIa: cliente.cuota_mensual_ia } };
+}
+
 export interface DatosNuevaCargaIa {
   clienteId: string;
   usuarioId: string;
