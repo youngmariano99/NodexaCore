@@ -9,6 +9,7 @@ import {
   insertarProducto,
   insertarProductosEnLote,
   obtenerPreciosProductosPorIds,
+  obtenerProductoPublicoPorId,
   obtenerProductosPaginados,
   obtenerProductosPublicadosPaginados,
 } from "./productosRepository";
@@ -465,5 +466,67 @@ describe("obtenerProductosPublicadosPaginados", () => {
     const resultado = await obtenerProductosPublicadosPaginados(supabase as never, CLIENTE_ID, 1);
 
     expect(resultado).toEqual({ ok: false, error: "NX-SYS-001" });
+  });
+});
+
+function crearBuilderDetalle(resultado: { data: unknown; error: unknown }) {
+  const builder = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    is: vi.fn(() => builder),
+    maybeSingle: vi.fn(async () => resultado),
+  };
+  return builder;
+}
+
+describe("obtenerProductoPublicoPorId", () => {
+  const PRODUCTO_ID = "b1111111-1111-4111-8111-111111111111";
+
+  it("filtra por producto_id, cliente_id, publicado=true y eliminado_en IS NULL", async () => {
+    const builder = crearBuilderDetalle({ data: null, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    await obtenerProductoPublicoPorId(supabase as never, CLIENTE_ID, PRODUCTO_ID);
+
+    expect(builder.eq).toHaveBeenCalledWith("producto_id", PRODUCTO_ID);
+    expect(builder.eq).toHaveBeenCalledWith("cliente_id", CLIENTE_ID);
+    expect(builder.eq).toHaveBeenCalledWith("publicado", true);
+    expect(builder.is).toHaveBeenCalledWith("eliminado_en", null);
+  });
+
+  it("retorna el producto encontrado", async () => {
+    const fila = {
+      producto_id: PRODUCTO_ID,
+      sku: "DP-00001",
+      nombre: "Yerba Mate 1kg",
+      descripcion: "ej. Yerba mate 1kg",
+      categoria: "Almacén",
+      precio: 3500,
+      imagen_url: "https://cdn.nodexa.app/productos/yerba.webp",
+    };
+    const builder = crearBuilderDetalle({ data: fila, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerProductoPublicoPorId(supabase as never, CLIENTE_ID, PRODUCTO_ID);
+
+    expect(resultado).toEqual({ ok: true, data: fila });
+  });
+
+  it("retorna NX-WEB-004 sin distinguir 'no existe' de 'no publicado' de 'es de otro tenant'", async () => {
+    const builder = crearBuilderDetalle({ data: null, error: null });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerProductoPublicoPorId(supabase as never, CLIENTE_ID, PRODUCTO_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-WEB-004" });
+  });
+
+  it("retorna NX-WEB-004 si Supabase devuelve error", async () => {
+    const builder = crearBuilderDetalle({ data: null, error: { message: "fallo" } });
+    const supabase = { from: vi.fn(() => builder) };
+
+    const resultado = await obtenerProductoPublicoPorId(supabase as never, CLIENTE_ID, PRODUCTO_ID);
+
+    expect(resultado).toEqual({ ok: false, error: "NX-WEB-004" });
   });
 });

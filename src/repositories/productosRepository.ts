@@ -382,3 +382,36 @@ export async function obtenerProductosPublicadosPaginados(
     data: { productos: data, total: count ?? 0, pagina: paginaSegura, porPagina: porPaginaSeguro },
   };
 }
+
+/**
+ * Ficha pública de un único producto (docs/BACKLOG.md "Componente de CTA
+ * WhatsApp en ficha de producto", Paso 1). Mismo criterio de la vidriera:
+ * `productos_lectura_publica` (RLS) no conoce el tenant, así que
+ * `cliente_id` se filtra explícito acá para no traer un producto de otro
+ * comercio si por error se pisara un `producto_id` ajeno en la URL —
+ * `publicado = true` y `eliminado_en IS NULL` también explícitos, mismo
+ * criterio de no confiar únicamente en RLS. No distingue "no existe" de
+ * "no está publicado" de "es de otro tenant": los tres casos retornan
+ * `NX-WEB-004` desde la page (vía `notFound()`), mismo criterio de no
+ * filtrar existencia de recursos que ya usa `verificarPertenenciaTenant`.
+ */
+export async function obtenerProductoPublicoPorId(
+  supabase: SupabaseClient,
+  clienteId: string,
+  productoId: string,
+): Promise<ResultadoRepositorio<FilaProductoPublico>> {
+  const { data, error } = await supabase
+    .from("productos")
+    .select("producto_id, sku, nombre, descripcion, categoria, precio, imagen_url")
+    .eq("producto_id", productoId)
+    .eq("cliente_id", clienteId)
+    .eq("publicado", true)
+    .is("eliminado_en", null)
+    .maybeSingle<FilaProductoPublico>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-WEB-004" };
+  }
+
+  return { ok: true, data };
+}
