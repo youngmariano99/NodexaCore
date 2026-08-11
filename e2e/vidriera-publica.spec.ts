@@ -33,12 +33,16 @@ test.describe("Vidriera pública (publico)/c/[clienteSlug]", () => {
 });
 
 test.describe("Ficha pública de producto y CTA de WhatsApp", () => {
-  test("el CTA arma un enlace wa.me con el mensaje del producto", async ({ page }) => {
-    await page.goto("/c/demo-nodexa/producto/prod-1");
+  // Mismo criterio que la vidriera: sin conexión real a Supabase en CI, ni el
+  // cliente ni el producto son resolubles, así que la ficha debe degradar a
+  // NX-WEB-004 con 404 en vez de un error sin manejar. El armado real del
+  // enlace wa.me (con el nombre del producto pre-cargado) y la visibilidad
+  // del CTA quedan cubiertos por src/repositories/productosRepository.test.ts
+  // y por la verificación manual en navegador contra el proyecto Supabase real.
+  test("un producto no resoluble muestra la página 404 con NX-WEB-004, no un error sin manejar", async ({ page }) => {
+    const respuesta = await page.goto("/c/demo-nodexa/producto/prod-1");
 
-    const cta = page.getByRole("link", { name: "Consultar por WhatsApp" });
-
-    await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute("href", /^https:\/\/wa\.me\/\d+\?text=/);
+    expect(respuesta?.status()).toBe(404);
+    await expect(page.getByText("Esta vidriera no está disponible en este momento.")).toBeVisible();
   });
 });
