@@ -52,6 +52,24 @@ describe("calcularTotalVenta", () => {
     expect(calcularTotalVenta(items)).toBe(10.01);
   });
 
+  it("una línea con cantidad cero no aporta nada al total (caso límite)", () => {
+    const items: VentaItem[] = [
+      { productoId: "p-1", precioUnitario: 3500, cantidad: 0 },
+      { productoId: "p-2", precioUnitario: 100, cantidad: 2 },
+    ];
+
+    expect(calcularTotalVenta(items)).toBe(200);
+  });
+
+  it("un arreglo donde todos los ítems tienen cantidad cero retorna 0", () => {
+    const items: VentaItem[] = [
+      { productoId: "p-1", precioUnitario: 3500, cantidad: 0 },
+      { productoId: "p-2", precioUnitario: 100, cantidad: 0 },
+    ];
+
+    expect(calcularTotalVenta(items)).toBe(0);
+  });
+
   it("acepta precio cero sin romperse (producto gratuito, precio >= 0 según docs/SCHEMA.md §5)", () => {
     const items: VentaItem[] = [
       { productoId: "p-1", precioUnitario: 0, cantidad: 3 },
@@ -102,5 +120,9 @@ describe("calcularSubtotalItem", () => {
 
   it("redondea a dos decimales (numeric(12,2))", () => {
     expect(calcularSubtotalItem({ productoId: "p-1", precioUnitario: 19.99, cantidad: 5 })).toBe(99.95);
+  });
+
+  it("con cantidad cero el subtotal es 0 (caso límite)", () => {
+    expect(calcularSubtotalItem({ productoId: "p-1", precioUnitario: 3500, cantidad: 0 })).toBe(0);
   });
 });
