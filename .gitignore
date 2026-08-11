@@ -44,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vitest coverage reports (generados por npm run test:coverage:dominio)
+coverage/
