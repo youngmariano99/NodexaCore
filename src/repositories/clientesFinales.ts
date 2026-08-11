@@ -4,10 +4,73 @@ import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { verificarPertenenciaTenant } from "@/repositories/base/verificarPertenenciaTenant";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 
+const CODIGO_UNIQUE_VIOLATION_POSTGRES = "23505";
+
+interface ErrorPostgres {
+  code?: string;
+}
+
+function esUniqueViolation(error: unknown): boolean {
+  return typeof error === "object" && error !== null && (error as ErrorPostgres).code === CODIGO_UNIQUE_VIOLATION_POSTGRES;
+}
+
 export interface ContextoRepositorioClientesFinales {
   supabase: SupabaseClient;
   clienteIdJwt: string | null;
   usuarioId: string;
+}
+
+export interface DatosNuevoClienteFinal {
+  clienteId: string;
+  nombre: string;
+  telefono: string | null;
+}
+
+export interface FilaClienteFinal {
+  cliente_final_id: string;
+  cliente_id: string;
+  nombre: string;
+  telefono: string | null;
+  saldo_deudor: number;
+}
+
+/**
+ * Alta de cliente final (docs/ROLES.md §2, fila "clientes_finales (fiados)":
+ * `C` para comerciante y empleado). `saldo_deudor` nunca viaja en el insert:
+ * la columna ya trae `DEFAULT 0` en docs/SCHEMA.md §9, y ese valor solo se
+ * modifica después vía `movimientos_cuenta_corriente` (mismo criterio que
+ * `actualizarClienteFinal`, que tampoco expone `saldo_deudor`).
+ *
+ * Duplicados de contacto (docs/ERRORS.md `NX-FIA-005`) no se pre-chequean
+ * con un `SELECT`: se deja que `idx_clientesfinales_telefono_unico`
+ * (supabase/migrations/20260811130000_...) falle y se traduce el `23505` acá
+ * — mismo patrón anti-TOCTOU que `insertarProducto` sobre
+ * `(cliente_id, sku)`. Un `telefono` `NULL` (opcional) nunca puede violar
+ * ese índice parcial, así que un alta sin teléfono jamás dispara
+ * `NX-FIA-005`.
+ */
+export async function insertarClienteFinal(
+  supabase: SupabaseClient,
+  datos: DatosNuevoClienteFinal,
+): Promise<ResultadoRepositorio<FilaClienteFinal>> {
+  const { data, error } = await supabase
+    .from("clientes_finales")
+    .insert({
+      cliente_id: datos.clienteId,
+      nombre: datos.nombre,
+      telefono: datos.telefono,
+    })
+    .select("cliente_final_id, cliente_id, nombre, telefono, saldo_deudor")
+    .single<FilaClienteFinal>();
+
+  if (error || !data) {
+    if (esUniqueViolation(error)) {
+      return { ok: false, error: "NX-FIA-005" };
+    }
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data };
 }
 
 export interface CambiosClienteFinal {
