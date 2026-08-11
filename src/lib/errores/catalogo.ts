@@ -13,6 +13,7 @@ export const CATALOGO_ERRORES = {
   "NX-SYS-006": "Los datos que enviaste no son válidos. Revisá los campos marcados y volvé a intentar.",
   "NX-SYS-007": "Este recurso pertenece a otro comercio y no podés acceder a él.",
   "NX-ADM-001": "Ya existe un comercio registrado con este slug o dominio.",
+  "NX-ADM-002": "El comercio tiene el pago suspendido. Regularizá la situación para reactivar el acceso.",
   "NX-ADM-003": "No podés ampliar el catálogo por debajo del uso actual de productos.",
   "NX-PRD-001":
     "Alcanzaste el límite de productos de tu plan actual. Contamos con un pack para seguir sumando catálogo sin perder nada de lo que ya cargaste.",

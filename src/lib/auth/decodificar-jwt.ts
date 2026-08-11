@@ -24,6 +24,7 @@ export function decodificarClaimsSesion(accessToken: string): ClaimsSesion | nul
       sub: payload.sub ?? "",
       cliente_id: payload.cliente_id ?? null,
       rol: payload.rol,
+      estado_pago: payload.estado_pago ?? null,
       iat: payload.iat,
       exp: payload.exp,
     };

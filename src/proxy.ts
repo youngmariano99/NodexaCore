@@ -32,8 +32,9 @@ function redirigirSinPermiso(request: NextRequest, rutaDestino: string) {
 /**
  * Proxy global de sesión (docs/ROLES.md §3.1, SITEMAP.md nota de acceso).
  * Intercepta las rutas de los grupos (app) y (admin): exige sesión Supabase
- * válida con antigüedad ≤ 1 hora y bloquea (admin) a quien no tenga
- * `rol = admin_nodexa`.
+ * válida con antigüedad ≤ 1 hora, bloquea (admin) a quien no tenga
+ * `rol = admin_nodexa`, y suspende a comerciante/empleado de un comercio con
+ * `estado_pago = false` (docs/ERRORS.md NX-ADM-002) de todo el grupo (app).
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -76,6 +77,15 @@ export async function proxy(request: NextRequest) {
 
   if (sesionExpirada) {
     return redirigirALogin(request, "NX-SYS-002");
+  }
+
+  // Suspensión de acceso al panel (docs/ERRORS.md NX-ADM-002, SOP-04):
+  // comerciante/empleado de un comercio con estado_pago=false quedan fuera de
+  // todo el grupo (app), no solo de /admin. admin_nodexa nunca lleva este
+  // claim (custom_access_token_hook.sql) y por lo tanto nunca puede
+  // auto-bloquearse gestionando la morosidad de terceros.
+  if (claims.rol !== "admin_nodexa" && claims.estado_pago === false) {
+    return redirigirALogin(request, "NX-ADM-002");
   }
 
   const esRutaAdmin = PREFIJOS_RUTAS_ADMIN.some((prefijo) => request.nextUrl.pathname.startsWith(prefijo));
