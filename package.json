@@ -10,6 +10,7 @@
     "lint": "eslint --max-warnings 0",
     "test": "vitest run",
     "test:coverage:dominio": "vitest run --coverage --config vitest.coverage-dominio.config.ts",
+    "test:integracion": "vitest run --config vitest.integracion.config.ts",
     "test:e2e": "playwright test",
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
   },
