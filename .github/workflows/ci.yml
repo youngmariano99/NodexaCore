@@ -124,6 +124,45 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  e2e-flujos-criticos:
+    name: Pruebas E2E de flujos críticos (Supabase local + Upstash real)
+    runs-on: ubuntu-latest
+    # NO forma parte de `needs` de ci-ok todavía: a diferencia de e2e-tests
+    # (que corre contra credenciales placeholder por diseño), estos specs
+    # necesitan un login real, que a su vez necesita un Upstash real
+    # (verificarAuthLimiter, docs/ERRORS.md NX-SYS-005) — no hay forma de
+    # simular eso con placeholders. Requiere agregar los secrets
+    # UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN en Settings > Secrets
+    # and variables > Actions del repo (mismas credenciales ya usadas en
+    # .env.local para desarrollo local). Hasta que se agreguen, este job
+    # falla de forma visible pero no bloquea ningún merge; agregarlo a
+    # `needs` de ci-ok queda para cuando el usuario confirme que los
+    # secrets ya están cargados.
+    env:
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase start
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:flujos-criticos
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report-flujos-criticos
+          path: playwright-report-flujos-criticos/
+          retention-days: 7
+      - if: always()
+        run: supabase stop
+
   ci-ok:
     name: CI (requerido para mergear)
     if: ${{ !cancelled() }}
