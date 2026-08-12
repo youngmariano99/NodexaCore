@@ -12,6 +12,7 @@
     "test:coverage:dominio": "vitest run --coverage --config vitest.coverage-dominio.config.ts",
     "test:integracion": "vitest run --config vitest.integracion.config.ts",
     "test:e2e": "playwright test",
+    "test:e2e:flujos-criticos": "playwright test --config playwright.flujos-criticos.config.ts",
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
   },
   "dependencies": {
