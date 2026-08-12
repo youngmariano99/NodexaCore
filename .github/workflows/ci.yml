@@ -79,6 +79,32 @@ jobs:
       - run: npm ci
       - run: npm run test
 
+  integration-tests:
+    name: Pruebas de integración (RLS + Supabase local)
+    runs-on: ubuntu-latest
+    # Paso 4 del checklist "Suite de integración contra Supabase local":
+    # contribuye al 20% de "Integración" de la pirámide de testing
+    # (CLAUDE.md §4). Job separado de unit-tests: requiere Docker + el CLI
+    # de Supabase (ubuntu-latest de GitHub Actions trae Docker preinstalado),
+    # arranca la instancia local completa (mismas migraciones que el
+    # proyecto real) y corre contra Postgres/PostgREST/GoTrue reales, no
+    # contra mocks — no debe compartir runner con las unitarias para no
+    # acoplar sus tiempos ni su superficie de fallos.
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase start
+      - run: npm run test:integracion
+      - if: ${{ !cancelled() }}
+        run: supabase stop
+
   e2e-tests:
     name: Pruebas E2E (Playwright)
     runs-on: ubuntu-latest
@@ -101,7 +127,7 @@ jobs:
   ci-ok:
     name: CI (requerido para mergear)
     if: ${{ !cancelled() }}
-    needs: [lint, typecheck, unit-tests, e2e-tests]
+    needs: [lint, typecheck, unit-tests, integration-tests, e2e-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Verificar que todos los jobs anteriores pasaron

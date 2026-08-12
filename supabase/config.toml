@@ -21,7 +21,14 @@ max_rows = 1000
 # without explicit GRANTs. When unset, new entities are NOT auto-exposed, matching the new cloud
 # default. Set to `true` to keep the legacy behaviour of auto-exposing new entities; this is
 # deprecated and the field is removed on 2026-10-30 once the always-revoked behaviour is permanent.
-# auto_expose_new_tables = true
+# Habilitado localmente para igualar el comportamiento real del proyecto
+# cloud (pkfxdbfrvbradmzangek), que sí auto-expone tablas nuevas — las
+# migraciones de este repo nunca escribieron GRANT explícitos a
+# authenticated/anon porque nunca hizo falta contra el proyecto real. Sin
+# esto, toda consulta autenticada local falla con "permission denied" ANTES
+# de siquiera evaluar RLS, dando un falso negativo en las pruebas de
+# integración de esta estación.
+auto_expose_new_tables = true
 
 [api.tls]
 # Enable HTTPS endpoints locally using a self-signed certificate.
@@ -281,9 +288,15 @@ max_frequency = "5s"
 # uri = "pg-functions://postgres/auth/before-user-created-hook"
 
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
-# [auth.hook.custom_access_token]
-# enabled = true
-# uri = "pg-functions://<database>/<schema>/<hook_name>"
+# Habilitado localmente (docs/handoffd Sprint 1 "Inicio de sesión con Supabase
+# Auth"): en el proyecto cloud este hook requiere activación manual en el
+# Dashboard (Authentication > Hooks), que no existe en `supabase start`. Sin
+# esto, `auth_rol()`/`auth_cliente_id()`/`es_admin_nodexa()` (de los que
+# depende toda política RLS) nunca reciben los claims y las pruebas de
+# integración de esta estación fallarían en falso positivo.
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
