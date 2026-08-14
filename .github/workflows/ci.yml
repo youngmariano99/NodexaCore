@@ -99,7 +99,7 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 1.192.5
       - run: supabase start
       - run: npm run test:integracion
       - if: ${{ !cancelled() }}
@@ -148,7 +148,7 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 1.192.5
       - run: supabase start
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:flujos-criticos
