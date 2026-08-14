@@ -201,3 +201,97 @@ Distribución temporal de Historias de Usuario organizadas en iteraciones de des
 
 ---
 
+# 🔍 SPRINTS DE RECUPERACIÓN DE BRECHAS (Auditoría Técnica)
+*Estos Sprints tienen como objetivo resolver los pendientes identificados en el [informe_auditoria.md](file:///C:/Users/mari_/.gemini/antigravity-ide/brain/119e040d-7e76-4425-8ebb-397a2a912ed1/informe_auditoria.md) para completar el frontend y las integraciones del backend, sin alterar el alcance original del proyecto.*
+
+---
+
+## 🏃 Sprint 10: Cimientos Visuales, Navegación y CRUD de Catálogo
+- **Objetivo:** Construir la infraestructura visual común (Sidebar y Topbar con control de accesos por tenant_modules) y habilitar la gestión manual/masiva de productos en frontend con subida de imágenes.
+- **Duración:** 2 semanas
+- **Capacidad:** 30 SP
+
+### Historias asignadas:
+- **UI de Navegación y Sidebar con Control de Módulos (Transversal/Layout)** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante/empleado quiero contar con un Sidebar y Topbar que respete el área táctil mínima de 44x44px y la paleta Verde Nodexa, y que oculte o bloquee los menús de módulos no contratados leyendo `tenant_modules` para navegar de forma segura y clara.
+  *Referencia:* Vinculado a Sprint 1 y 2 (Cimientos y multi-tenant / SITEMAP layout).
+- **UI de Edición y Baja de Producto** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante/empleado quiero editar los datos de un producto existente e iniciar su baja lógica desde la interfaz del listado de productos para mantener el catálogo al día.
+  *Referencia:* Vinculado a Sprint 4 (Edición y baja lógica de producto).
+- **Integración de Compresión y Subida de Imágenes a Cloudinary** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante quiero que el formulario de alta y edición manual permita seleccionar una imagen de producto, la cual debe enviarse al backend, comprimirse a WebP (~70 KB) vía `comprimirImagenProducto` y guardarse en base de datos.
+  *Referencia:* Vinculado a Sprint 5 (Compresión de imágenes).
+- **UI de Carga Masiva por Excel** (6 SP) - Prioridad: Media
+  *Descripción:* Como comerciante quiero ingresar a la página de carga masiva, descargar la plantilla de Excel oficial y subir mi catálogo estructurado para procesarlo en lote.
+  *Referencia:* Vinculado a Sprint 5 (Carga masiva de productos).
+
+---
+
+## 🏃 Sprint 11: Gestión Visual de Stock, Configuración del Catálogo Web y Bot de WhatsApp
+- **Objetivo:** Desarrollar la gestión visual de movimientos de stock y habilitar los paneles de administración del bot y de la vidriera pública para los comerciantes.
+- **Duración:** 2 semanas
+- **Capacidad:** 30 SP
+
+### Historias asignadas:
+- **UI de Registro de Movimientos de Stock** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante/empleado quiero abrir un formulario o modal desde la sección de stock para registrar entradas (mercadería recibida) o salidas (mermas/roturas) de forma manual.
+  *Referencia:* Vinculado a Sprint 4 (Registro de entrada/salida de stock).
+- **Suscripción en Tiempo Real para Stock en UI (Realtime)** (6 SP) - Prioridad: Media
+  *Descripción:* Como comerciante quiero que el stock disponible de los productos se actualice en tiempo real en la pantalla del mostrador y listados mediante suscripciones a Supabase Realtime para evitar vender productos sin stock.
+  *Referencia:* Vinculado a Sprint 5 (Stock en tiempo real).
+- **UI de Publicación de Vidriera** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante quiero acceder a la configuración del catálogo web para marcar de forma visual (mediante toggles rápidos) qué productos están publicados para exposición pública y cuáles no.
+  *Referencia:* Vinculado a Sprint 6 (Publicación y despublicación).
+- **UI de Configuración del Bot de WhatsApp** (8 SP) - Prioridad: Media
+  *Descripción:* Como comerciante quiero configurar las respuestas automáticas del bot de WhatsApp (horarios, ubicación, catálogo) e indicar si se permite derivar la consulta a mi número de teléfono.
+  *Referencia:* Vinculado a Sprint 8 (Configuración del bot).
+
+---
+
+## 🏃 Sprint 12: Módulo de Clientes (Fiados), Historial de Ventas y Gestión de Devoluciones
+- **Objetivo:** Habilitar la gestión y cobro a clientes registrados (Fiado) y toda la interfaz para consultar ventas y registrar notas de crédito por devoluciones.
+- **Duración:** 2 semanas
+- **Capacidad:** 30 SP
+
+### Historias asignadas:
+- **UI de Listado y Registro de Clientes (Fiados)** (8 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante quiero acceder a la sección de clientes para listar a mis clientes registrados, buscar por nombre o teléfono, y registrar clientes nuevos con sus datos de contacto básicos.
+  *Referencia:* Vinculado a Sprint 7 (Registro de cliente final).
+- **Selector de Clientes en el Mostrador y Pago Integrado** (8 SP) - Prioridad: Alta
+  *Descripción:* Como cajero quiero buscar y asociar un cliente registrado a la venta en curso en el mostrador para que el total se cargue automáticamente a su cuenta corriente.
+  *Referencia:* Vinculado a Sprint 7 (Venta asociada a cuenta corriente).
+- **Registro de Pagos de Cuenta Corriente** (4 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante/empleado quiero acceder al estado de cuenta del cliente y pulsar un botón para abrir un formulario que registre pagos parciales o totales de su saldo deudor.
+  *Referencia:* Vinculado a Sprint 7 (Registro de pagos parciales/totales).
+- **UI de Historial y Detalle de Ventas** (5 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante/empleado quiero ver el listado paginado de ventas confirmadas y pulsar sobre una para ver su detalle (productos vendidos, cantidades, total, cliente e idempotency key).
+  *Referencia:* Vinculado a Sprint 6 (Confirmación de cobro).
+- **UI de Listado y Registro de Devoluciones** (5 SP) - Prioridad: Alta
+  *Descripción:* Como comerciante quiero abrir el detalle de una venta e iniciar una devolución (parcial o total), generando la nota de crédito y el reintegro de stock de forma visual.
+  *Referencia:* Vinculado a Sprint 7 (Registro de devolución y Nota de Crédito).
+
+---
+
+## 🏃 Sprint 13: Portal de Administración de NODEXA y Cobertura de Pruebas
+- **Objetivo:** Entregar las interfaces para el Administrador NODEXA, la autogestión de módulos para el comerciante y asegurar la calidad del frontend mediante pruebas E2E.
+- **Duración:** 2 semanas
+- **Capacidad:** 30 SP
+
+### Historias asignadas:
+- **UI de Alta y Detalle de Comercios para Admin** (6 SP) - Prioridad: Alta
+  *Descripción:* Como administrador NODEXA quiero crear comercios nuevos de forma visual en la ruta `/admin/clientes/nuevo` y ver su ficha de detalle (estado de pago, límite SKU, módulos contratados).
+  *Referencia:* Vinculado a Sprint 3 (Alta de nuevo comercio).
+- **UI de Activación de Módulos (Admin & Comerciante)** (6 SP) - Prioridad: Media
+  *Descripción:* Como administrador NODEXA quiero habilitar/deshabilitar módulos a clientes desde su ficha, y como comerciante quiero ver en mi marketplace de módulos cuáles tengo activos y cuáles puedo solicitar.
+  *Referencia:* Vinculado a Sprint 3 (Activación de módulos).
+- **UI de Reporte de Morosidad y General de Admin** (6 SP) - Prioridad: Media
+  *Descripción:* Como administrador NODEXA quiero consultar el panel general administrativo y ver un listado de clientes en mora con su estado de pago, suspendiendo accesos según el SOP de morosidad.
+  *Referencia:* Vinculado a Sprint 8 (Actualización del estado de pago del comercio).
+- **UI de Datos del Comercio y Centro de Ayuda** (6 SP) - Prioridad: Media
+  *Descripción:* Como comerciante quiero configurar los datos básicos de mi comercio en `/configuracion` y ver micro-tips educativos o consultar guías en la sección `/ayuda`.
+  *Referencia:* Vinculado a Sprint 8 (Uso actual vs límites).
+- **Pruebas de Componentes y E2E de Vistas de Recuperación (Playwright)** (6 SP) - Prioridad: Alta
+  *Descripción:* Como equipo de desarrollo quiero escribir pruebas unitarias de componentes y flujos de Playwright para las nuevas vistas creadas, garantizando el 80% de cobertura mínima de calidad.
+  *Referencia:* Vinculado a Sprint 9 (Endurecimiento de calidad).
+
+

@@ -14,28 +14,32 @@
 - **Enfoque UX:** Alta legibilidad, baja fatiga visual y UX Educativa (placeholders ejemplares, ayuda en estados vacíos).
 ---
 ## 2. Paleta de Colores & Mapeo Estricto a Tailwind CSS
-Fondo oscuro profundo (sin usar negro puro `#000000` para evitar fatiga por contraste extremo) y un único color de acento minimalista.
-| Rol | Hexadecimal | Variable / Clase Tailwind | Uso Permitido |
+Fondo oscuro profundo con matiz verde oliva/esmeralda (evitando el negro puro `#000000`) y el color Verde Nodexa como único acento de precisión.
+
+| Rol | Hexadecimal | Variable / Clase CSS | Uso Permitido |
 | :--- | :--- | :--- | :--- |
-| **Fondo Base** | `#0B0F19` | `bg-slate-950` | General de la página / Layout base |
-| **Superficie 1** | `#1E293B` | `bg-slate-800` | Tarjetas, contenedores de tablas, modales |
-| **Superficie 2** | `#334155` | `bg-slate-700` | Hover en filas, fondos de inputs |
-| **Texto Principal**| `#F8FAFC` | `text-slate-50` | Títulos, párrafos, labels de formularios |
-| **Texto Muted** | `#94A3B8` | `text-slate-400` | Placeholders, leyendas, metadatos |
-| **Acento Core** | `#3B82F6` | `bg-blue-500` / `text-blue-500` | Botón primario, links activos, selección |
-| **Éxito (Semántico)**| `#10B981` | `text-emerald-500` | Stock positivo, guardado exitoso |
-| **Error (Semántico)**| `#EF4444` | `text-red-500` / `border-red-500` | Errores de formulario, alertas destructivas |
+| **Fondo Base** | `#090B0B` | `bg-[#090B0B]` | General de la página / Layout base |
+| **Fondo Secundario**| `#0D1110` | `bg-[#0D1110]` | Sidebar, paneles secundarios, cabeceras |
+| **Superficie 1 (Cards)**| `#111615`| `bg-[#111615]` | Tarjetas, contenedores de tablas, modales |
+| **Superficie 2 (Elevada)**| `#151A18`| `bg-[#151A18]` | Hover en filas, inputs, botones secundarios |
+| **Bordes** | `#222A27` | `border-[#222A27]` | Bordes muy sutiles de cards, separadores |
+| **Texto Principal**| `#F3F5F4` | `text-[#F3F5F4]` | Títulos, párrafos, labels de formularios |
+| **Texto Secundario**| `#A6AEAA` | `text-[#A6AEAA]` | Subtítulos, placeholders, metadatos, leyendas |
+| **Texto Terciario** | `#737C78` | `text-[#737C78]` | Textos pequeños, deshabilitados o secundarios |
+| **Acento Core (Verde Nodexa)** | `#16D39A` | `bg-[#16D39A]` / `text-[#16D39A]` | Botones primarios, enlaces activos, selecciones, focus |
+| **Éxito (Semántico)**| `#16D39A` | `text-[#16D39A]` | Stock positivo, guardado exitoso, confirmaciones |
+| **Error (Semántico)**| `#EF4444` | `text-red-500` / `border-red-500` | Errores de formulario, alertas destructivas (no verde) |
 ---
 ## 3. Pareja Tipográfica & Jerarquía
 - **Títulos y Display (`font-display`):** Satoshi o Plus Jakarta Sans (Weight: 600 SemiBold / 700 Bold).
 - **UI & Lectura (`font-sans`):** Inter (Weight: 400 Regular para cuerpo, 500 Medium para botones y labels).
-- **Datos y Números (`font-mono`):** JetBrains Mono. Obligatorio para precios, SKUs, fechas y columnas de tablas (garantiza alineación perfecta en columnas).
+- **Datos y Números (`font-mono`):** JetBrains Mono. Obligatorio para precios, SKUs, fechas y columnas de tablas (garantiza almeación perfecta en columnas).
 ---
 ## 4. Patrones de Interacción & UX Educativa
 - **Placeholders Educativos:** No usar placeholders genéricos. Ejemplo: `ej. juan.perez@comercio.com`.
 - **Formularios Fail-Fast:** Validación visual con bordes rojos (`border-red-500`), ícono de alerta (`lucide-react: AlertCircle`, nunca emoji) y mensaje explicativo claro y accionable, mapeado a `ERRORS.md`.
-- **Empty States (Estados Vacíos):** Mostrar contenedor con borde discontinuo (`border-dashed`), texto explicativo amigable en tono Aliado Sincero y un botón de Call To Action (CTA) azul principal.
-- **Alertas de Límite (SKU / IA):** Al 90% del tope, banda informativa discreta con `bg-slate-800` y texto `text-slate-400`; al 100%, modal de bloqueo empático con acento `text-blue-500` para la acción de ampliación, nunca en tono punitivo o rojo.
+- **Empty States (Estados Vacíos):** Mostrar contenedor con borde discontinuo (`border-dashed`), texto explicativo amigable en tono Aliado Sincero y un botón de Call To Action (CTA) Verde Nodexa principal.
+- **Alertas de Límite (SKU / IA):** Al 90% del tope, banda informativa discreta con `bg-[#111615]` y texto `text-[#A6AEAA]`; al 100%, modal de bloqueo empático con acento `text-[#16D39A]` para la acción de ampliación, nunca en tono punitivo o rojo.
 ---
 ## 5. Directrices de Negación ("El Freno de IA")
 Queda ESTRICTAMENTE PROHIBIDO en todo código frontend de este proyecto:

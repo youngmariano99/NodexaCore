@@ -99,7 +99,7 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.114.0
       - run: supabase start
       - run: npm run test:integracion
       - if: ${{ !cancelled() }}
@@ -127,17 +127,15 @@ jobs:
   e2e-flujos-criticos:
     name: Pruebas E2E de flujos críticos (Supabase local + Upstash real)
     runs-on: ubuntu-latest
-    # NO forma parte de `needs` de ci-ok todavía: a diferencia de e2e-tests
-    # (que corre contra credenciales placeholder por diseño), estos specs
-    # necesitan un login real, que a su vez necesita un Upstash real
-    # (verificarAuthLimiter, docs/ERRORS.md NX-SYS-005) — no hay forma de
-    # simular eso con placeholders. Requiere agregar los secrets
-    # UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN en Settings > Secrets
-    # and variables > Actions del repo (mismas credenciales ya usadas en
-    # .env.local para desarrollo local). Hasta que se agreguen, este job
-    # falla de forma visible pero no bloquea ningún merge; agregarlo a
-    # `needs` de ci-ok queda para cuando el usuario confirme que los
-    # secrets ya están cargados.
+    # A diferencia de e2e-tests (que corre contra credenciales placeholder
+    # por diseño), estos specs necesitan un login real, que a su vez
+    # necesita un Upstash real (verificarAuthLimiter, docs/ERRORS.md
+    # NX-SYS-005) — no hay forma de simular eso con placeholders. Los
+    # secrets UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN ya están
+    # cargados en Settings > Secrets and variables > Actions del repo
+    # (mismas credenciales ya usadas en .env.local para desarrollo local),
+    # confirmado en verde — por eso este job SÍ forma parte de `needs` de
+    # ci-ok, igual que el resto.
     env:
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
@@ -150,7 +148,7 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.114.0
       - run: supabase start
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:flujos-criticos
@@ -166,7 +164,7 @@ jobs:
   ci-ok:
     name: CI (requerido para mergear)
     if: ${{ !cancelled() }}
-    needs: [lint, typecheck, unit-tests, integration-tests, e2e-tests]
+    needs: [lint, typecheck, unit-tests, integration-tests, e2e-tests, e2e-flujos-criticos]
     runs-on: ubuntu-latest
     steps:
       - name: Verificar que todos los jobs anteriores pasaron
