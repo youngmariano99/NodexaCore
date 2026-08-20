@@ -47,6 +47,14 @@ export interface ResultadoAuthLimiter {
  * solicitudes excedentes antes de llegar a Supabase Auth").
  */
 export async function verificarAuthLimiter(ip: string, email: string): Promise<ResultadoAuthLimiter> {
+  if (process.env.DISABLE_RATE_LIMITER === "true") {
+    return {
+      permitido: true,
+      restantes: 5,
+      reintentarEnSegundos: 0,
+    };
+  }
+
   const limiter = obtenerAuthLimiter();
   const clave = `${ip}:${email.trim().toLowerCase()}`;
 
