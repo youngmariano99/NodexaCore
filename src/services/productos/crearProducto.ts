@@ -7,6 +7,7 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { contarProductosActivos, insertarProducto } from "@/repositories/productosRepository";
 import type { EstadoCrearProducto } from "@/services/productos/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
+import { comprimirImagenProducto } from "@/services/imagenes/comprimirImagen";
 
 const esquemaCrearProducto = z.object({
   sku: z.string({ message: "El SKU es obligatorio." }).trim().min(1, "El SKU es obligatorio."),
@@ -15,6 +16,7 @@ const esquemaCrearProducto = z.object({
     .number({ message: "El precio es obligatorio." })
     .min(0, "El precio no puede ser negativo."),
   categoria: z.string({ message: "La categoría es obligatoria." }).trim().min(1, "La categoría es obligatoria."),
+  imagen: z.instanceof(File).optional(),
 });
 
 interface FilaUsuarioSolicitante {
@@ -39,11 +41,13 @@ export async function crearProducto(
   _estadoPrevio: EstadoCrearProducto,
   formData: FormData,
 ): Promise<EstadoCrearProducto> {
+  const archivoImagen = formData.get("imagen");
   const resultado = esquemaCrearProducto.safeParse({
     sku: formData.get("sku"),
     nombre: formData.get("nombre"),
     precio: formData.get("precio"),
     categoria: formData.get("categoria"),
+    imagen: archivoImagen instanceof File && archivoImagen.size > 0 ? archivoImagen : undefined,
   });
 
   if (!resultado.success) {
@@ -98,12 +102,24 @@ export async function crearProducto(
     return { error: "NX-PRD-001", exito: false };
   }
 
+  let imagenUrl: string | null = null;
+  if (resultado.data.imagen) {
+    const bytes = await resultado.data.imagen.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const resultadoImagen = await comprimirImagenProducto(buffer);
+    if (!resultadoImagen.ok) {
+      return { error: "NX-PRD-005", exito: false };
+    }
+    imagenUrl = resultadoImagen.data.url;
+  }
+
   const productoCreado = await insertarProducto(supabase, {
     clienteId,
     sku: resultado.data.sku,
     nombre: resultado.data.nombre,
     precio: resultado.data.precio,
     categoria: resultado.data.categoria,
+    imagenUrl,
   });
 
   if (!productoCreado.ok) {
@@ -122,6 +138,7 @@ export async function crearProducto(
       nombre: resultado.data.nombre,
       precio: resultado.data.precio,
       categoria: resultado.data.categoria,
+      imagen_url: imagenUrl,
     }),
   });
 

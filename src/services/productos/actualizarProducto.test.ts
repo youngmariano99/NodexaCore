@@ -18,6 +18,10 @@ vi.mock("@sentry/nextjs", () => ({
   captureMessage: vi.fn(),
 }));
 
+vi.mock("@/services/imagenes/comprimirImagen", () => ({
+  comprimirImagenProducto: vi.fn(),
+}));
+
 interface ResultadoSupabase {
   data: unknown;
   error: unknown;

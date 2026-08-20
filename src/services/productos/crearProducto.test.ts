@@ -20,6 +20,10 @@ vi.mock("@/repositories/productosRepository", () => ({
   insertarProducto: vi.fn(),
 }));
 
+vi.mock("@/services/imagenes/comprimirImagen", () => ({
+  comprimirImagenProducto: vi.fn(),
+}));
+
 interface ResultadoSupabase {
   data: unknown;
   error: unknown;
@@ -142,6 +146,7 @@ describe("crearProducto", () => {
       nombre: "Yerba Mate 1kg",
       precio: 3500,
       categoria: "Almacén",
+      imagenUrl: null,
     });
     expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({

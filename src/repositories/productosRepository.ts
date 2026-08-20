@@ -30,6 +30,7 @@ export interface DatosNuevoProducto {
   nombre: string;
   precio: number;
   categoria: string;
+  imagenUrl?: string | null;
 }
 
 export interface FilaProducto {
@@ -39,6 +40,7 @@ export interface FilaProducto {
   nombre: string;
   precio: number;
   categoria: string | null;
+  imagen_url?: string | null;
 }
 
 interface ErrorPostgres {
@@ -135,8 +137,9 @@ export async function insertarProducto(
       nombre: datos.nombre,
       precio: datos.precio,
       categoria: datos.categoria,
+      imagen_url: datos.imagenUrl,
     })
-    .select("producto_id, cliente_id, sku, nombre, precio, categoria")
+    .select("producto_id, cliente_id, sku, nombre, precio, categoria, imagen_url")
     .single<FilaProducto>();
 
   if (error || !data) {

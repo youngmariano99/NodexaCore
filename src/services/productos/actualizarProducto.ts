@@ -7,6 +7,7 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { verificarPertenenciaTenant } from "@/repositories/base/verificarPertenenciaTenant";
 import type { EstadoActualizarProducto } from "@/services/productos/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
+import { comprimirImagenProducto } from "@/services/imagenes/comprimirImagen";
 
 const esquemaActualizarProducto = z
   .object({
@@ -14,6 +15,7 @@ const esquemaActualizarProducto = z
     descripcion: z.string().trim().min(1, "La descripción no puede quedar vacía.").optional(),
     categoria: z.string().trim().min(1, "La categoría es obligatoria.").optional(),
     precio: z.coerce.number().min(0, "El precio no puede ser negativo.").optional(),
+    imagen: z.instanceof(File).optional(),
   })
   .refine((datos) => Object.values(datos).some((valor) => valor !== undefined), {
     message: "Tenés que modificar al menos un campo.",
@@ -72,11 +74,13 @@ export async function actualizarProducto(
   _estadoPrevio: EstadoActualizarProducto,
   formData: FormData,
 ): Promise<EstadoActualizarProducto> {
+  const archivoImagen = formData.get("imagen");
   const resultado = esquemaActualizarProducto.safeParse({
     nombre: campoOpcional(formData, "nombre"),
     descripcion: campoOpcional(formData, "descripcion"),
     categoria: campoOpcional(formData, "categoria"),
     precio: campoOpcional(formData, "precio"),
+    imagen: archivoImagen instanceof File && archivoImagen.size > 0 ? archivoImagen : undefined,
   });
 
   if (!resultado.success) {
@@ -126,41 +130,72 @@ export async function actualizarProducto(
 
   const { data: filaAnterior } = await supabase
     .from("productos")
-    .select("nombre, descripcion, categoria, precio, eliminado_en")
+    .select("nombre, descripcion, categoria, precio, eliminado_en, imagen_url")
     .eq("producto_id", productoId)
-    .maybeSingle<FilaProductoValoresConBaja>();
+    .maybeSingle<FilaProductoValoresConBaja & { imagen_url: string | null }>();
 
   if (filaAnterior?.eliminado_en) {
     return { error: "NX-PRD-006", exito: false };
   }
 
-  const cambios: Partial<FilaProductoValores> = {};
+  let imagenUrl: string | null | undefined = undefined;
+  if (resultado.data.imagen) {
+    const bytes = await resultado.data.imagen.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const resultadoImagen = await comprimirImagenProducto(buffer);
+    if (!resultadoImagen.ok) {
+      return { error: "NX-PRD-005", exito: false };
+    }
+    imagenUrl = resultadoImagen.data.url;
+  }
+
+  const cambios: Partial<FilaProductoValores & { imagen_url: string | null }> = {};
   camposModificados.forEach((campo) => {
-    cambios[campo] = resultado.data[campo] as never;
+    if (campo !== "imagen") {
+      cambios[campo] = resultado.data[campo] as any;
+    }
   });
+
+  if (imagenUrl !== undefined) {
+    cambios.imagen_url = imagenUrl;
+  }
 
   const { data: productoActualizado, error: errorActualizacion } = await supabase
     .from("productos")
     .update({ ...cambios, actualizado_en: new Date().toISOString() })
     .eq("producto_id", productoId)
-    .select("producto_id, nombre, descripcion, categoria, precio, actualizado_en")
-    .single<FilaProductoActualizado>();
+    .select("producto_id, nombre, descripcion, categoria, precio, actualizado_en, imagen_url")
+    .single<FilaProductoActualizado & { imagen_url: string | null }>();
 
   if (errorActualizacion || !productoActualizado) {
     return { error: "NX-SYS-001", exito: false };
   }
 
   camposModificados.forEach((campo) => {
+    if (campo !== "imagen") {
+      registrarDiff({
+        clienteId,
+        usuarioId: solicitante.usuario_id,
+        tablaAfectada: "productos",
+        registroId: productoActualizado.producto_id,
+        campoModificado: campo,
+        valorAnterior: filaAnterior?.[campo] != null ? String(filaAnterior[campo]) : null,
+        valorNuevo: productoActualizado[campo] != null ? String(productoActualizado[campo]) : null,
+      });
+    }
+  });
+
+  if (imagenUrl !== undefined) {
     registrarDiff({
       clienteId,
       usuarioId: solicitante.usuario_id,
       tablaAfectada: "productos",
       registroId: productoActualizado.producto_id,
-      campoModificado: campo,
-      valorAnterior: filaAnterior?.[campo] != null ? String(filaAnterior[campo]) : null,
-      valorNuevo: productoActualizado[campo] != null ? String(productoActualizado[campo]) : null,
+      campoModificado: "imagen_url",
+      valorAnterior: filaAnterior?.imagen_url != null ? String(filaAnterior.imagen_url) : null,
+      valorNuevo: productoActualizado.imagen_url != null ? String(productoActualizado.imagen_url) : null,
     });
-  });
+  }
 
   return { error: null, exito: true };
 }
