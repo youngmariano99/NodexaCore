@@ -62,6 +62,7 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_URL: SUPABASE_URL_LOCAL,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: SUPABASE_ANON_KEY_LOCAL,
       SUPABASE_SERVICE_ROLE_KEY: SUPABASE_SERVICE_ROLE_KEY_LOCAL,
+      DISABLE_RATE_LIMITER: "true",
       // Ninguno de estos 3 flujos usa Cloudinary/OpenAI, pero
       // obtenerEntornoServidor() valida el esquema server-only completo en
       // cada crearClienteSupabaseServidor() — mismos placeholders inertes
