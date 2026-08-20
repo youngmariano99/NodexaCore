@@ -15,6 +15,7 @@ export interface FilaProductoListado {
   precio: number;
   stock_actual: number;
   publicado: boolean;
+  imagen_url?: string | null;
 }
 
 export interface ResultadoProductosPaginados {
@@ -348,7 +349,7 @@ export async function obtenerProductosPaginados(
 
   const { data, error, count } = await supabase
     .from("productos")
-    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado", { count: "exact" })
+    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado, imagen_url", { count: "exact" })
     .eq("cliente_id", clienteId)
     .is("eliminado_en", null)
     .order("creado_en", { ascending: false })
