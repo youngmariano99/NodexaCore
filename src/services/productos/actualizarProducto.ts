@@ -152,9 +152,10 @@ export async function actualizarProducto(
   const cambios: Partial<FilaProductoValores & { imagen_url: string | null }> = {};
   camposModificados.forEach((campo) => {
     if (campo !== "imagen") {
-      cambios[campo] = resultado.data[campo] as any;
+      cambios[campo] = resultado.data[campo] as never;
     }
   });
+
 
   if (imagenUrl !== undefined) {
     cambios.imagen_url = imagenUrl;
