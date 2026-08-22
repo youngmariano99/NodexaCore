@@ -19,6 +19,7 @@ const esquemaActualizarConfiguracionBot = z
     mensajeHorarios: z.preprocess(normalizarMensaje, z.string().nullable()),
     mensajeUbicacion: z.preprocess(normalizarMensaje, z.string().nullable()),
     mensajeCatalogo: z.preprocess(normalizarMensaje, z.string().nullable()),
+    permiteDerivarWhatsapp: z.preprocess((valor) => valor === "true" || valor === "on", z.boolean()),
   })
   .superRefine((datos, ctx) => {
     const tieneAlMenosUnMensaje = Boolean(
@@ -83,6 +84,7 @@ export async function actualizarConfiguracionBot(
     mensajeHorarios: formData.get("mensaje_horarios"),
     mensajeUbicacion: formData.get("mensaje_ubicacion"),
     mensajeCatalogo: formData.get("mensaje_catalogo"),
+    permiteDerivarWhatsapp: formData.get("permite_derivar_whatsapp"),
   });
 
   if (!resultado.success) {
@@ -132,9 +134,9 @@ export async function actualizarConfiguracionBot(
 
   const { data: valoresPrevios } = await supabase
     .from("configuracion_bot_whatsapp")
-    .select("activo, mensaje_horarios, mensaje_ubicacion, mensaje_catalogo")
+    .select("activo, mensaje_horarios, mensaje_ubicacion, mensaje_catalogo, permite_derivar_whatsapp")
     .eq("cliente_id", clienteId)
-    .maybeSingle<FilaConfiguracionBotPrevia>();
+    .maybeSingle<FilaConfiguracionBotPrevia & { permite_derivar_whatsapp: boolean }>();
 
   const { data: configuracion, error: errorUpsert } = await supabase
     .from("configuracion_bot_whatsapp")
@@ -145,19 +147,20 @@ export async function actualizarConfiguracionBot(
         mensaje_horarios: resultado.data.mensajeHorarios,
         mensaje_ubicacion: resultado.data.mensajeUbicacion,
         mensaje_catalogo: resultado.data.mensajeCatalogo,
+        permite_derivar_whatsapp: resultado.data.permiteDerivarWhatsapp,
         actualizado_en: new Date().toISOString(),
       },
       { onConflict: "cliente_id" },
     )
-    .select("cliente_id, activo, mensaje_horarios, mensaje_ubicacion, mensaje_catalogo")
-    .single<FilaConfiguracionBot>();
+    .select("cliente_id, activo, mensaje_horarios, mensaje_ubicacion, mensaje_catalogo, permite_derivar_whatsapp")
+    .single<FilaConfiguracionBot & { permite_derivar_whatsapp: boolean }>();
 
   if (errorUpsert || !configuracion) {
     return { error: "NX-SYS-001", exito: false };
   }
 
   const camposComparados: Array<{
-    campo: "activo" | "mensaje_horarios" | "mensaje_ubicacion" | "mensaje_catalogo";
+    campo: "activo" | "mensaje_horarios" | "mensaje_ubicacion" | "mensaje_catalogo" | "permite_derivar_whatsapp";
     anterior: string | null;
     nuevo: string | null;
   }> = [
@@ -180,6 +183,11 @@ export async function actualizarConfiguracionBot(
       campo: "mensaje_catalogo",
       anterior: valoresPrevios?.mensaje_catalogo ?? null,
       nuevo: configuracion.mensaje_catalogo,
+    },
+    {
+      campo: "permite_derivar_whatsapp",
+      anterior: valoresPrevios ? String(valoresPrevios.permite_derivar_whatsapp) : null,
+      nuevo: String(configuracion.permite_derivar_whatsapp),
     },
   ];
 
