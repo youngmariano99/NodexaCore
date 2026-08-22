@@ -11,6 +11,7 @@ import {
   type TipoMovimientoCuenta,
 } from "@/repositories/movimientosCuentaCorrienteRepository";
 import { verificarPertenenciaTenant } from "@/repositories/base/verificarPertenenciaTenant";
+import { FormularioPagoCuentaCorriente } from "./FormularioPagoCuentaCorriente";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 export const metadata: Metadata = {
@@ -164,9 +165,15 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
           ← Volver al listado de clientes
         </Link>
 
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-slate-50">{clienteFinal.nombre}</h1>
-          <p className="text-sm text-slate-400">{clienteFinal.telefono ?? "Sin teléfono registrado"}</p>
+        <header className="flex flex-row justify-between items-start gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-semibold text-slate-50">{clienteFinal.nombre}</h1>
+            <p className="text-sm text-slate-400">{clienteFinal.telefono ?? "Sin teléfono registrado"}</p>
+          </div>
+          <FormularioPagoCuentaCorriente
+            clienteFinalId={clienteFinalId}
+            saldoDeudor={clienteFinal.saldo_deudor}
+          />
         </header>
 
         <section className="flex flex-col gap-1 rounded-md border border-slate-700 bg-slate-800 p-6">
