@@ -1,12 +1,23 @@
 "use client";
 
-import { PackageMinus, PackageOpen, PackagePlus } from "lucide-react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { PackageMinus, PackageOpen, PackagePlus, X, Search, Loader2 } from "lucide-react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
-import { useMovimientosStockPaginados } from "@/hooks/useMovimientosStockPaginados";
+import { useMovimientosStockPaginados, invalidarMovimientosStock } from "@/hooks/useMovimientosStockPaginados";
+import { useBuscarProductos } from "@/hooks/useBuscarProductos";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { registrarEntradaStock } from "@/services/stock/registrarEntradaStock";
+import { registrarSalidaStock } from "@/services/stock/registrarSalidaStock";
+import {
+  ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL,
+  ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL,
+} from "@/services/stock/tipos";
 import type { FilaMovimientoStockListado } from "@/repositories/movimientosStockRepository";
+import type { FilaProductoBusqueda } from "@/repositories/productosRepository";
 
 const FORMATO_FECHA = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "short",
@@ -31,6 +42,245 @@ function EtiquetaTipoMovimiento({ tipo }: { tipo: FilaMovimientoStockListado["ti
   );
 }
 
+interface ModalMovimientoStockProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function ModalMovimientoStock({ isOpen, onClose, onSuccess }: ModalMovimientoStockProps) {
+  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const terminoDebounced = useDebouncedValue(terminoBusqueda, 300);
+  const { data: resultados, isFetching } = useBuscarProductos(terminoDebounced);
+  
+  const [productoSeleccionado, setProductoSeleccionado] = useState<FilaProductoBusqueda | null>(null);
+  const [tipoMovimiento, setTipoMovimiento] = useState<"entrada" | "salida">("entrada");
+  const [cantidad, setCantidad] = useState<string>("");
+  
+  const [errorLocal, setErrorLocal] = useState<string | null>(null);
+  const [isPendingSubmit, startTransitionSubmit] = useTransition();
+
+  const refDropdown = useRef<HTMLDivElement>(null);
+
+
+  // Cerrar el dropdown al hacer clic afuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (refDropdown.current && !refDropdown.current.contains(event.target as Node)) {
+        setTerminoBusqueda("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorLocal(null);
+
+    // Validar en cliente y aplicar patrones Fail-Fast
+    if (!productoSeleccionado) {
+      setErrorLocal("El producto es obligatorio.");
+      return;
+    }
+
+    const cantidadNum = Number(cantidad);
+    if (!cantidad || Number.isNaN(cantidadNum)) {
+      setErrorLocal("La cantidad es obligatoria.");
+      return;
+    }
+
+    if (!Number.isInteger(cantidadNum)) {
+      setErrorLocal("La cantidad debe ser un número entero.");
+      return;
+    }
+
+    if (cantidadNum <= 0) {
+      setErrorLocal("La cantidad debe ser mayor a cero.");
+      return;
+    }
+
+    startTransitionSubmit(async () => {
+      const formData = new FormData();
+      formData.append("producto_id", productoSeleccionado.producto_id);
+      formData.append("cantidad", String(cantidadNum));
+
+      const serverAction = tipoMovimiento === "entrada" ? registrarEntradaStock : registrarSalidaStock;
+      const estadoInicial = tipoMovimiento === "entrada" ? ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL : ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL;
+
+      const resultado = await serverAction(estadoInicial, formData);
+
+      if (resultado.exito) {
+        onSuccess();
+        onClose();
+      } else {
+        setErrorLocal(resultado.error);
+      }
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-900 p-6 text-slate-50 shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <h2 className="text-lg font-semibold text-slate-50">Registrar Movimiento de Stock</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
+          {errorLocal && (
+            <MensajeError codigo={errorLocal} className="w-full" />
+          )}
+
+          {/* Selector de Producto */}
+          <div className="flex flex-col gap-1.5 relative">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Producto
+            </label>
+
+            {productoSeleccionado ? (
+              <div className="flex items-center justify-between rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-slate-50">{productoSeleccionado.nombre}</span>
+                  <span className="font-mono text-xs text-slate-400">SKU: {productoSeleccionado.sku}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProductoSeleccionado(null)}
+                  className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Cambiar
+                </button>
+              </div>
+            ) : (
+              <div className="relative" ref={refDropdown}>
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={terminoBusqueda}
+                  onChange={(e) => setTerminoBusqueda(e.target.value)}
+                  placeholder="Buscar por SKU o nombre..."
+                  className="w-full rounded-md border border-slate-700 bg-slate-800 pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                />
+
+                {terminoDebounced.trim().length > 0 && (
+                  <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-slate-700 bg-slate-800 shadow-lg divide-y divide-slate-700">
+                    {isFetching && (
+                      <div className="p-3 text-xs text-slate-400 flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Buscando...
+                      </div>
+                    )}
+                    {!isFetching && resultados?.length === 0 && (
+                      <div className="p-3 text-xs text-slate-400 text-center">
+                        No se encontraron productos.
+                      </div>
+                    )}
+                    {!isFetching && resultados?.map((prod) => (
+                      <button
+                        key={prod.producto_id}
+                        type="button"
+                        onClick={() => {
+                          setProductoSeleccionado(prod);
+                          setTerminoBusqueda("");
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors flex flex-col"
+                      >
+                        <span className="font-medium text-slate-100">{prod.nombre}</span>
+                        <span className="font-mono text-xs text-slate-400">SKU: {prod.sku}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Tipo de Movimiento */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Tipo de Movimiento
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setTipoMovimiento("entrada")}
+                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-md border text-sm font-semibold transition-all ${
+                  tipoMovimiento === "entrada"
+                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-500"
+                    : "border-slate-700 bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-slate-300"
+                }`}
+              >
+                <PackagePlus className="h-4 w-4" />
+                Entrada
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipoMovimiento("salida")}
+                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-md border text-sm font-semibold transition-all ${
+                  tipoMovimiento === "salida"
+                    ? "bg-red-500/10 border-red-500 text-red-500"
+                    : "border-slate-700 bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-slate-300"
+                }`}
+              >
+                <PackageMinus className="h-4 w-4" />
+                Salida
+              </button>
+            </div>
+          </div>
+
+          {/* Cantidad */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Cantidad
+            </label>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={cantidad}
+              onChange={(e) => setCantidad(e.target.value)}
+              placeholder="ej. 10"
+              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+            />
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex justify-end gap-2 border-t border-slate-800 pt-4 mt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isPendingSubmit}
+              className="rounded-md border border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-slate-100 disabled:opacity-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPendingSubmit}
+              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-colors flex items-center justify-center min-w-[100px]"
+            >
+              {isPendingSubmit ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Confirmar"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Vista de movimientos de stock (docs/BACKLOG.md "Vista de movimientos de
  * stock con TanStack Query"). El filtro opcional `?productoId=` permite
@@ -44,8 +294,10 @@ export function MovimientosStock() {
   const searchParams = useSearchParams();
   const paginaActual = Math.max(1, Number.parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const productoId = searchParams.get("productoId") ?? undefined;
+  const queryClient = useQueryClient();
 
   const { data, isPending, isError, isPlaceholderData } = useMovimientosStockPaginados(paginaActual, productoId);
+  const [abrirModal, setAbrirModal] = useState(false);
 
   if (isPending) {
     return (
@@ -67,15 +319,27 @@ export function MovimientosStock() {
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
   const sufijoQuery = productoId ? `&productoId=${productoId}` : "";
 
+  const handleSuccess = async () => {
+    await invalidarMovimientosStock(queryClient);
+  };
+
   return (
     <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-slate-50">Stock</h1>
-          <p className="text-sm text-slate-400">
-            {total} movimiento{total === 1 ? "" : "s"} de entrada y salida registrado{total === 1 ? "" : "s"} en tu
-            comercio.
-          </p>
+        <header className="flex flex-row justify-between items-start gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-semibold text-slate-50">Stock</h1>
+            <p className="text-sm text-slate-400">
+              {total} movimiento{total === 1 ? "" : "s"} de entrada y salida registrado{total === 1 ? "" : "s"} en tu
+              comercio.
+            </p>
+          </div>
+          <button
+            onClick={() => setAbrirModal(true)}
+            className="flex min-h-11 items-center rounded-md bg-emerald-500 px-4 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+          >
+            Registrar Movimiento
+          </button>
         </header>
 
         {movimientos.length === 0 ? (
@@ -166,6 +430,14 @@ export function MovimientosStock() {
           </nav>
         ) : null}
       </div>
+
+      {abrirModal && (
+        <ModalMovimientoStock
+          isOpen={abrirModal}
+          onClose={() => setAbrirModal(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
     </div>
   );
 }
