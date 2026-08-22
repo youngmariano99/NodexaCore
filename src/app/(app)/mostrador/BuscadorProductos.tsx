@@ -15,6 +15,8 @@ import { ESTADO_CONFIRMAR_VENTA_INICIAL } from "@/services/ventas/tipos";
 import { CarritoVenta } from "@/app/(app)/mostrador/CarritoVenta";
 import { ConfirmarCobro } from "@/app/(app)/mostrador/ConfirmarCobro";
 import { ResumenTotal } from "@/app/(app)/mostrador/ResumenTotal";
+import { SelectorClienteMostrador } from "@/app/(app)/mostrador/SelectorClienteMostrador";
+import type { ClienteFinalBusqueda } from "@/hooks/useBuscarClientesFinales";
 
 const FORMATO_PRECIO = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
 const DEMORA_DEBOUNCE_MS = 300;
@@ -47,6 +49,7 @@ export function BuscadorProductos() {
     ESTADO_CONFIRMAR_VENTA_INICIAL,
   );
   const [ultimoEstadoVentaVisto, setUltimoEstadoVentaVisto] = useState(estadoVenta);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<ClienteFinalBusqueda | null>(null);
 
   // Ajuste de estado durante el render (patrón recomendado por React en vez
   // de un efecto: https://react.dev/learn/you-might-not-need-an-effect):
@@ -58,6 +61,7 @@ export function BuscadorProductos() {
     if (estadoVenta.exito) {
       dispatch({ tipo: "VACIAR_CARRITO" });
       setIdempotencyKey(crypto.randomUUID());
+      setClienteSeleccionado(null);
     }
   }
 
@@ -164,10 +168,15 @@ export function BuscadorProductos() {
 
         <section className="flex flex-col gap-4">
           <h2 className="text-sm font-medium text-slate-400">Venta en curso</h2>
+          <SelectorClienteMostrador
+            clienteSeleccionado={clienteSeleccionado}
+            onSeleccionarCliente={setClienteSeleccionado}
+          />
           <CarritoVenta items={carrito} dispatch={dispatch} />
           <ResumenTotal items={carrito} />
           <ConfirmarCobro
             idempotencyKey={idempotencyKey}
+            clienteFinalId={clienteSeleccionado?.cliente_final_id || null}
             items={JSON.stringify(
               carrito.map((item) => ({ productoId: item.productoId, cantidad: item.cantidad })),
             )}
