@@ -7,6 +7,7 @@ import type { EstadoConfirmarVenta } from "@/services/ventas/tipos";
 
 interface ConfirmarCobroProps {
   idempotencyKey: string;
+  clienteFinalId: string | null;
   items: string;
   total: number;
   carritoVacio: boolean;
@@ -33,6 +34,7 @@ interface ConfirmarCobroProps {
  */
 export function ConfirmarCobro({
   idempotencyKey,
+  clienteFinalId,
   items,
   total,
   carritoVacio,
@@ -43,6 +45,9 @@ export function ConfirmarCobro({
   return (
     <form action={accionFormulario} className="flex flex-col gap-3">
       <input type="hidden" name="idempotency_key" value={idempotencyKey} readOnly />
+      {clienteFinalId && (
+        <input type="hidden" name="cliente_final_id" value={clienteFinalId} readOnly />
+      )}
       <input type="hidden" name="items" value={items} readOnly />
       <input type="hidden" name="total" value={total} readOnly />
 
