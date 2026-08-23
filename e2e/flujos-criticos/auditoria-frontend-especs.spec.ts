@@ -197,10 +197,11 @@ test.describe.serial("Auditoría Frontend y Flujos Críticos", () => {
       // 2. Registro de pago
       await page.goto(`/clientes/${clienteFinalId}`);
       await page.getByRole("button", { name: "Registrar Pago" }).click();
-      await page.getByLabel("Monto a pagar").fill("1500");
-      await page.getByRole("button", { name: "Confirmar Pago" }).click();
+      await page.getByPlaceholder("0.00").fill("1500");
+      await page.getByRole("button", { name: "Confirmar" }).click();
 
-      await expect(page.getByText("Pago registrado con éxito.")).toBeVisible();
+      // Esperar que el modal se cierre
+      await expect(page.getByText("Monto del Pago")).toBeHidden();
 
       // Verificar saldo resultante
       const { data: clienteFinalDespues } = await servicio
