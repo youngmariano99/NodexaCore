@@ -1,9 +1,10 @@
 export interface EstadoCrearCliente {
   error: string | null;
   exito: boolean;
+  clienteId?: string | null;
 }
 
-export const ESTADO_CREAR_CLIENTE_INICIAL: EstadoCrearCliente = { error: null, exito: false };
+export const ESTADO_CREAR_CLIENTE_INICIAL: EstadoCrearCliente = { error: null, exito: false, clienteId: null };
 
 /** Espejo del ENUM modulo_nodexa (docs/SCHEMA.md §1). */
 export type ModuloNodexa = "catalogo_web" | "carga_ia" | "fiados" | "devoluciones" | "bot_whatsapp";
