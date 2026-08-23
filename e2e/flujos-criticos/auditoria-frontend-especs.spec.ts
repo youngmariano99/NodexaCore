@@ -93,20 +93,19 @@ test.describe.serial("Auditoría Frontend y Flujos Críticos", () => {
     test("registra entrada de stock correctamente desde la vista de stock", async () => {
       await page.goto("/stock");
 
-      // Buscar el producto en la lista y abrir modal de movimiento de stock
-      await page.getByPlaceholder("Buscar por nombre o SKU...").fill(sku);
-      const fila = page.getByRole("row").filter({ hasText: sku });
-      await expect(fila).toBeVisible();
+      // Abrir modal de movimiento de stock
+      await page.getByRole("button", { name: "Registrar Movimiento" }).click();
 
-      await fila.getByRole("button", { name: "Registrar movimiento" }).click();
+      // Buscar y seleccionar el producto en el modal
+      await page.getByPlaceholder("Buscar por SKU o nombre...").fill(sku);
+      await page.getByRole("button").filter({ hasText: sku }).click();
 
-      // Completar modal
-      await page.getByLabel("Tipo de movimiento").selectOption("entrada");
-      await page.getByLabel("Cantidad").fill("5");
-      await page.getByLabel("Motivo").fill("Carga de mercadería E2E");
-      await page.getByRole("button", { name: "Registrar" }).click();
+      // Completar modal (el tipo por defecto es entrada)
+      await page.getByPlaceholder("ej. 10").fill("5");
+      await page.getByRole("button", { name: "Confirmar" }).click();
 
-      await expect(page.getByText("Movimiento registrado con éxito.")).toBeVisible();
+      // Esperar que el modal se cierre
+      await expect(page.getByText("Registrar Movimiento de Stock")).toBeHidden();
 
       const { data } = await servicio
         .from("productos")
