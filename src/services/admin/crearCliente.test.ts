@@ -108,7 +108,7 @@ describe("crearCliente", () => {
 
     const resultado = await crearCliente(ESTADO_CREAR_CLIENTE_INICIAL, crearFormData(DATOS_VALIDOS));
 
-    expect(resultado).toEqual({ error: null, exito: true });
+    expect(resultado).toEqual({ error: null, exito: true, clienteId: "c-nuevo-cliente" });
 
     expect(insertBuilder.insert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -152,7 +152,7 @@ describe("crearCliente", () => {
 
     const resultado = await crearCliente(ESTADO_CREAR_CLIENTE_INICIAL, crearFormData(DATOS_VALIDOS));
 
-    expect(resultado).toEqual({ error: "NX-ADM-001", exito: false });
+    expect(resultado).toEqual({ error: "NX-ADM-001", exito: false, clienteId: null });
     expect(registrarDiff).not.toHaveBeenCalled();
   });
 });

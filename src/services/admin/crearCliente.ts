@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import type { EstadoCrearCliente } from "@/services/admin/tipos";
+import { type EstadoCrearCliente, MODULOS_NODEXA, type ModuloNodexa } from "@/services/admin/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 const LIMITE_SKU_INICIAL = 1000;
@@ -25,7 +25,20 @@ const esquemaCrearCliente = z.object({
     .string({ message: "El teléfono de WhatsApp es obligatorio." })
     .trim()
     .regex(/^\+[1-9]\d{7,14}$/, "Ingresá el teléfono en formato internacional, ej. +5492920000000."),
+  limite_sku: z.coerce.number().int().positive().optional(),
+  modulos: z.array(z.enum(MODULOS_NODEXA as [ModuloNodexa, ...ModuloNodexa[]])).optional(),
 });
+
+function parsearModulos(valorCrudo: FormDataEntryValue | null): unknown {
+  if (typeof valorCrudo !== "string") {
+    return null;
+  }
+  try {
+    return JSON.parse(valorCrudo);
+  } catch {
+    return null;
+  }
+}
 
 interface FilaUsuarioSolicitante {
   usuario_id: string;
@@ -62,6 +75,8 @@ export async function crearCliente(
     nombre_comercio: formData.get("nombre_comercio"),
     slug: formData.get("slug"),
     telefono_whatsapp: formData.get("telefono_whatsapp"),
+    limite_sku: formData.get("limite_sku") || undefined,
+    modulos: parsearModulos(formData.get("modulos")) || undefined,
   });
 
   if (!resultado.success) {
@@ -95,6 +110,8 @@ export async function crearCliente(
 
   const supabaseAdmin = crearClienteSupabaseAdmin();
 
+  const limiteSkuPersistido = resultado.data.limite_sku || LIMITE_SKU_INICIAL;
+
   const { data: clienteCreado, error: errorInsercion } = await supabaseAdmin
     .from("clientes")
     .insert({
@@ -102,16 +119,26 @@ export async function crearCliente(
       slug: resultado.data.slug,
       telefono_whatsapp: resultado.data.telefono_whatsapp,
       estado_pago: true,
-      limite_sku: LIMITE_SKU_INICIAL,
+      limite_sku: limiteSkuPersistido,
     })
     .select("cliente_id")
     .single<FilaClienteCreado>();
 
   if (errorInsercion || !clienteCreado) {
     if (esUniqueViolation(errorInsercion)) {
-      return { error: "NX-ADM-001", exito: false };
+      return { error: "NX-ADM-001", exito: false, clienteId: null };
     }
-    return { error: "NX-SYS-001", exito: false };
+    return { error: "NX-SYS-001", exito: false, clienteId: null };
+  }
+
+  // Si se indicaron módulos activos iniciales, darlos de alta
+  if (resultado.data.modulos && resultado.data.modulos.length > 0) {
+    const payloadsModulos = resultado.data.modulos.map((modulo) => ({
+      cliente_id: clienteCreado.cliente_id,
+      modulo,
+      activo: true,
+    }));
+    await supabaseAdmin.from("tenant_modules").insert(payloadsModulos);
   }
 
   registrarDiff({
@@ -126,9 +153,10 @@ export async function crearCliente(
       slug: resultado.data.slug,
       telefono_whatsapp: resultado.data.telefono_whatsapp,
       estado_pago: true,
-      limite_sku: LIMITE_SKU_INICIAL,
+      limite_sku: limiteSkuPersistido,
+      modulos: resultado.data.modulos || [],
     }),
   });
 
-  return { error: null, exito: true };
+  return { error: null, exito: true, clienteId: clienteCreado.cliente_id };
 }
