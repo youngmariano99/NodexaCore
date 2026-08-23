@@ -79,7 +79,7 @@ test.describe.serial("Auditoría Frontend y Flujos Críticos", () => {
       await page.getByLabel("Precio").fill("150");
       await page.getByRole("button", { name: "Guardar cambios" }).click();
 
-      await expect(page.getByText("Producto actualizado con éxito.")).toBeVisible();
+      await expect(page).toHaveURL("/productos");
 
       const { data } = await servicio
         .from("productos")
