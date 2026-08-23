@@ -13,12 +13,7 @@ vi.mock("@/lib/auditoria/registrarDiff", () => ({
   registrarDiff: vi.fn(),
 }));
 
-interface ResultadoSupabase {
-  data: unknown;
-  error: unknown;
-}
-
-function crearBuilder(solicitanteRes: any) {
+function crearBuilder(solicitanteRes: unknown) {
   const builder = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
