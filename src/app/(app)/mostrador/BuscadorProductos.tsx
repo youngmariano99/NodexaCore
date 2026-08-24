@@ -150,7 +150,7 @@ export function BuscadorProductos() {
                       className={`flex min-h-11 min-w-11 items-center justify-center rounded-md border transition-colors duration-150 ${
                         sinStock
                           ? "cursor-not-allowed border-slate-700 text-slate-700"
-                          : "border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                          : "border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
                       }`}
                     >
                       <Plus className="h-4 w-4" aria-hidden="true" />
