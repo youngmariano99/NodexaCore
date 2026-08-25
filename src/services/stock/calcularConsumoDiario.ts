@@ -91,8 +91,10 @@ export async function calcularConsumoDiario(productoId: string): Promise<Resulta
     if (item.ventas?.creado_en) {
       totalCantidad += item.cantidad;
       // Truncar a la fecha y agregar al set
-      const fecha = item.ventas.creado_en.split("T")[0];
-      fechasUnicas.add(fecha);
+      const fecha = item.ventas.creado_en.split("T")[0] ?? "";
+      if (fecha) {
+        fechasUnicas.add(fecha);
+      }
     }
   });
 
