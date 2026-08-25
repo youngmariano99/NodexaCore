@@ -18,3 +18,10 @@ export interface EstadoEliminarProducto {
 }
 
 export const ESTADO_ELIMINAR_PRODUCTO_INICIAL: EstadoEliminarProducto = { error: null, exito: false };
+
+export interface EstadoCrearMarca {
+  error: string | null;
+  exito: boolean;
+}
+
+export const ESTADO_CREAR_MARCA_INICIAL: EstadoCrearMarca = { error: null, exito: false };
