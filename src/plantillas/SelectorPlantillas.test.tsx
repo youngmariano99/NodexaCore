@@ -38,7 +38,7 @@ describe("SelectorPlantillas Component", () => {
       productos: MOCK_PRODUCTOS,
     };
 
-    expect(SelectorPlantillas).toBeDefined();
+    expect(SelectorPlantillas(props)).toBeDefined();
   });
 
   it("selecciona y retorna el componente dinámico correspondiente según la propiedad plantillaActiva", () => {
