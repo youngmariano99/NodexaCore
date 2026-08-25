@@ -11,3 +11,11 @@ export interface EstadoRegistrarSalidaStock {
 }
 
 export const ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL: EstadoRegistrarSalidaStock = { error: null, exito: false };
+
+export interface EstadoCrearProveedor {
+  error: string | null;
+  exito: boolean;
+}
+
+export const ESTADO_CREAR_PROVEEDOR_INICIAL: EstadoCrearProveedor = { error: null, exito: false };
+

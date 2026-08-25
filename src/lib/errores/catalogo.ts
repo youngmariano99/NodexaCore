@@ -26,6 +26,8 @@ export const CATALOGO_ERRORES = {
   "NX-PRD-008": "Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual.",
   "NX-BRD-001":
     "Alcanzaste el límite de marcas de tu plan actual. Para seguir sumando marcas podés ampliar tu plan.",
+  "NX-PROV-001":
+    "Alcanzaste el límite de proveedores de tu plan actual. Para seguir sumando proveedores podés ampliar tu plan.",
   "NX-VTA-001": "No hay stock suficiente de este producto para completar la venta.",
   "NX-WEB-001": "Este módulo todavía no está activo en tu cuenta. Activalo para publicar tu vidriera.",
   "NX-WEB-002": "No pudimos publicar este producto. Verificá que tenga nombre, precio e imagen cargados.",
