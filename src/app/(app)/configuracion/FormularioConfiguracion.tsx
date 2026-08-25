@@ -82,7 +82,7 @@ export function FormularioConfiguracion({
           required
           disabled={isPending}
           placeholder="Ej: Almacén Don Pedro"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
         />
       </div>
 
@@ -97,7 +97,7 @@ export function FormularioConfiguracion({
           required
           disabled={isPending}
           placeholder="Ej: 5491122334455"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
         />
         <p className="text-[11px] text-slate-500 leading-normal">
           Ingresá el número con código de país, sin espacios ni caracteres especiales (ej. 549...).
@@ -114,7 +114,7 @@ export function FormularioConfiguracion({
           onChange={(e) => setLogo(e.target.value)}
           disabled={isPending}
           placeholder="Ej: https://misitio.com/logo.png"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
         />
       </div>
 

@@ -27,7 +27,7 @@ export function ResumenTotal({ items }: ResumenTotalProps) {
   const total = calcularTotalVenta(aItemsDeVenta(items));
 
   return (
-    <div className="flex items-center justify-between rounded-md border border-slate-700 bg-slate-800 px-4 py-4">
+    <div className="flex items-center justify-between rounded-md border border-[#222A27] bg-[#111615] px-4 py-4">
       <div className="flex flex-col">
         <span className="text-xs text-slate-400">
           {totalUnidades} unidad{totalUnidades === 1 ? "" : "es"} en el carrito

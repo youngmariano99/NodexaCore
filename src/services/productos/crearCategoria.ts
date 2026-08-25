@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
-import { contarCategoriasActivas, insertarCategoria } from "@/repositories/categoriasRepository";
+import { insertarCategoria } from "@/repositories/categoriasRepository";
 import type { EstadoCrearCategoria } from "@/services/productos/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 

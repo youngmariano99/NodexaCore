@@ -22,7 +22,7 @@ interface CarritoVentaProps {
 export function CarritoVenta({ items, dispatch }: CarritoVentaProps) {
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-slate-700 bg-slate-800 px-6 py-10 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-10 text-center">
         <ShoppingCart className="h-6 w-6 text-slate-400" aria-hidden="true" />
         <p className="text-sm text-slate-50">El carrito está vacío.</p>
         <p className="text-xs text-slate-400">Buscá un producto por SKU o nombre para empezar la venta.</p>
@@ -38,7 +38,7 @@ export function CarritoVenta({ items, dispatch }: CarritoVentaProps) {
         return (
           <li
             key={item.productoId}
-            className="flex items-center justify-between gap-3 rounded-md border border-slate-700 bg-slate-800 px-4 py-3"
+            className="flex items-center justify-between gap-3 rounded-md border border-[#222A27] bg-[#111615] px-4 py-3"
           >
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-medium text-slate-50">{item.nombre}</span>
@@ -50,7 +50,7 @@ export function CarritoVenta({ items, dispatch }: CarritoVentaProps) {
                 type="button"
                 onClick={() => dispatch({ tipo: "DECREMENTAR_CANTIDAD", productoId: item.productoId })}
                 aria-label={`Quitar una unidad de ${item.nombre}`}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-slate-700 text-slate-50 transition-colors duration-150 hover:border-blue-500"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[#222A27] text-slate-50 transition-colors duration-150 hover:border-blue-500"
               >
                 <Minus className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -64,8 +64,8 @@ export function CarritoVenta({ items, dispatch }: CarritoVentaProps) {
                 aria-label={`Agregar una unidad más de ${item.nombre}`}
                 className={`flex min-h-11 min-w-11 items-center justify-center rounded-md border transition-colors duration-150 ${
                   enElTope
-                    ? "cursor-not-allowed border-slate-700 text-slate-700"
-                    : "border-slate-700 text-slate-50 hover:border-blue-500"
+                    ? "cursor-not-allowed border-[#222A27] text-slate-700"
+                    : "border-[#222A27] text-slate-50 hover:border-blue-500"
                 }`}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />

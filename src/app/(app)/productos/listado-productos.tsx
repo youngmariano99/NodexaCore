@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Trash2, Pencil, Loader2 } from "lucide-react";
+import { AlertCircle, Trash2, Pencil, Loader2, Plus } from "lucide-react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { useProductosPaginados } from "@/hooks/useProductosPaginados";
@@ -76,11 +76,20 @@ export function ListadoProductos() {
   return (
     <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-[#F3F5F4]">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-[#F3F5F4]">Productos</h1>
-          <p className="text-sm text-[#A6AEAA]">
-            {total} producto{total === 1 ? "" : "s"} activo{total === 1 ? "" : "s"} en tu catálogo.
-          </p>
+        <header className="flex flex-row justify-between items-center gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-semibold text-[#F3F5F4]">Productos</h1>
+            <p className="text-sm text-[#A6AEAA]">
+              {total} producto{total === 1 ? "" : "s"} activo{total === 1 ? "" : "s"} en tu catálogo.
+            </p>
+          </div>
+          <Link
+            href="/productos/nuevo"
+            className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
+          >
+            <Plus className="h-4 w-4" />
+            Nuevo producto
+          </Link>
         </header>
 
         {productos.length === 0 ? (
@@ -89,6 +98,13 @@ export function ListadoProductos() {
             <p className="text-sm text-[#A6AEAA]">
               Los productos que des de alta van a aparecer acá, ej. Yerba mate 1kg.
             </p>
+            <Link
+              href="/productos/nuevo"
+              className="mt-4 flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
+            >
+              <Plus className="h-4 w-4" />
+              Crear primer producto
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-md border border-[#222A27] bg-[#111615]">

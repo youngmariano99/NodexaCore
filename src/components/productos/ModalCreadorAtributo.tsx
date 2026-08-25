@@ -46,7 +46,7 @@ export function ModalCreadorAtributo({
 
     if (!resultado.success) {
       const issue = resultado.error.issues[0];
-      setErrorNombre(issue.message);
+      setErrorNombre(issue ? issue.message : "El nombre es obligatorio.");
       return;
     }
 

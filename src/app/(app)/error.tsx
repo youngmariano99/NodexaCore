@@ -29,7 +29,7 @@ export default function ErrorBoundaryApp({ error, reset }: ErrorBoundaryProps) {
   }, [error]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-slate-950 px-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-[#090B0B] px-6 text-center">
       <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       <div className="flex flex-wrap items-center justify-center gap-3">
         <button
@@ -41,7 +41,7 @@ export default function ErrorBoundaryApp({ error, reset }: ErrorBoundaryProps) {
         </button>
         <Link
           href="/dashboard"
-          className="inline-flex min-h-11 items-center rounded-md border border-slate-700 px-4 text-base text-slate-50 transition-colors duration-150 hover:border-blue-500"
+          className="inline-flex min-h-11 items-center rounded-md border border-[#222A27] px-4 text-base text-slate-50 transition-colors duration-150 hover:border-blue-500"
         >
           Volver al panel
         </Link>

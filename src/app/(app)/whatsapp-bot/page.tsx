@@ -61,7 +61,7 @@ export default async function WhatsappBotPage() {
 
   if (!moduloBot?.activo) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10 text-slate-50">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10 text-slate-50">
         <div className="flex w-full max-w-md flex-col gap-4">
           <MensajeError codigo="NX-BOT-001" className="w-full" />
         </div>
@@ -85,7 +85,7 @@ export default async function WhatsappBotPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col items-center bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="flex w-full max-w-md flex-col gap-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-slate-50">Configuración del Bot</h1>

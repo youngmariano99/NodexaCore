@@ -84,7 +84,7 @@ export function BuscadorProductos() {
   const mostrandoResultados = terminoDebounced.trim().length > 0;
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr]">
         <section className="flex flex-col gap-4">
           <header className="flex flex-col gap-1">
@@ -103,7 +103,7 @@ export function BuscadorProductos() {
               onChange={(evento) => setTerminoBusqueda(evento.target.value)}
               placeholder="ej. yerba, DP-00001"
               aria-label="Buscar producto por SKU o nombre"
-              className="min-h-11 w-full rounded-md border border-slate-700 bg-slate-800 py-2 pl-10 pr-3 text-sm text-slate-50 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="min-h-11 w-full rounded-md border border-[#222A27] bg-[#111615] py-2 pl-10 pr-3 text-sm text-slate-50 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
@@ -112,13 +112,13 @@ export function BuscadorProductos() {
           {mostrandoResultados ? (
             <ul className="flex flex-col gap-2" aria-live="polite">
               {isFetching && !resultados ? (
-                <li className="rounded-md border border-slate-700 bg-slate-800 px-4 py-6 text-center text-sm text-slate-400">
+                <li className="rounded-md border border-[#222A27] bg-[#111615] px-4 py-6 text-center text-sm text-slate-400">
                   Buscando...
                 </li>
               ) : null}
 
               {resultados && resultados.length === 0 ? (
-                <li className="rounded-md border border-dashed border-slate-700 bg-slate-800 px-4 py-6 text-center text-sm text-slate-400">
+                <li className="rounded-md border border-dashed border-[#222A27] bg-[#111615] px-4 py-6 text-center text-sm text-slate-400">
                   No encontramos productos para &ldquo;{terminoDebounced}&rdquo;.
                 </li>
               ) : null}
@@ -129,7 +129,7 @@ export function BuscadorProductos() {
                 return (
                   <li
                     key={producto.producto_id}
-                    className="flex items-center justify-between gap-3 rounded-md border border-slate-700 bg-slate-800 px-4 py-3"
+                    className="flex items-center justify-between gap-3 rounded-md border border-[#222A27] bg-[#111615] px-4 py-3"
                   >
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium text-slate-50">{producto.nombre}</span>
@@ -149,7 +149,7 @@ export function BuscadorProductos() {
                       aria-label={`Agregar ${producto.nombre} a la venta`}
                       className={`flex min-h-11 min-w-11 items-center justify-center rounded-md border transition-colors duration-150 ${
                         sinStock
-                          ? "cursor-not-allowed border-slate-700 text-slate-700"
+                          ? "cursor-not-allowed border-[#222A27] text-slate-700"
                           : "border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
                       }`}
                     >
@@ -160,7 +160,7 @@ export function BuscadorProductos() {
               })}
             </ul>
           ) : (
-            <p className="rounded-md border border-dashed border-slate-700 bg-slate-800 px-4 py-6 text-center text-sm text-slate-400">
+            <p className="rounded-md border border-dashed border-[#222A27] bg-[#111615] px-4 py-6 text-center text-sm text-slate-400">
               Empezá a escribir para buscar productos.
             </p>
           )}

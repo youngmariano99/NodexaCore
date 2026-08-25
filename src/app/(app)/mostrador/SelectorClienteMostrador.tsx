@@ -40,7 +40,7 @@ export function SelectorClienteMostrador({
       </label>
 
       {clienteSeleccionado ? (
-        <div className="flex items-center justify-between rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100">
+        <div className="flex items-center justify-between rounded-md border border-[#222A27] bg-[#111615] px-3 py-2 text-sm text-slate-100">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-emerald-500" />
             <div className="flex flex-col">
@@ -71,11 +71,11 @@ export function SelectorClienteMostrador({
             }}
             onFocus={() => setIsOpen(true)}
             placeholder="Buscar cliente para fiar (opcional)..."
-            className="min-h-11 w-full rounded-md border border-slate-700 bg-slate-800 pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+            className="min-h-11 w-full rounded-md border border-[#222A27] bg-[#111615] pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
           />
 
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-slate-700 bg-slate-800 shadow-lg divide-y divide-slate-700">
+            <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-[#222A27] bg-[#111615] shadow-lg divide-y divide-slate-700">
               {isFetching && (
                 <div className="p-3 text-xs text-slate-400 flex items-center justify-center">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />

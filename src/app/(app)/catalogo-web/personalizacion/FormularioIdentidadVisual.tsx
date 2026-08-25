@@ -45,7 +45,7 @@ export function FormularioIdentidadVisual({ logoUrlActual, colorPrimarioActual }
           type="url"
           defaultValue={logoUrlActual ?? ""}
           placeholder="ej. https://cdn.nodexa.app/logos/mi-comercio.webp"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-700 px-4 text-base text-slate-50 placeholder:text-slate-400 outline-none transition-colors duration-150 focus:border-blue-500"
+          className="min-h-11 rounded-md border border-[#222A27] bg-slate-700 px-4 text-base text-slate-50 placeholder:text-slate-400 outline-none transition-colors duration-150 focus:border-blue-500"
         />
         <p className="text-xs text-slate-400">Dejalo vacío para quitar el logo de tu vidriera.</p>
       </div>
