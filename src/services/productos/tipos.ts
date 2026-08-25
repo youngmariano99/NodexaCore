@@ -25,3 +25,11 @@ export interface EstadoCrearMarca {
 }
 
 export const ESTADO_CREAR_MARCA_INICIAL: EstadoCrearMarca = { error: null, exito: false };
+
+export interface EstadoCrearCategoria {
+  error: string | null;
+  exito: boolean;
+}
+
+export const ESTADO_CREAR_CATEGORIA_INICIAL: EstadoCrearCategoria = { error: null, exito: false };
+
