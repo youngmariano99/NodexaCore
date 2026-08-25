@@ -32,6 +32,7 @@
 | `NX-PRD-007` | El archivo Excel no tiene el formato esperado. Descargá la plantilla y volvé a intentar. | Validación de importación / 422 | Mostrar enlace de descarga de la plantilla estructurada oficial. |
 | `NX-PRD-008` | Estás cerca del límite de tu catálogo. Te quedan pocos productos disponibles en tu plan actual. | Banda informativa / 200 (no bloqueante) | Mostrar banda discreta (`bg-slate-800`, `text-slate-400`) al alcanzar el 90% del `limite_sku`; sin bloquear la carga. |
 | `NX-BRD-001` | Alcanzaste el límite de marcas de tu plan actual. Para seguir sumando marcas podés ampliar tu plan. | Server Action / 409 | Mostrar mensaje de alerta indicando que se superó el límite de marcas contratado. |
+| `NX-PROV-001` | Alcanzaste el límite de proveedores de tu plan actual. Para seguir sumando proveedores podés ampliar tu plan. | Server Action / 409 | Mostrar mensaje de alerta indicando que se superó el límite de proveedores contratado. |
 
 ---
 
