@@ -7,13 +7,18 @@ import { entornoCliente } from "@/lib/env";
 
 /**
  * Coincide con la duración de JWT configurada en Supabase Auth (CLAUDE.md §4).
- * Se valida explícitamente acá además de confiar en el `exp` del token: si
- * algún día se reconfigura la duración en el dashboard sin avisar, el
- * proxy sigue exigiendo el máximo de 1 hora documentado.
+ * Se valida explícitamente acá además de confiar en el `exp` del token.
  */
 const DURACION_MAXIMA_SESION_SEGUNDOS = 60 * 60;
-
 const PREFIJOS_RUTAS_ADMIN = ["/admin"];
+
+const DOMINIOS_PRINCIPALES = [
+  "localhost",
+  "127.0.0.1",
+  "nodexa.com",
+  "app.nodexa.com",
+  "vercel.app",
+];
 
 function redirigirALogin(request: NextRequest, codigoError: string) {
   const url = request.nextUrl.clone();
@@ -30,13 +35,101 @@ function redirigirSinPermiso(request: NextRequest, rutaDestino: string) {
 }
 
 /**
- * Proxy global de sesión (docs/ROLES.md §3.1, SITEMAP.md nota de acceso).
- * Intercepta las rutas de los grupos (app) y (admin): exige sesión Supabase
- * válida con antigüedad ≤ 1 hora, bloquea (admin) a quien no tenga
- * `rol = admin_nodexa`, y suspende a comerciante/empleado de un comercio con
- * `estado_pago = false` (docs/ERRORS.md NX-ADM-002) de todo el grupo (app).
+ * Extrae el subdominio comercial del header host.
+ * Ejemplos:
+ * - despensacarlitos.nodexa.com -> despensacarlitos
+ * - despensacarlitos.localhost:3000 -> despensacarlitos
+ * - localhost:3000 -> null
+ */
+export function obtenerSubdominioDesdeHost(host: string): string | null {
+  const hostSeguro = host ?? "";
+  const hostLimpio = hostSeguro.split(":")[0]?.toLowerCase() ?? "";
+
+  if (!hostLimpio || DOMINIOS_PRINCIPALES.includes(hostLimpio)) {
+    return null;
+  }
+
+  const partes = hostLimpio.split(".");
+
+  if (partes.length > 1) {
+    const primerSegmento = partes[0];
+    if (primerSegmento && !["www", "app", "admin", "api"].includes(primerSegmento)) {
+      return primerSegmento;
+    }
+  }
+
+  return hostLimpio || null;
+}
+
+/**
+ * Proxy global de Next.js (docs/ROLES.md §3.1, SITEMAP.md nota de acceso).
+ * 1. Resuelve subdominios y dominios personalizados para el Catálogo Web de forma dinámica (rewrite interno a /c/[slug]).
+ * 2. Intercepta las rutas del panel de administración y comercio: exige sesión Supabase válida con antigüedad ≤ 1 hora.
  */
 export async function proxy(request: NextRequest) {
+  const host = request.headers.get("host") || "";
+  const pathname = request.nextUrl.pathname;
+  const subdominioOHost = obtenerSubdominioDesdeHost(host);
+
+  // 1. Ruteo Dinámico del Catálogo Web por Subdominio / Dominio Personalizado
+  if (subdominioOHost && !pathname.startsWith("/c/")) {
+    const supabasePublico = createServerClient(
+      entornoCliente.NEXT_PUBLIC_SUPABASE_URL,
+      entornoCliente.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    const { data: cliente, error } = await supabasePublico
+      .from("clientes")
+      .select("cliente_id, slug, estado_pago, tenant_modules!inner(modulo, activo)")
+      .or(`slug.eq.${subdominioOHost},dominio_personalizado.eq.${subdominioOHost}`)
+      .eq("estado_pago", true)
+      .is("eliminado_en", null)
+      .eq("tenant_modules.modulo", "catalogo_web")
+      .eq("tenant_modules.activo", true)
+      .maybeSingle();
+
+    if (error || !cliente) {
+      const urlError = request.nextUrl.clone();
+      urlError.pathname = "/404";
+      urlError.search = "?error=NX-WEB-004";
+      return NextResponse.rewrite(urlError);
+    }
+
+    const urlDestino = request.nextUrl.clone();
+    urlDestino.pathname = `/c/${cliente.slug}${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(urlDestino);
+  }
+
+  // 2. Control de acceso al panel privado y administración
+  const RUTAS_PRIVADAS = [
+    "/dashboard",
+    "/mostrador",
+    "/productos",
+    "/stock",
+    "/ventas",
+    "/devoluciones",
+    "/clientes",
+    "/catalogo-web",
+    "/whatsapp-bot",
+    "/configuracion",
+    "/ayuda",
+    "/admin",
+  ];
+
+  const esRutaPrivada = RUTAS_PRIVADAS.some((prefijo) => pathname.startsWith(prefijo));
+
+  if (!esRutaPrivada) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -56,8 +149,6 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // getUser() revalida el token contra el servidor de Supabase Auth (no confía
-  // ciegamente en la cookie), refrescando la sesión si corresponde.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -79,11 +170,6 @@ export async function proxy(request: NextRequest) {
     return redirigirALogin(request, "NX-SYS-002");
   }
 
-  // Suspensión de acceso al panel (docs/ERRORS.md NX-ADM-002, SOP-04):
-  // comerciante/empleado de un comercio con estado_pago=false quedan fuera de
-  // todo el grupo (app), no solo de /admin. admin_nodexa nunca lleva este
-  // claim (custom_access_token_hook.sql) y por lo tanto nunca puede
-  // auto-bloquearse gestionando la morosidad de terceros.
   if (claims.rol !== "admin_nodexa" && claims.estado_pago === false) {
     return redirigirALogin(request, "NX-ADM-002");
   }
@@ -99,17 +185,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/mostrador/:path*",
-    "/productos/:path*",
-    "/stock/:path*",
-    "/ventas/:path*",
-    "/devoluciones/:path*",
-    "/clientes/:path*",
-    "/catalogo-web/:path*",
-    "/whatsapp-bot/:path*",
-    "/configuracion/:path*",
-    "/ayuda/:path*",
-    "/admin/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
