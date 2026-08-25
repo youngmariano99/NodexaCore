@@ -127,7 +127,7 @@ export function FormularioDevolucion({ ventaId, itemsVenta }: FormularioDevoluci
           placeholder="Ej: Producto fallado o vencido..."
           required
           disabled={isPending}
-          className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          className="w-full rounded-md border border-[#222A27] bg-[#0D1110] px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
       </div>
 
@@ -136,10 +136,10 @@ export function FormularioDevolucion({ ventaId, itemsVenta }: FormularioDevoluci
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Seleccione los productos a devolver
         </span>
-        <div className="overflow-hidden rounded-md border border-slate-800 bg-slate-900/30">
+        <div className="overflow-hidden rounded-md border border-[#222A27] bg-[#0D1110]/30">
           <table className="w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/50">
+              <tr className="border-b border-[#222A27] text-slate-400 bg-[#0D1110]/50">
                 <th className="px-4 py-3 font-medium w-12 text-center">Sel.</th>
                 <th className="px-4 py-3 font-medium">Producto</th>
                 <th className="px-4 py-3 font-medium text-center">Comprado</th>
@@ -150,14 +150,14 @@ export function FormularioDevolucion({ ventaId, itemsVenta }: FormularioDevoluci
               {itemsVenta.map((item) => {
                 const seleccionado = itemsSeleccionados[item.venta_item_id];
                 return (
-                  <tr key={item.venta_item_id} className="hover:bg-slate-900/45 transition-colors">
+                  <tr key={item.venta_item_id} className="hover:bg-[#0D1110]/45 transition-colors">
                     <td className="px-4 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={seleccionado}
                         onChange={() => handleCheckboxChange(item.venta_item_id)}
                         disabled={isPending}
-                        className="h-4 w-4 rounded border-slate-700 bg-slate-850 text-emerald-500 focus:ring-emerald-500 outline-none cursor-pointer"
+                        className="h-4 w-4 rounded border-[#222A27] bg-slate-850 text-emerald-500 focus:ring-emerald-500 outline-none cursor-pointer"
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -178,7 +178,7 @@ export function FormularioDevolucion({ ventaId, itemsVenta }: FormularioDevoluci
                         value={cantidadesDevolver[item.venta_item_id]}
                         onChange={(e) => handleCantidadChange(item.venta_item_id, e.target.value)}
                         disabled={!seleccionado || isPending}
-                        className="w-20 rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-right text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none disabled:opacity-40 disabled:pointer-events-none font-mono"
+                        className="w-20 rounded-md border border-[#222A27] bg-[#111615] px-2 py-1 text-right text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none disabled:opacity-40 disabled:pointer-events-none font-mono"
                       />
                     </td>
                   </tr>

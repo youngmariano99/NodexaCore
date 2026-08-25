@@ -79,7 +79,7 @@ export default async function FacturacionPage() {
   ]);
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-slate-50">Facturación</h1>
@@ -101,7 +101,7 @@ export default async function FacturacionPage() {
           {moduloCargaIa?.activo ? (
             <SeccionCuotaIa supabase={supabase} clienteId={clienteId} />
           ) : (
-            <div className="flex flex-col gap-4 rounded-md border border-slate-700 bg-slate-800 p-6">
+            <div className="flex flex-col gap-4 rounded-md border border-[#222A27] bg-[#111615] p-6">
               <div className="flex items-center gap-3 text-blue-500">
                 <PackagePlus className="h-6 w-6 shrink-0" aria-hidden="true" />
                 <p className="text-sm text-slate-400">{obtenerMensajeError("NX-IA-001")}</p>

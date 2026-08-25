@@ -127,7 +127,7 @@ export default async function DetalleVentaPage({
 
   if (errorVenta || !venta) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-007" className="max-w-md" />
       </div>
     );
@@ -153,7 +153,7 @@ export default async function DetalleVentaPage({
 
   if (errorItems || !items) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       </div>
     );
@@ -170,7 +170,7 @@ export default async function DetalleVentaPage({
   const mostrarBotonDevolucion = moduloDevoluciones?.activo ?? false;
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <div>
           <Link
@@ -182,7 +182,7 @@ export default async function DetalleVentaPage({
           </Link>
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-[#222A27] pb-6">
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold text-slate-50">Detalle de Venta</h1>
             <p className="text-xs font-mono text-slate-500">ID: {venta.venta_id}</p>
@@ -202,7 +202,7 @@ export default async function DetalleVentaPage({
 
         {/* Resumen de Datos de Cobro */}
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-md border border-slate-800 bg-slate-900/50 p-4 flex flex-col gap-3">
+          <div className="rounded-md border border-[#222A27] bg-[#0D1110]/50 p-4 flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Información de la Venta</h3>
             <div className="flex items-center gap-2.5 text-sm text-slate-200">
               <Calendar className="h-4 w-4 text-slate-500" />
@@ -221,7 +221,7 @@ export default async function DetalleVentaPage({
             </div>
           </div>
 
-          <div className="rounded-md border border-slate-800 bg-slate-900/50 p-4 flex flex-col gap-3 justify-between">
+          <div className="rounded-md border border-[#222A27] bg-[#0D1110]/50 p-4 flex flex-col gap-3 justify-between">
             <div className="flex flex-col gap-3">
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente de Facturación</h3>
               <div className="flex items-center gap-2.5 text-sm text-slate-200">
@@ -229,7 +229,7 @@ export default async function DetalleVentaPage({
                 <span>{venta.clientes_finales?.nombre || "Consumidor Final"}</span>
               </div>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-800 pt-3 text-slate-100">
+            <div className="flex items-center justify-between border-t border-[#222A27] pt-3 text-slate-100">
               <span className="text-sm font-medium">Total Cobrado</span>
               <span className="text-lg font-bold text-slate-50">{FORMATO_PRECIO.format(venta.total)}</span>
             </div>
@@ -239,10 +239,10 @@ export default async function DetalleVentaPage({
         {/* Desglose de Items */}
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Ítems Vendidos</h2>
-          <div className="overflow-hidden rounded-md border border-slate-800 bg-slate-900/30">
+          <div className="overflow-hidden rounded-md border border-[#222A27] bg-[#0D1110]/30">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/50">
+                <tr className="border-b border-[#222A27] text-slate-400 bg-[#0D1110]/50">
                   <th className="px-4 py-3 font-medium">Producto</th>
                   <th className="px-4 py-3 font-medium text-center">Cant.</th>
                   <th className="px-4 py-3 font-medium text-right">Precio Unit.</th>
@@ -251,7 +251,7 @@ export default async function DetalleVentaPage({
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {items.map((item) => (
-                  <tr key={item.venta_item_id} className="hover:bg-slate-900/45 transition-colors">
+                  <tr key={item.venta_item_id} className="hover:bg-[#0D1110]/45 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
                         <span className="font-medium text-slate-100">{item.productos?.nombre || "Producto no disponible"}</span>

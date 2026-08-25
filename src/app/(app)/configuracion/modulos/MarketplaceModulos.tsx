@@ -54,10 +54,10 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
           return (
             <article
               key={modulo}
-              className={`flex flex-col justify-between rounded-lg border p-5 transition-all duration-200 bg-slate-900 ${
+              className={`flex flex-col justify-between rounded-lg border p-5 transition-all duration-200 bg-[#0D1110] ${
                 contratado
                   ? "border-emerald-500/30 shadow-emerald-950/20 shadow-md"
-                  : "border-slate-800"
+                  : "border-[#222A27]"
               }`}
             >
               <div className="flex flex-col gap-3">
@@ -75,7 +75,7 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
                       Solicitado
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#111615] px-2 py-0.5 text-xs font-medium text-slate-400">
                       Disponible
                     </span>
                   )}
@@ -86,7 +86,7 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-col pt-4 border-t border-slate-800/60">
+              <div className="mt-6 flex flex-col pt-4 border-t border-[#222A27]/60">
                 {contratado ? (
                   <p className="text-xs text-slate-500 text-center">
                     Módulo contratado y listo para usar en tu comercio.

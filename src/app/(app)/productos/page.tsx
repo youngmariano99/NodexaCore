@@ -17,7 +17,7 @@ export default function ProductosPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center bg-slate-950 px-6 py-10 text-slate-400">
+        <div className="flex flex-1 items-center justify-center bg-[#090B0B] px-6 py-10 text-slate-400">
           Cargando productos...
         </div>
       }

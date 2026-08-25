@@ -85,7 +85,7 @@ export function FormularioConfiguracionBot({ configInicial }: FormularioConfigur
       )}
 
       {/* Switch Activo */}
-      <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900/50 p-4">
+      <div className="flex items-center justify-between rounded-md border border-[#222A27] bg-[#0D1110]/50 p-4">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-slate-100">Estado del Bot</span>
           <span className="text-xs text-slate-400">Activá o desactivá el bot in-app de tu vidriera.</span>
@@ -118,7 +118,7 @@ export function FormularioConfiguracionBot({ configInicial }: FormularioConfigur
           value={mensajeHorarios}
           onChange={(e) => setMensajeHorarios(e.target.value)}
           placeholder="Ej: Lunes a viernes de 9:00 a 18:00 hs. Sábados de 9:00 a 13:00 hs."
-          className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          className="w-full rounded-md border border-[#222A27] bg-[#0D1110] px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
       </div>
 
@@ -132,7 +132,7 @@ export function FormularioConfiguracionBot({ configInicial }: FormularioConfigur
           value={mensajeUbicacion}
           onChange={(e) => setMensajeUbicacion(e.target.value)}
           placeholder="Ej: Estamos en Av. Corrientes 1234, CABA."
-          className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          className="w-full rounded-md border border-[#222A27] bg-[#0D1110] px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
       </div>
 
@@ -146,12 +146,12 @@ export function FormularioConfiguracionBot({ configInicial }: FormularioConfigur
           value={mensajeCatalogo}
           onChange={(e) => setMensajeCatalogo(e.target.value)}
           placeholder="Ej: Podés ver todos nuestros productos actualizados en esta misma vidriera."
-          className="w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          className="w-full rounded-md border border-[#222A27] bg-[#0D1110] px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
       </div>
 
       {/* Switch Derivación WhatsApp */}
-      <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900/50 p-4">
+      <div className="flex items-center justify-between rounded-md border border-[#222A27] bg-[#0D1110]/50 p-4">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-slate-100">Derivación a WhatsApp</span>
           <span className="text-xs text-slate-400">Permitir a los clientes chatear directamente por WhatsApp.</span>

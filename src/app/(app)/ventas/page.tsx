@@ -115,7 +115,7 @@ export default async function HistorialVentasPage({
 
   if (error || !ventas) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       </div>
     );
@@ -124,7 +124,7 @@ export default async function HistorialVentasPage({
   const totalPaginas = Math.max(1, Math.ceil((count ?? 0) / LIMITE_FILAS_PAGINA));
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-slate-50">Historial de Ventas</h1>
@@ -134,7 +134,7 @@ export default async function HistorialVentasPage({
         </header>
 
         {ventas.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-slate-700 bg-slate-800 px-6 py-12 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-12 text-center">
             <ShoppingBag className="h-8 w-8 text-slate-400" aria-hidden="true" />
             <p className="text-base text-slate-50">Todavía no registraste ninguna venta.</p>
             <p className="text-sm text-slate-400">
@@ -148,10 +148,10 @@ export default async function HistorialVentasPage({
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-slate-700 bg-slate-800">
+          <div className="overflow-x-auto rounded-md border border-[#222A27] bg-[#111615]">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-700 text-slate-400">
+                <tr className="border-b border-[#222A27] text-slate-400">
                   <th className="px-4 py-3 font-medium">Fecha y Hora</th>
                   <th className="px-4 py-3 font-medium">ID Venta</th>
                   <th className="px-4 py-3 font-medium">Cliente</th>
@@ -164,7 +164,7 @@ export default async function HistorialVentasPage({
                 {(ventas as unknown as FilaVentaListado[]).map((venta) => (
                   <tr
                     key={venta.venta_id}
-                    className="border-b border-slate-700 last:border-b-0 hover:bg-slate-750/50 transition-colors"
+                    className="border-b border-[#222A27] last:border-b-0 hover:bg-slate-750/50 transition-colors"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-slate-400">
                       {FORMATO_FECHA.format(new Date(venta.creado_en))}
@@ -205,7 +205,7 @@ export default async function HistorialVentasPage({
             <Link
               href={`/ventas?page=${Math.max(1, paginaActual - 1)}`}
               aria-disabled={paginaActual <= 1}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] px-4 transition-colors duration-150 ${
                 paginaActual <= 1 ? "pointer-events-none opacity-40" : "hover:border-blue-500 hover:text-slate-50"
               }`}
             >
@@ -217,7 +217,7 @@ export default async function HistorialVentasPage({
             <Link
               href={`/ventas?page=${Math.min(totalPaginas, paginaActual + 1)}`}
               aria-disabled={paginaActual >= totalPaginas}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] px-4 transition-colors duration-150 ${
                 paginaActual >= totalPaginas ? "pointer-events-none opacity-40" : "hover:border-blue-500 hover:text-slate-50"
               }`}
             >

@@ -65,7 +65,7 @@ export default async function NuevaDevolucionPage({
   // Devoluciones es exclusivo de comerciantes
   if (!solicitante || solicitante.rol !== "comerciante" || !solicitante.cliente_id) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10 text-slate-50">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10 text-slate-50">
         <div className="flex w-full max-w-md flex-col gap-4">
           <MensajeError codigo="NX-SYS-003" className="w-full" />
         </div>
@@ -85,7 +85,7 @@ export default async function NuevaDevolucionPage({
 
   if (!moduloDevoluciones?.activo) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10 text-slate-50">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10 text-slate-50">
         <div className="flex w-full max-w-md flex-col gap-4">
           <MensajeError codigo="NX-DEV-001" className="w-full" />
         </div>
@@ -95,8 +95,8 @@ export default async function NuevaDevolucionPage({
 
   if (!ventaId) {
     return (
-      <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50 items-center justify-center">
-        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-slate-700 bg-slate-800 px-6 py-12 text-center max-w-md">
+      <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50 items-center justify-center">
+        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-12 text-center max-w-md">
           <ShoppingBag className="h-8 w-8 text-slate-400" aria-hidden="true" />
           <p className="text-base text-slate-50">No seleccionaste ninguna venta.</p>
           <p className="text-sm text-slate-400">
@@ -124,7 +124,7 @@ export default async function NuevaDevolucionPage({
 
   if (errorVenta || !venta) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-007" className="max-w-md" />
       </div>
     );
@@ -150,14 +150,14 @@ export default async function NuevaDevolucionPage({
 
   if (errorItems || !items) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <div>
           <Link
@@ -169,7 +169,7 @@ export default async function NuevaDevolucionPage({
           </Link>
         </div>
 
-        <header className="flex flex-col gap-1 border-b border-slate-800 pb-4">
+        <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-xl font-bold text-slate-50">Registrar Devolución</h1>
           <p className="text-xs text-slate-400">
             Venta ID: <span className="font-mono text-slate-300">{venta.venta_id}</span>

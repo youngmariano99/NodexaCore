@@ -48,7 +48,7 @@ export function FormularioAltaProducto() {
             type="text"
             placeholder="ej. YER-1KG-001"
             required
-            className={`${CLASES_CAMPO_BASE} border-slate-700`}
+            className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
           />
         </div>
 
@@ -62,7 +62,7 @@ export function FormularioAltaProducto() {
             type="text"
             placeholder="ej. Yerba mate 1kg"
             required
-            className={`${CLASES_CAMPO_BASE} border-slate-700`}
+            className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
           />
         </div>
 
@@ -76,7 +76,7 @@ export function FormularioAltaProducto() {
             type="text"
             placeholder="ej. Almacén"
             required
-            className={`${CLASES_CAMPO_BASE} border-slate-700`}
+            className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
           />
         </div>
 
@@ -92,7 +92,7 @@ export function FormularioAltaProducto() {
             step="0.01"
             placeholder="ej. 3500"
             required
-            className={`${CLASES_CAMPO_BASE} border-slate-700`}
+            className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
           />
         </div>
 

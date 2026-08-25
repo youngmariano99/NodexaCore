@@ -206,12 +206,12 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
             return (
               <div
                 key={faq.id}
-                className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/40 transition-colors"
+                className="overflow-hidden rounded-lg border border-[#222A27] bg-[#0D1110]/40 transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => toggleFaq(faq.id)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left font-medium text-slate-200 hover:bg-slate-900/60 transition-colors"
+                  className="flex w-full items-center justify-between px-5 py-4 text-left font-medium text-slate-200 hover:bg-[#0D1110]/60 transition-colors"
                 >
                   <span className="text-sm">{faq.pregunta}</span>
                   {isOpen ? (
@@ -221,7 +221,7 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
                   )}
                 </button>
                 {isOpen && (
-                  <div className="border-t border-slate-800 bg-slate-900/10 px-5 py-4 text-sm text-slate-400 leading-relaxed">
+                  <div className="border-t border-[#222A27] bg-[#0D1110]/10 px-5 py-4 text-sm text-slate-400 leading-relaxed">
                     {faq.respuesta}
                   </div>
                 )}
@@ -239,7 +239,7 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
         </div>
 
         {tipsActivos.length === 0 ? (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-5 text-center text-xs text-slate-500">
+          <div className="rounded-lg border border-[#222A27] bg-[#0D1110]/30 p-5 text-center text-xs text-slate-500">
             Los consejos personalizados aparecerán aquí a medida que habilites módulos en tu comercio.
           </div>
         ) : (

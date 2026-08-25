@@ -78,7 +78,7 @@ export default async function DashboardPage() {
 
   if (errorCliente || !cliente || !conteoActivos.ok) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6">
         <MensajeError codigo={!conteoActivos.ok ? conteoActivos.error : "NX-SYS-001"} className="max-w-md" />
       </div>
     );
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
   const mostrarAvisoLimiteSku = debeMostrarAvisoLimiteSku(porcentajeUsoSku);
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-slate-50">Dashboard</h1>
@@ -98,14 +98,14 @@ export default async function DashboardPage() {
         {mostrarAvisoLimiteSku ? (
           <div
             role="status"
-            className="flex items-start gap-2 rounded-md bg-slate-800 px-4 py-3 text-sm text-slate-400"
+            className="flex items-start gap-2 rounded-md bg-[#111615] px-4 py-3 text-sm text-slate-400"
           >
             <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{obtenerMensajeError("NX-PRD-008")}</span>
           </div>
         ) : null}
 
-        <section className="grid grid-cols-1 gap-4 rounded-md border border-slate-700 bg-slate-800 p-6 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-4 rounded-md border border-[#222A27] bg-[#111615] p-6 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-400">Productos activos</span>
             <span className="font-mono text-base text-slate-50">

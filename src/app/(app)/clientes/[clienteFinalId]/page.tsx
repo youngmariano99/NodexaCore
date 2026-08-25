@@ -115,11 +115,11 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
 
   if (!verificacion.perteneceAlTenant) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-[#090B0B] px-6">
         <MensajeError codigo={verificacion.error ?? "NX-SYS-007"} className="max-w-md" />
         <Link
           href="/clientes"
-          className="inline-flex min-h-11 items-center rounded-md border border-slate-700 px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-blue-500"
+          className="inline-flex min-h-11 items-center rounded-md border border-[#222A27] px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-blue-500"
         >
           ← Volver al listado de clientes
         </Link>
@@ -135,7 +135,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
 
   if (errorClienteFinal || !clienteFinal) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6">
         <MensajeError codigo="NX-FIA-002" className="max-w-md" />
       </div>
     );
@@ -146,7 +146,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
 
   if (!resultado.ok) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6">
         <MensajeError codigo={resultado.error} className="max-w-md" />
       </div>
     );
@@ -156,7 +156,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <Link
           href="/clientes"
@@ -176,22 +176,22 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
           />
         </header>
 
-        <section className="flex flex-col gap-1 rounded-md border border-slate-700 bg-slate-800 p-6">
+        <section className="flex flex-col gap-1 rounded-md border border-[#222A27] bg-[#111615] p-6">
           <span className="text-xs text-slate-400">Saldo deudor actual</span>
           <span className="font-mono text-3xl text-slate-50">${FORMATO_MONEDA.format(clienteFinal.saldo_deudor)}</span>
         </section>
 
         {movimientos.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-slate-700 bg-slate-800 px-6 py-12 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-12 text-center">
             <Receipt className="h-8 w-8 text-slate-400" aria-hidden="true" />
             <p className="text-base text-slate-50">Todavía no hay movimientos de cuenta corriente.</p>
             <p className="text-sm text-slate-400">Los cargos por venta y los pagos que registres van a aparecer acá.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-slate-700 bg-slate-800">
+          <div className="overflow-x-auto rounded-md border border-[#222A27] bg-[#111615]">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-700 text-slate-400">
+                <tr className="border-b border-[#222A27] text-slate-400">
                   <th className="px-4 py-3 font-medium">Fecha</th>
                   <th className="px-4 py-3 font-medium">Movimiento</th>
                   <th className="px-4 py-3 font-medium">Monto</th>
@@ -201,7 +201,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
                 {movimientos.map((movimiento) => (
                   <tr
                     key={movimiento.movimiento_cc_id}
-                    className="border-b border-slate-700 last:border-b-0 hover:bg-slate-700"
+                    className="border-b border-[#222A27] last:border-b-0 hover:bg-slate-700"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-slate-400">
                       {FORMATO_FECHA.format(new Date(movimiento.creado_en))}
@@ -227,7 +227,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
             <Link
               href={`/clientes/${clienteFinalId}?page=${Math.max(1, paginaActual - 1)}`}
               aria-disabled={paginaActual <= 1}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] px-4 transition-colors duration-150 ${
                 paginaActual <= 1 ? "pointer-events-none opacity-40" : "hover:border-blue-500 hover:text-slate-50"
               }`}
             >
@@ -239,7 +239,7 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
             <Link
               href={`/clientes/${clienteFinalId}?page=${Math.min(totalPaginas, paginaActual + 1)}`}
               aria-disabled={paginaActual >= totalPaginas}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] px-4 transition-colors duration-150 ${
                 paginaActual >= totalPaginas
                   ? "pointer-events-none opacity-40"
                   : "hover:border-blue-500 hover:text-slate-50"
