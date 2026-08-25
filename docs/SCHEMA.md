@@ -104,6 +104,30 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 
 ---
 
+## 5.1 Entidad: `marcas`
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `marca_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `nombre` | `text` | `NOT NULL` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+| `eliminado_en` | `timestamptz` | `NULL` |
+
+---
+
+## 5.2 Entidad: `categorias`
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `categoria_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `nombre` | `text` | `NOT NULL` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+| `eliminado_en` | `timestamptz` | `NULL` |
+
+---
+
 ## 6. Entidad: `movimientos_stock`
 
 | Campo | Tipo | Restricciones |

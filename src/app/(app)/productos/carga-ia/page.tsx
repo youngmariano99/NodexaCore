@@ -81,13 +81,13 @@ export default async function CargaIaPage() {
 
         {!moduloCargaIa?.activo ? (
           <div className="flex flex-col gap-4 rounded-md border border-slate-700 bg-slate-800 p-6">
-            <div className="flex items-center gap-3 text-blue-500">
+            <div className="flex items-center gap-3 text-emerald-500">
               <PackagePlus className="h-6 w-6 shrink-0" aria-hidden="true" />
               <p className="text-sm text-slate-400">{obtenerMensajeError("NX-IA-001")}</p>
             </div>
             <Link
               href="/configuracion/modulos"
-              className="inline-flex min-h-11 w-fit items-center justify-center rounded-md bg-blue-500 px-4 text-sm font-medium text-slate-50 transition-colors duration-150 hover:bg-blue-500/90"
+              className="inline-flex min-h-11 w-fit items-center justify-center rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
             >
               Ver módulos disponibles
             </Link>

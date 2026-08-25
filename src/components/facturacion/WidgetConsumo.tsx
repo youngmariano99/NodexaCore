@@ -16,7 +16,7 @@ interface WidgetConsumoProps {
  *
  * Paleta (docs/DESIGN.md §5, "Directriz de Negación": nunca comunicar solo
  * por color, nunca rojo punitivo fuera de validación de formularios): el
- * relleno de la barra es siempre `bg-blue-500` (Acento Core), nunca rojo, ni
+ * relleno de la barra es siempre `bg-[#16D39A]` (Acento Core), nunca rojo, ni
  * siquiera al llegar o superar el 100% — el bloqueo real de negocio ya lo
  * aplican `crearProducto.ts`/`fn_registrar_consumo_ia` con sus propios
  * códigos de error; esta barra es solo informativa. El ancho visual del
@@ -28,10 +28,7 @@ export function WidgetConsumo({ etiqueta, usado, limite, porcentaje, className =
 
   return (
     <div className={`flex flex-col gap-3 rounded-md border border-slate-700 bg-slate-800 p-6 ${className}`}>
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs text-slate-400">{etiqueta}</span>
-        <span className="font-mono text-sm text-blue-500">{porcentaje}%</span>
-      </div>
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{etiqueta}</span>
 
       <span className="font-mono text-2xl text-slate-50">
         {usado.toLocaleString("es-AR")}/{limite.toLocaleString("es-AR")}
@@ -46,7 +43,7 @@ export function WidgetConsumo({ etiqueta, usado, limite, porcentaje, className =
         className="h-2 w-full overflow-hidden rounded-full bg-slate-700"
       >
         <div
-          className="h-full rounded-full bg-blue-500 transition-[width] duration-200"
+          className="h-full rounded-full bg-[#16D39A] transition-[width] duration-200"
           style={{ width: `${anchoRelleno}%` }}
         />
       </div>

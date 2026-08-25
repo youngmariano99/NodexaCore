@@ -44,13 +44,13 @@ export function ModalBloqueoSku({ abierto, onCerrar }: ModalBloqueoSkuProps) {
           <button
             type="button"
             onClick={onCerrar}
-            className="min-h-11 rounded-md border border-slate-700 px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-blue-500"
+            className="min-h-11 rounded-md border border-slate-700 px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-emerald-500"
           >
             Ahora no
           </button>
           <Link
             href="/configuracion/modulos"
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-blue-500 px-4 text-sm font-medium text-slate-50 transition-colors duration-150 hover:bg-blue-500/90"
+            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
           >
             Ampliar catálogo
           </Link>

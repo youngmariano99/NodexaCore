@@ -142,7 +142,7 @@ export default async function HistorialVentasPage({
             </p>
             <Link
               href="/mostrador"
-              className="mt-2 flex min-h-11 items-center rounded-md bg-blue-500 px-4 text-sm font-medium text-slate-50 transition-colors duration-150 hover:bg-blue-500/90"
+              className="mt-2 flex min-h-11 items-center rounded-md bg-emerald-500 px-4 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400"
             >
               Ir al Mostrador
             </Link>

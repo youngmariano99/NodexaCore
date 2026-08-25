@@ -63,7 +63,7 @@ export function ConfirmarCobro({
       <button
         type="submit"
         disabled={estaEnviando || carritoVacio}
-        className="min-h-11 rounded-md bg-blue-500 px-4 text-base font-medium text-slate-50 transition-colors duration-150 hover:bg-blue-500/90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-11 rounded-md bg-emerald-500 px-4 text-base font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {estaEnviando ? "Confirmando..." : "Confirmar cobro"}
       </button>

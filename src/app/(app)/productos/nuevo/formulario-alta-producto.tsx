@@ -107,7 +107,7 @@ export function FormularioAltaProducto() {
         <button
           type="submit"
           disabled={estaEnviando}
-          className="min-h-11 rounded-md bg-blue-500 px-4 text-base font-medium text-slate-50 transition-colors duration-150 hover:bg-blue-500/90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="min-h-11 rounded-md bg-[#16D39A] px-4 text-base font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {estaEnviando ? "Guardando..." : "Guardar producto"}
         </button>

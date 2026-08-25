@@ -34,10 +34,11 @@ export function useBuscarProductos(termino: string) {
   useEffect(() => {
     const supabase = crearClienteSupabaseNavegador();
     let channel: RealtimeChannel | null = null;
+    let isCancelled = false;
 
     const inicializarRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (isCancelled || !user) return;
 
       const { data: perfil } = await supabase
         .from("usuarios")
@@ -45,29 +46,42 @@ export function useBuscarProductos(termino: string) {
         .eq("auth_user_id", user.id)
         .single();
 
-      if (!perfil?.cliente_id) return;
+      if (isCancelled || !perfil?.cliente_id) return;
 
-      channel = supabase
-        .channel(`productos-buscar-realtime-${perfil.cliente_id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "productos",
-            filter: `cliente_id=eq.${perfil.cliente_id}`,
-          },
-          () => {
-            queryClient.invalidateQueries({ queryKey: ["buscar-productos"] });
-            queryClient.invalidateQueries({ queryKey: ["productos"] });
-          }
-        )
-        .subscribe();
+      const channelName = `productos-buscar-realtime-${perfil.cliente_id}`;
+      
+      // Limpiar canal existente si ya existiera en cache del cliente
+      const existingChannel = supabase.getChannels().find((c) => c.topic === `realtime:${channelName}` || c.topic === channelName);
+      if (existingChannel) {
+        await supabase.removeChannel(existingChannel);
+      }
+
+      if (isCancelled) return;
+
+      channel = supabase.channel(channelName);
+      
+      channel.on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "productos",
+          filter: `cliente_id=eq.${perfil.cliente_id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["buscar-productos"] });
+          queryClient.invalidateQueries({ queryKey: ["productos"] });
+        }
+      );
+
+      if (isCancelled) return;
+      channel.subscribe();
     };
 
     inicializarRealtime();
 
     return () => {
+      isCancelled = true;
       if (channel) {
         supabase.removeChannel(channel);
       }

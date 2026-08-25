@@ -43,11 +43,37 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
         "Es un mecanismo de seguridad técnica que previene que un cobro se registre doble si hacés doble clic o si la red falla momentáneamente. El sistema garantiza que cada transacción se guarde exactamente una sola vez.",
     },
     {
+      id: "general-3",
+      pregunta: "¿Qué sucede al alcanzar el límite de SKUs de mi catálogo?",
+      respuesta:
+        "Nodexa te notificará discretamente en tu panel principal cuando alcances el 90% del límite de productos contratados. Al llegar al 100%, se bloqueará la creación de nuevos productos (arrojando el aviso NX-PRD-001) hasta que solicites una ampliación o limpies productos inactivos.",
+    },
+    {
+      id: "general-4",
+      pregunta: "¿Cómo elimino un producto de forma segura sin perder historial?",
+      respuesta:
+        "En el catálogo de productos de Nodexa, la eliminación es de tipo lógico (soft-delete). El producto dejará de ser visible para nuevas ventas pero el historial de transacciones pasadas y auditoría de diffs permanecerán intactos.",
+    },
+    {
       id: "catalogo-1",
       pregunta: "¿Cómo comparto mi catálogo web con los clientes?",
       modulo: "catalogo_web",
       respuesta:
         "Tus clientes pueden entrar usando tu enlace personalizado (vidriera). Podés copiar la dirección web del catálogo directamente desde la sección 'Catálogo Web' y enviarla por WhatsApp o agregarla a la biografía de tus redes sociales.",
+    },
+    {
+      id: "catalogo-2",
+      pregunta: "¿Cómo personalizo los colores y logo de mi Catálogo Web?",
+      modulo: "catalogo_web",
+      respuesta:
+        "Dirigite a la sección 'Catálogo Web' -> 'Personalización'. Desde allí vas a poder subir el logo de tu comercio y seleccionar una de las paletas cromáticas preestablecidas para que combine con la identidad visual de tu marca.",
+    },
+    {
+      id: "catalogo-3",
+      pregunta: "¿Cómo decido qué productos se muestran en la vidriera pública?",
+      modulo: "catalogo_web",
+      respuesta:
+        "Cada producto en tu catálogo posee un selector de visibilidad web (Publicado). Podés activar o desactivar este interruptor individualmente en el catálogo o ficha del producto para decidir al instante qué artículos se exponen al público.",
     },
     {
       id: "carga-ia-1",
@@ -57,6 +83,13 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
         "Para obtener el mejor resultado, subí o capturá fotos nítidas y bien iluminadas de las etiquetas de los productos. La IA de Nodexa leerá automáticamente el nombre, el SKU/código y sugerirá el precio sugerido.",
     },
     {
+      id: "carga-ia-2",
+      pregunta: "¿Cuántas consultas mensuales de IA tengo disponibles?",
+      modulo: "carga_ia",
+      respuesta:
+        "Cada comercio cuenta con un cupo base de 40 consultas mensuales. Podés ver tus cargas consumidas en tiempo real desde la sección 'Carga con IA'. Si se agotan, el sistema arrojará la alerta NX-IA-001 sugiriendo recargar tu pack de consultas.",
+    },
+    {
       id: "fiados-1",
       pregunta: "¿Cómo registro un cobro a cuenta corriente?",
       modulo: "fiados",
@@ -64,7 +97,28 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
         "Andá a la sección 'Clientes y Fiados', seleccioná la ficha del cliente correspondiente y hacé clic en 'Registrar Pago'. Ingresá el monto cobrado y el saldo deudor se actualizará automáticamente en tiempo real.",
     },
     {
+      id: "fiados-2",
+      pregunta: "¿Cómo asocio una venta en el mostrador a un cliente para fiarle?",
+      modulo: "fiados",
+      respuesta:
+        "En el Mostrador, verás un selector de 'Cliente (Cuenta Corriente)'. Buscá e indicá el cliente antes de presionar 'Confirmar cobro'. De esta forma, el total de la compra no se cobrará en efectivo, sino que se acumulará como saldo deudor en su cuenta corriente.",
+    },
+    {
+      id: "fiados-3",
+      pregunta: "¿Qué pasa si un cliente quiere pagar solo una parte de su saldo deudor?",
+      modulo: "fiados",
+      respuesta:
+        "El sistema admite pagos parciales. Al registrar el pago desde la ficha del cliente, ingresá el monto exacto entregado. El sistema calculará el saldo deudor restante y actualizará su estado al instante.",
+    },
+    {
       id: "devoluciones-1",
+      pregunta: "¿Cómo registro una devolución total o parcial?",
+      modulo: "devoluciones",
+      respuesta:
+        "Ingresá a la sección 'Devoluciones' -> 'Registrar Devolución'. Buscá el ID de la venta original, seleccioná los artículos devueltos y su cantidad correspondientes, y confirmá la operación. Esto reintegrará el stock y creará un comprobante único de Nota de Crédito.",
+    },
+    {
+      id: "devoluciones-2",
       pregunta: "¿Cuándo se genera una Nota de Crédito?",
       modulo: "devoluciones",
       respuesta:
@@ -76,6 +130,13 @@ export function CentroAyuda({ modulosContratados }: CentroAyudaProps) {
       modulo: "bot_whatsapp",
       respuesta:
         "El bot responde de forma automatizada consultando el inventario actual. Cuando un cliente le escribe para preguntar precio o disponibilidad, el bot lee la base de datos del comercio al instante y devuelve la respuesta correcta.",
+    },
+    {
+      id: "bot-2",
+      pregunta: "¿Cómo configuro las respuestas estáticas del bot?",
+      modulo: "bot_whatsapp",
+      respuesta:
+        "Accedé a 'Configuración' -> 'Bot de WhatsApp'. Podés activar el funcionamiento del bot y definir mensajes estáticos personalizados (como horarios de atención, dirección física o mensaje de bienvenida de tu catálogo).",
     },
   ];
 
