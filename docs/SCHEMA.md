@@ -101,7 +101,8 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `producto_padre_id` | `uuid` | `NULL`, `REFERENCES productos(producto_id) ON DELETE CASCADE` |
 | `categoria_id` | `uuid` | `NULL`, `REFERENCES categorias(categoria_id) ON DELETE SET NULL` |
 | `marca_id` | `uuid` | `NULL`, `REFERENCES marcas(marca_id) ON DELETE SET NULL` |
-| `proveedor_id` | `uuid` | `NULL` |
+| `proveedor_id` | `uuid` | `NULL`, `REFERENCES proveedores(proveedor_id) ON DELETE SET NULL` |
+| `stock_minimo` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (stock_minimo >= 0)` |
 
 **Restricción:** `UNIQUE (cliente_id, sku)`
 **Índices:** `idx_productos_cliente_publicado (cliente_id, publicado) WHERE eliminado_en IS NULL`, `idx_productos_cliente_activos (cliente_id) WHERE eliminado_en IS NULL` (soporte al conteo de límite de SKU), `idx_productos_padre_id (producto_padre_id)`, `idx_productos_categoria_id (categoria_id)`, `idx_productos_marca_id (marca_id)`, `idx_productos_proveedor_id (proveedor_id)`
@@ -129,6 +130,22 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
+
+---
+
+## 5.3 Entidad: `proveedores`
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `proveedor_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `nombre` | `text` | `NOT NULL` |
+| `contacto` | `text` | `NOT NULL` |
+| `dias_demora` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (dias_demora >= 0)` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+| `eliminado_en` | `timestamptz` | `NULL` |
+
+**Índices:** `idx_proveedores_cliente_id (cliente_id)`
 
 ---
 
