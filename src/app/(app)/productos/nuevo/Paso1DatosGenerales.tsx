@@ -57,6 +57,7 @@ export function Paso1DatosGenerales({
           <label className="flex min-h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-[#222A27] bg-[#111615] hover:border-[#16D39A]/60 transition-colors duration-150">
             {imagenPrevisualizacion ? (
               <div className="relative h-28 w-28 overflow-hidden rounded-md border border-[#222A27]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagenPrevisualizacion} alt="Previsualización" className="h-full w-full object-cover" />
                 <button
                   type="button"

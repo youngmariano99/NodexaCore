@@ -47,6 +47,8 @@ test.describe.serial("Alta de producto", () => {
     await page.getByLabel("Nombre").fill("Producto de prueba E2E");
     await page.getByLabel("Categoría").fill("Almacén");
     await page.getByLabel("Precio").fill("1500");
+    await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
+    await page.getByRole("button", { name: "Siguiente: Matriz de Stock" }).click();
     await page.getByRole("button", { name: "Guardar producto" }).click();
 
     await expect(page.getByText("Producto cargado con éxito.")).toBeVisible();
@@ -105,6 +107,8 @@ test.describe.serial("Alta de producto", () => {
       await page.getByLabel("Nombre").fill("Producto que no debería entrar");
       await page.getByLabel("Categoría").fill("Almacén");
       await page.getByLabel("Precio").fill("100");
+      await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
+      await page.getByRole("button", { name: "Siguiente: Matriz de Stock" }).click();
       await page.getByRole("button", { name: "Guardar producto" }).click();
 
       const modal = page.getByRole("dialog", { name: "Llegaste al límite de tu catálogo" });

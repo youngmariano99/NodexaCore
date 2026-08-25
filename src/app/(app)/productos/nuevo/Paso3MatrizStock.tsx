@@ -120,7 +120,7 @@ export function Paso3MatrizStock({
       {exito && (
         <div className="flex items-center gap-2 text-sm text-[#16D39A]">
           <Check className="h-5 w-5" />
-          <span>¡Producto y variantes creadas con éxito!</span>
+          <span>Producto cargado con éxito.</span>
         </div>
       )}
 

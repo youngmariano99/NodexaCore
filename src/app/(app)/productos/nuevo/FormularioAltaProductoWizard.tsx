@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { crearProducto } from "@/services/productos/crearProducto";
 import { ModalBloqueoSku } from "@/components/productos/ModalBloqueoSku";
+import { generarMatrizCombinaciones } from "@/lib/dominio/productos/generarMatrizCombinaciones";
 
 import { Paso1DatosGenerales } from "./Paso1DatosGenerales";
 import { Paso2Dimensiones } from "./Paso2Dimensiones";
@@ -99,56 +100,16 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
   };
 
   const irAlPaso3 = () => {
-    if (dimensiones.length === 0) {
-      setMatrizVariantes([
-        {
-          combinacion: {},
-          sku,
-          stock: 0,
-          precio,
-        },
-      ]);
-      setPaso(3);
-      return;
-    }
-
-    const dimensionesIncompletas = dimensiones.some((d) => d.valores.length === 0);
-    if (dimensionesIncompletas) {
-      setErrorPaso2("Cargá al menos una opción para cada dimensión agregada.");
-      return;
+    if (dimensiones.length > 0) {
+      const dimensionesIncompletas = dimensiones.some((d) => d.valores.length === 0);
+      if (dimensionesIncompletas) {
+        setErrorPaso2("Cargá al menos una opción para cada dimensión agregada.");
+        return;
+      }
     }
 
     setErrorPaso2(null);
-
-    const generarCombinaciones = (list: Dimension[], index = 0, current: Record<string, string> = {}): Array<Record<string, string>> => {
-      if (index === list.length) {
-        return [current];
-      }
-
-      const results: Array<Record<string, string>> = [];
-      const dim = list[index];
-      if (dim) {
-        dim.valores.forEach((val) => {
-          results.push(...generarCombinaciones(list, index + 1, { ...current, [dim.nombre]: val }));
-        });
-      }
-
-      return results;
-    };
-
-    const combinaciones = generarCombinaciones(dimensiones);
-    const nuevaMatriz = combinaciones.map((comb) => {
-      const sufijoSku = Object.values(comb)
-        .map((v) => v.toUpperCase().replace(/\s+/g, ""))
-        .join("-");
-      return {
-        combinacion: comb,
-        sku: sufijoSku ? `${sku}-${sufijoSku}` : sku,
-        stock: 10,
-        precio,
-      };
-    });
-
+    const nuevaMatriz = generarMatrizCombinaciones(dimensiones, sku, precio, 10);
     setMatrizVariantes(nuevaMatriz);
     setPaso(3);
   };
