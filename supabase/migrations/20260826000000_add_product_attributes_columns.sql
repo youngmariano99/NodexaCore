@@ -1,13 +1,11 @@
--- Migración: Agregar llaves foráneas para categorías, marcas y proveedores en la tabla productos
+-- Migración: Agregar llaves foráneas para categorías y marcas en la tabla productos
 ALTER TABLE productos
   ADD COLUMN categoria_id UUID REFERENCES categorias(categoria_id) ON DELETE SET NULL,
-  ADD COLUMN marca_id UUID REFERENCES marcas(marca_id) ON DELETE SET NULL,
-  ADD COLUMN proveedor_id UUID; -- Se deja sin FK porque la tabla proveedores aún no está creada en este sprint
+  ADD COLUMN marca_id UUID REFERENCES marcas(marca_id) ON DELETE SET NULL;
 
 -- Índices para optimizar filtros
 CREATE INDEX idx_productos_categoria_id ON productos(categoria_id);
 CREATE INDEX idx_productos_marca_id ON productos(marca_id);
-CREATE INDEX idx_productos_proveedor_id ON productos(proveedor_id);
 
 -- Función de base de datos para la actualización atómica y auditoría masiva de precios
 CREATE OR REPLACE FUNCTION fn_actualizar_precios_lote(
