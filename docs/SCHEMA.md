@@ -350,6 +350,47 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 
 **Modelo comercial de `concepto = 'pack_sku'` (escalonado decreciente, docs/BACKLOG.md "Actualización del próximo período de facturación en ampliaciones"):** pack 1 = $5.000 ARS, cada pack siguiente descuenta $1.000 ARS respecto del anterior, con piso de $2.000 ARS a partir del pack 4 en adelante (`calcularCostoPackSku`, `src/lib/dominio/facturacion/calcularCostoPackSku.ts`). `concepto = 'recarga_ia'` es un monto fijo de $3.000 ARS por paquete de +40 consultas (`COSTO_RECARGA_IA_ARS`) — ninguno de los dos montos estaba documentado antes de esta estación; se confirmaron explícitamente con el usuario por tratarse de datos de facturación real.
 
+
+---
+
+## 20. Entidad: `pedidos_web` (Módulo Catálogo Web & Comandas Realtime)
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `pedido_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `datos_cliente` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` (nombre, telefono, direccion, notas) |
+| `metodo_pago` | `text` | `NOT NULL`, `DEFAULT 'efectivo'` (efectivo, transferencia, tarjeta) |
+| `opcion_entrega` | `text` | `NOT NULL`, `DEFAULT 'envio'`, `CHECK (opcion_entrega IN ('envio', 'retiro'))` |
+| `estado` | `estado_pedido_web` | `NOT NULL`, `DEFAULT 'pendiente'` ('pendiente', 'en_preparacion', 'despachado', 'completado', 'cancelado') |
+| `subtotal` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0.00`, `CHECK (subtotal >= 0)` |
+| `costo_envio` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0.00`, `CHECK (costo_envio >= 0)` |
+| `monto_ajuste` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0.00` |
+| `total` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0.00`, `CHECK (total >= 0)` |
+| `repartidor_id` | `uuid` | `NULL` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+| `actualizado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+
+**Índices:** `idx_pedidos_web_cliente_estado (cliente_id, estado, creado_en DESC)`
+
+---
+
+## 21. Entidad: `pedido_items`
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `item_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `pedido_id` | `uuid` | `NOT NULL`, `REFERENCES pedidos_web(pedido_id)` |
+| `producto_id` | `uuid` | `NOT NULL`, `REFERENCES productos(producto_id)` |
+| `variante_id` | `uuid` | `NULL` |
+| `nombre` | `text` | `NOT NULL` |
+| `cantidad` | `integer` | `NOT NULL`, `DEFAULT 1`, `CHECK (cantidad > 0)` |
+| `precio_unitario` | `numeric(12,2)` | `NOT NULL`, `CHECK (precio_unitario >= 0)` |
+| `subtotal` | `numeric(12,2)` | `NOT NULL`, `CHECK (subtotal >= 0)` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+
+**Índices:** `idx_pedido_items_pedido_id (pedido_id)`
+
 ---
 
 ## 18. Relaciones (Resumen de Claves Foráneas)
@@ -364,14 +405,18 @@ clientes (1) ──< devoluciones
 clientes (1) ──< cargas_ia
 clientes (1) ──1 configuracion_bot_whatsapp
 clientes (1) ──< ajustes_facturacion
+clientes (1) ──< pedidos_web
 
 productos (1) ──< movimientos_stock
 productos (1) ──< venta_items
 productos (1) ──< cargas_ia
+productos (1) ──< pedido_items
 
 ventas (1) ──< venta_items
 ventas (1) ──< devoluciones
 ventas (1) ──< movimientos_cuenta_corriente
+
+pedidos_web (1) ──< pedido_items
 
 clientes_finales (1) ──< ventas
 clientes_finales (1) ──< movimientos_cuenta_corriente
