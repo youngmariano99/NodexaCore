@@ -126,6 +126,40 @@ export async function crearProducto(
     return { error: productoCreado.error, exito: false };
   }
 
+  // Procesar e insertar variantes si vienen en el lote
+  const rawVariantes = formData.get("variantes");
+  if (rawVariantes && typeof rawVariantes === "string") {
+    try {
+      const variantes = JSON.parse(rawVariantes) as Array<{
+        sku: string;
+        stock: number;
+        precio: number;
+        combinacion: Record<string, string>;
+      }>;
+
+      for (const v of variantes) {
+        const sufijoNombre = Object.values(v.combinacion).join(" / ");
+        const nombreVariante = sufijoNombre ? `${resultado.data.nombre} - ${sufijoNombre}` : resultado.data.nombre;
+
+        const varianteCreada = await insertarProducto(supabase, {
+          clienteId,
+          sku: v.sku,
+          nombre: nombreVariante,
+          precio: v.precio,
+          categoria: resultado.data.categoria,
+          imagenUrl,
+          productoPadreId: productoCreado.data.producto_id,
+        });
+
+        if (!varianteCreada.ok) {
+          return { error: varianteCreada.error, exito: false };
+        }
+      }
+    } catch {
+      return { error: "NX-SYS-006", exito: false };
+    }
+  }
+
   registrarDiff({
     clienteId,
     usuarioId: solicitante.usuario_id,
