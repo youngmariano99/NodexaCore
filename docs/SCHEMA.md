@@ -37,6 +37,8 @@ CREATE TYPE origen_alta_producto AS ENUM ('manual', 'excel', 'ia_vision');
 | `color_primario` | `text` | `NULL` |
 | `dominio_personalizado` | `text` | `NULL`, `UNIQUE` |
 | `telefono_whatsapp` | `text` | `NOT NULL` |
+| `plantilla_activa` | `text` | `NOT NULL`, `DEFAULT 'basica'` |
+| `configuracion_plantilla` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
 
