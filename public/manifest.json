@@ -1,0 +1,16 @@
+{
+  "name": "Nodexa Core — Catálogo Web",
+  "short_name": "Nodexa Core",
+  "description": "Plataforma de Catálogo Web y Pedidos en línea por WhatsApp",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090B0B",
+  "theme_color": "#16D39A",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
