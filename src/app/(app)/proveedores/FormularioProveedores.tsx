@@ -59,7 +59,7 @@ export function FormularioProveedores({ proveedores }: FormularioProveedoresProp
 
     if (!validacion.success) {
       const mapeoErrores: Record<string, string> = {};
-      validacion.error.errors.forEach((err) => {
+      validacion.error.issues.forEach((err) => {
         if (err.path[0]) {
           mapeoErrores[err.path[0].toString()] = err.message;
         }
