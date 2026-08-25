@@ -33,3 +33,13 @@ export interface EstadoCrearCategoria {
 
 export const ESTADO_CREAR_CATEGORIA_INICIAL: EstadoCrearCategoria = { error: null, exito: false };
 
+export interface EstadoActualizarPreciosLote {
+  error: string | null;
+  exito: boolean;
+  cantidadAfectada?: number;
+}
+
+export const ESTADO_ACTUALIZAR_PRECIOS_LOTE_INICIAL: EstadoActualizarPreciosLote = {
+  error: null,
+  exito: false,
+};
