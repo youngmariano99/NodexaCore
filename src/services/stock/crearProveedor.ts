@@ -99,7 +99,7 @@ export async function crearProveedor(
     campoModificado: "alta",
     valorAnterior: null,
     valorNuevo: JSON.stringify(nuevoProveedor),
-  }).catch(console.error);
+  });
 
   return { error: null, exito: true };
 }
