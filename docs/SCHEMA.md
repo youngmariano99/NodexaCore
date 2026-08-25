@@ -98,9 +98,10 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `actualizado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
+| `producto_padre_id` | `uuid` | `NULL`, `REFERENCES productos(producto_id) ON DELETE CASCADE` |
 
 **Restricción:** `UNIQUE (cliente_id, sku)`
-**Índices:** `idx_productos_cliente_publicado (cliente_id, publicado) WHERE eliminado_en IS NULL`, `idx_productos_cliente_activos (cliente_id) WHERE eliminado_en IS NULL` (soporte al conteo de límite de SKU)
+**Índices:** `idx_productos_cliente_publicado (cliente_id, publicado) WHERE eliminado_en IS NULL`, `idx_productos_cliente_activos (cliente_id) WHERE eliminado_en IS NULL` (soporte al conteo de límite de SKU), `idx_productos_padre_id (producto_padre_id)`
 
 ---
 
