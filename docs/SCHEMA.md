@@ -391,6 +391,23 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 
 **Índices:** `idx_pedido_items_pedido_id (pedido_id)`
 
+## 22. Tabla `repartidores` (Cuentas de Delivery)
+
+Almacena las cuentas de repartidores asociadas a cada comercio para la asignación de comandas y hoja de reparto móvil (límite máximo de 2 repartidores activos por plan/tenant).
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| `repartidor_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
+| `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
+| `nombre` | `text` | `NOT NULL` |
+| `telefono` | `text` | `NOT NULL` |
+| `pin_acceso` | `text` | `NOT NULL`, `DEFAULT '1234'` |
+| `activo` | `boolean` | `NOT NULL`, `DEFAULT true` |
+| `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
+| `eliminado_en` | `timestamptz` | `NULL` |
+
+**Índices:** `idx_repartidores_cliente_id (cliente_id) WHERE eliminado_en IS NULL`
+
 ---
 
 ## 18. Relaciones (Resumen de Claves Foráneas)
@@ -406,6 +423,7 @@ clientes (1) ──< cargas_ia
 clientes (1) ──1 configuracion_bot_whatsapp
 clientes (1) ──< ajustes_facturacion
 clientes (1) ──< pedidos_web
+clientes (1) ──< repartidores
 
 productos (1) ──< movimientos_stock
 productos (1) ──< venta_items
@@ -417,6 +435,7 @@ ventas (1) ──< devoluciones
 ventas (1) ──< movimientos_cuenta_corriente
 
 pedidos_web (1) ──< pedido_items
+repartidores (1) ──< pedidos_web
 
 clientes_finales (1) ──< ventas
 clientes_finales (1) ──< movimientos_cuenta_corriente
@@ -449,6 +468,6 @@ CREATE POLICY productos_lectura_publica ON productos
   FOR SELECT USING (publicado = true AND eliminado_en IS NULL);
 ```
 
-> Aplicar el mismo patrón (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `movimientos_cuenta_corriente`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`. Ninguna política de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
+> Aplicar el mismo patrón (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `movimientos_cuenta_corriente`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`, `repartidores`. Ninguna política de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
 >
-> `ajustes_facturacion` es un caso especial dentro de este patrón: `SELECT` sigue la regla genérica (`cliente_id = auth_cliente_id() OR es_admin_nodexa()`), pero `INSERT` es exclusivo de `es_admin_nodexa()` (nunca `cliente_id = auth_cliente_id()`) — un comercio nunca genera sus propios cargos, mismo criterio ya aplicado a `clientes_update_admin`.
+> `ajustes_facturacion` es un caso especial dentro de este patrón: `SELECT` sigue la regla genérica (`cliente_id = auth_cliente_id() OR es_admin_nodexa()`), pero `INSERT` es exclusivo de `es_admin_nodexa()` (nunca `cliente_id = auth_cliente_id()`) — un comercio nunca genera sus propios cargos, mismo criterio ya aplicado a `clientes_update_admin`.

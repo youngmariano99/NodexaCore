@@ -26,6 +26,7 @@ export interface PedidoKanban {
   metodoPago: string;
   opcionEntrega: "envio" | "retiro";
   estado: EstadoPedidoKanban;
+  repartidorId?: string | null;
   subtotal: number;
   costoEnvio: number;
   montoAjuste: number;
@@ -80,17 +81,27 @@ const COLUMNAS: ColumnasConfig[] = [
   },
 ];
 
+interface RepartidorOpcion {
+  repartidorId: string;
+  nombre: string;
+}
+
 interface TableroComandasKanbanProps {
   pedidosIniciales?: PedidoKanban[];
   nombreComercio?: string;
+  repartidores?: RepartidorOpcion[];
   onCambiarEstadoPedido?: (pedidoId: string, nuevoEstado: EstadoPedidoKanban) => Promise<void>;
+  onAsignarRepartidor?: (pedidoId: string, repartidorId: string | null) => Promise<void>;
 }
 
 export function TableroComandasKanban({
   pedidosIniciales = [],
   nombreComercio = "Comercio",
+  repartidores = [],
   onCambiarEstadoPedido,
+  onAsignarRepartidor,
 }: TableroComandasKanbanProps) {
+
   const [pedidos, setPedidos] = useState<PedidoKanban[]>(pedidosIniciales);
   const [pedidoArrastradoId, setPedidoArrastradoId] = useState<string | null>(null);
   const [codigoError, setCodigoError] = useState<string | null>(null);
@@ -269,6 +280,39 @@ export function TableroComandasKanban({
                           {formatearPrecio(pedido.total)}
                         </span>
                       </div>
+
+                      {/* Selector de Repartidor Asignado */}
+                      {pedido.opcionEntrega === "envio" && (
+                        <div className="flex flex-col gap-1 border-t border-slate-900 pt-2">
+                          <label className="text-2xs font-semibold text-slate-400 uppercase">
+                            Repartidor Asignado:
+                          </label>
+                          <select
+                            value={pedido.repartidorId ?? ""}
+                            onChange={async (e) => {
+                              const nuevoRepartidorId = e.target.value || null;
+                              setPedidos((prev) =>
+                                prev.map((p) =>
+                                  p.pedidoId === pedido.pedidoId
+                                    ? { ...p, repartidorId: nuevoRepartidorId }
+                                    : p
+                                )
+                              );
+                              if (onAsignarRepartidor) {
+                                await onAsignarRepartidor(pedido.pedidoId, nuevoRepartidorId);
+                              }
+                            }}
+                            className="rounded-lg border border-slate-800 bg-slate-900 px-2 py-1 text-xs text-slate-200 focus:border-[#16D39A] focus:outline-none"
+                          >
+                            <option value="">Sin asignar</option>
+                            {repartidores.map((r) => (
+                              <option key={r.repartidorId} value={r.repartidorId}>
+                                🛵 {r.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
                       {/* Acciones Rápidas: Botones de Transición y WhatsApp */}
                       <div className="flex items-center justify-between pt-1 gap-2">

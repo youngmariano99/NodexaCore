@@ -111,3 +111,13 @@
 | `NX-ADM-002` | El comercio tiene el pago suspendido. Regularizá la situación para reactivar el acceso. | Estado de cuenta / 402 | Mostrar contacto directo por WhatsApp según SOP-04, sin aplicar fee de reactivación en la fase actual. |
 | `NX-ADM-003` | No podés ampliar el catálogo por debajo del uso actual de productos. | Validación de negocio / 400 | Mostrar el conteo de SKUs activos como referencia mínima al modificar `limite_sku`. |
 | `NX-ADM-004` | No pudimos actualizar el estado del comercio. Probá de nuevo. | Server Action / 500 | Reintentar la actualización de `estado_pago` o `tenant_modules` desde el panel admin. |
+
+---
+
+## 10. Módulo Deliverys y Repartos (`DELIV`)
+
+| Código de Error | Mensaje para el Usuario | Capa / Estado HTTP | Acción Sugerida para Resolución |
+| :--- | :--- | :--- | :--- |
+| `NX-DELIV-001` | Alcanzaste el límite de repartidores activos de tu plan actual (máximo 2 cuentas). | Server Action / 409 | Desactivar o eliminar un repartidor existente antes de registrar uno nuevo. |
+| `NX-DELIV-002` | El PIN de acceso ingresado no es válido para este repartidor. | Auth / 401 | Verificar el PIN de 4 dígitos ingresado y reintentar. |
+| `NX-DELIV-003` | No encontramos esta cuenta de repartidor activa. | Recurso / 404 | Verificar el enlace recibido o consultar con el administrador del comercio. |
