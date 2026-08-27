@@ -62,7 +62,8 @@ describe("Lógica de Imputación FIFO y Específica (procesarImputacionFifo)", (
     expect(resultado.montoTotalImputado).toBe(50000);
     expect(resultado.montoRemanenteSinImputar).toBe(10000);
     expect(resultado.imputaciones).toHaveLength(2);
-    expect(resultado.imputaciones[0].nuevoEstadoImputacion).toBe("total");
-    expect(resultado.imputaciones[1].nuevoEstadoImputacion).toBe("total");
+    expect(resultado.imputaciones[0]?.nuevoEstadoImputacion).toBe("total");
+    expect(resultado.imputaciones[1]?.nuevoEstadoImputacion).toBe("total");
   });
 });
+
