@@ -39,7 +39,8 @@ function mockearSesion(usuario: { id: string } | null) {
   return { auth: { getUser: vi.fn(async () => ({ data: { user: usuario } })) } };
 }
 
-function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; rpc?: ReturnType<typeof vi.fn>; clienteFinal?: any }) {
+function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; rpc?: ReturnType<typeof vi.fn>; clienteFinal?: unknown }) {
+
   const solicitanteBuilder = crearBuilderSolicitante(opciones.solicitante);
   const clienteFinalBuilder = {
     select: vi.fn(() => ({

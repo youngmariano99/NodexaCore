@@ -117,7 +117,7 @@ export function FormularioPagoCuentaCorriente({
         disabled={saldoDeudor <= 0}
         className="flex min-h-11 items-center rounded-xl bg-emerald-500 px-4 text-sm font-bold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-40 disabled:pointer-events-none"
       >
-        Registrar Entrega / Cobro
+        Registrar Pago
       </button>
 
       {isOpen && (
@@ -138,7 +138,7 @@ export function FormularioPagoCuentaCorriente({
             ) : (
               <>
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h2 className="text-base font-bold text-slate-50">Registrar Pago / Cobro</h2>
+                  <h2 className="text-base font-bold text-slate-50">Registrar Pago</h2>
                   <button
                     type="button"
                     onClick={handleClose}
@@ -237,9 +237,10 @@ export function FormularioPagoCuentaCorriente({
                       disabled={isPending}
                       className="rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
                     >
-                      {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar Pago"}
+                      {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
                     </button>
                   </div>
+
                 </form>
               </>
             )}

@@ -1,6 +1,7 @@
 "use client";
 
-import { Printer, MessageCircle, CheckCircle2 } from "lucide-react";
+import { Printer, MessageCircle } from "lucide-react";
+
 
 export interface ItemImputacionTicket {
   comprobanteTipo: string;
