@@ -162,8 +162,9 @@ export function FormularioPagoCuentaCorriente({
                   {/* Monto */}
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-semibold text-slate-300">
-                      Monto del Cobro:
+                      Monto del Pago
                     </label>
+
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-mono">
                         $
