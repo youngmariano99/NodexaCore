@@ -79,6 +79,10 @@
 | `NX-FIA-003` | El monto del pago no puede ser mayor a la deuda actual del cliente. | Validación de negocio / 400 | Mostrar el saldo deudor vigente y ajustar el monto máximo permitido en el formulario. |
 | `NX-FIA-004` | El monto ingresado tiene que ser mayor a cero. | Validación Zod / 400 | Resaltar el campo `monto` con borde rojo. |
 | `NX-FIA-005` | Ya existe un cliente cargado con estos datos de contacto. | Validación / 409 | Sugerir buscar al cliente existente antes de crear uno nuevo. |
+| `NX-FIA-006` | El total de la compra supera el límite de crédito disponible del cliente. | Validación / 409 | Solicitar autorización con PIN de administrador o abonar parte de la compra en efectivo. |
+| `NX-FIA-007` | Este cliente tiene la cuenta corriente suspendida para nuevas compras a fiado. | Validación / 403 | Regularizar la cuenta del cliente antes de otorgar un nuevo crédito. |
+| `NX-FIA-008` | El PIN de administrador ingresado no es válido para autorizar el exceso de crédito. | Auth / 401 | Verificar el PIN de administrador ingresado y reintentar. |
+
 
 ---
 

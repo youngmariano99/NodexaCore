@@ -40,7 +40,12 @@ describe("insertarClienteFinal", () => {
       cliente_id: CLIENTE_ID,
       nombre: "Juan Pérez",
       telefono: "+5492920001111",
+      limite_credito: 0,
+      cuit_cuil: null,
+      email: null,
+      estado: "activo",
     });
+
   });
 
   it("acepta telefono NULL (opcional, docs/SCHEMA.md §9)", async () => {

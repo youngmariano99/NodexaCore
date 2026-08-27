@@ -24,6 +24,10 @@ export interface DatosNuevoClienteFinal {
   clienteId: string;
   nombre: string;
   telefono: string | null;
+  limiteCredito?: number;
+  cuitCuil?: string | null;
+  email?: string | null;
+  estado?: "activo" | "suspendido";
 }
 
 export interface FilaClienteFinal {
@@ -32,22 +36,14 @@ export interface FilaClienteFinal {
   nombre: string;
   telefono: string | null;
   saldo_deudor: number;
+  limite_credito: number;
+  cuit_cuil: string | null;
+  email: string | null;
+  estado: "activo" | "suspendido";
 }
 
 /**
- * Alta de cliente final (docs/ROLES.md §2, fila "clientes_finales (fiados)":
- * `C` para comerciante y empleado). `saldo_deudor` nunca viaja en el insert:
- * la columna ya trae `DEFAULT 0` en docs/SCHEMA.md §9, y ese valor solo se
- * modifica después vía `movimientos_cuenta_corriente` (mismo criterio que
- * `actualizarClienteFinal`, que tampoco expone `saldo_deudor`).
- *
- * Duplicados de contacto (docs/ERRORS.md `NX-FIA-005`) no se pre-chequean
- * con un `SELECT`: se deja que `idx_clientesfinales_telefono_unico`
- * (supabase/migrations/20260811130000_...) falle y se traduce el `23505` acá
- * — mismo patrón anti-TOCTOU que `insertarProducto` sobre
- * `(cliente_id, sku)`. Un `telefono` `NULL` (opcional) nunca puede violar
- * ese índice parcial, así que un alta sin teléfono jamás dispara
- * `NX-FIA-005`.
+ * Alta de cliente final con límite de crédito opcional y creación automática de cabecera de cuenta corriente.
  */
 export async function insertarClienteFinal(
   supabase: SupabaseClient,
@@ -59,8 +55,12 @@ export async function insertarClienteFinal(
       cliente_id: datos.clienteId,
       nombre: datos.nombre,
       telefono: datos.telefono,
+      limite_credito: datos.limiteCredito ?? 0,
+      cuit_cuil: datos.cuitCuil ?? null,
+      email: datos.email ?? null,
+      estado: datos.estado ?? "activo",
     })
-    .select("cliente_final_id, cliente_id, nombre, telefono, saldo_deudor")
+    .select("cliente_final_id, cliente_id, nombre, telefono, saldo_deudor, limite_credito, cuit_cuil, email, estado")
     .single<FilaClienteFinal>();
 
   if (error || !data) {
@@ -70,8 +70,16 @@ export async function insertarClienteFinal(
     return { ok: false, error: "NX-SYS-001" };
   }
 
+  // Crear cabecera en cuentas_corrientes si no existe
+  await supabase.from("cuentas_corrientes").insert({
+    cliente_id: datos.clienteId,
+    cliente_final_id: data.cliente_final_id,
+    estado: data.estado,
+  });
+
   return { ok: true, data };
 }
+
 
 export interface CambiosClienteFinal {
   nombre?: string;
