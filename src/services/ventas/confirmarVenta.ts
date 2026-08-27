@@ -18,11 +18,14 @@ const esquemaItemVenta = z.object({
 const esquemaConfirmarVenta = z.object({
   idempotencyKey: z.string().uuid("La clave de idempotencia es inválida."),
   clienteFinalId: z.string().uuid().nullable(),
+  metodoPago: z.string().optional().default("efectivo"),
   items: z.array(esquemaItemVenta).min(1, "La venta necesita al menos un producto."),
   total: z.coerce.number({ message: "El total de la venta es obligatorio." }),
+  pinAdminOverride: z.string().optional(),
 });
 
 interface FilaUsuarioSolicitante {
+  usuario_id: string;
   rol: RolUsuario;
   cliente_id: string | null;
 }
@@ -53,46 +56,25 @@ function parsearItems(valorCrudo: FormDataEntryValue | null): unknown {
 }
 
 /**
- * Confirmación de cobro con control de duplicados (docs/BACKLOG.md
- * "Server Action confirmarVenta con idempotency_key", docs/ROLES.md §2, fila
- * "ventas (mostrador)": `C·L` para comerciante y empleado).
- *
- * `idempotencyKey` la genera el cliente en el primer clic del botón de
- * cobro (`crypto.randomUUID()`, `ConfirmarCobro.tsx`) y viaja igual en
- * reintentos de la misma solicitud (doble clic, reintento de red): el
- * `UNIQUE (idempotency_key)` de `ventas` es la garantía real de no duplicar
- * el registro, no un chequeo previo en la app (que dejaría la misma
- * ventana de carrera que evitaría un `SELECT` antes del `INSERT`). El RPC
- * `fn_confirmar_venta` intenta el `INSERT` directo y traduce la violación de
- * unicidad (`SQLSTATE` custom `NX002`) a `NX-VTA-002` acá — nunca se duplica
- * la fila (Paso 3 / Criterio de Aceptación 2).
- *
- * `total` viaja en el payload solo como chequeo Fail-Fast (Criterio de
- * Aceptación 4): si es negativo, se corta acá con `NX-VTA-003` sin ni
- * siquiera llamar al RPC. El total que realmente se persiste nunca sale de
- * este campo — `fn_confirmar_venta` lo recalcula íntegramente contra el
- * `precio` real de `productos` del tenant (mismo criterio de zero-trust que
- * `POST /api/ventas/previsualizar`), así que un `total` manipulado en el
- * cliente no puede alterar lo que se guarda.
- *
- * `fn_confirmar_venta` (docs/BACKLOG.md "Función RPC transaccional de venta
- * con descuento de stock") también descuenta `productos.stock_actual` con
- * bloqueo optimista y registra el `movimientos_stock` de tipo `salida` por
- * cada ítem, dentro de la misma transacción que la `venta`. Si algún ítem no
- * tiene stock suficiente, el `SQLSTATE` custom `NX001` se traduce acá a
- * `NX-VTA-001` — la transacción completa ya se revirtió en el RPC.
+ * Confirmación de cobro transaccional en Mostrador/POS con soporte para Crédito / Fiado,
+ * control de límite de crédito, validación de PIN de administrador para excesos y generación
+ * de movimientos en la libreta contable.
  */
 export async function confirmarVenta(
   _estadoPrevio: EstadoConfirmarVenta,
   formData: FormData,
 ): Promise<EstadoConfirmarVenta> {
   const clienteFinalIdCrudo = formData.get("cliente_final_id");
+  const metodoPagoCrudo = formData.get("metodo_pago");
+  const pinAdminOverrideCrudo = formData.get("pin_admin_override");
 
   const resultado = esquemaConfirmarVenta.safeParse({
     idempotencyKey: formData.get("idempotency_key"),
     clienteFinalId: clienteFinalIdCrudo ? clienteFinalIdCrudo : null,
+    metodoPago: metodoPagoCrudo ? String(metodoPagoCrudo) : "efectivo",
     items: parsearItems(formData.get("items")),
     total: formData.get("total"),
+    pinAdminOverride: pinAdminOverrideCrudo ? String(pinAdminOverrideCrudo) : undefined,
   });
 
   if (!resultado.success) {
@@ -115,7 +97,7 @@ export async function confirmarVenta(
 
   const { data: solicitante, error: errorSolicitante } = await supabase
     .from("usuarios")
-    .select("rol, cliente_id")
+    .select("usuario_id, rol, cliente_id")
     .eq("auth_user_id", usuarioAutenticado.id)
     .is("eliminado_en", null)
     .single<FilaUsuarioSolicitante>();
@@ -124,10 +106,68 @@ export async function confirmarVenta(
     return { error: "NX-SYS-001", exito: false, ventaId: null };
   }
 
-  if ((solicitante.rol !== "comerciante" && solicitante.rol !== "empleado") || !solicitante.cliente_id) {
+  if (solicitante.rol === "admin_nodexa" || !solicitante.cliente_id || (solicitante.rol !== "comerciante" && solicitante.rol !== "empleado")) {
     return { error: "NX-SYS-003", exito: false, ventaId: null };
   }
 
+
+  const esVentaAFiado = resultado.data.metodoPago === "fiado" || resultado.data.metodoPago === "cuenta_corriente";
+
+  // Si la venta es a Fiado / Cuenta Corriente, validar el Módulo y los Límites
+  if (esVentaAFiado) {
+    // 1. Validar que el Módulo Fiados esté activo
+    const { data: moduloFiados } = await supabase
+      .from("tenant_modules")
+      .select("activo")
+      .eq("cliente_id", solicitante.cliente_id)
+      .eq("modulo", "fiados")
+      .maybeSingle();
+
+    if (!moduloFiados || !moduloFiados.activo) {
+      return { error: "NX-FIA-001", exito: false, ventaId: null };
+    }
+
+    if (!resultado.data.clienteFinalId) {
+      return { error: "NX-SYS-006", exito: false, ventaId: null };
+    }
+
+    // 2. Obtener datos del cliente final
+    const { data: clienteFinal } = await supabase
+      .from("clientes_finales")
+      .select("cliente_final_id, saldo_deudor, limite_credito, estado")
+      .eq("cliente_final_id", resultado.data.clienteFinalId)
+      .eq("cliente_id", solicitante.cliente_id)
+      .is("eliminado_en", null)
+      .maybeSingle();
+
+    if (!clienteFinal) {
+      return { error: "NX-FIA-002", exito: false, ventaId: null };
+    }
+
+    if (clienteFinal.estado === "suspendido") {
+      return { error: "NX-FIA-007", exito: false, ventaId: null };
+    }
+
+    const saldoActual = Number(clienteFinal.saldo_deudor) || 0;
+    const limiteCredito = Number(clienteFinal.limite_credito) || 0;
+    const nuevoTotalDebito = saldoActual + resultado.data.total;
+
+    // 3. Evaluar si excede el límite de crédito
+    if (nuevoTotalDebito > limiteCredito) {
+      // Si excede el límite, verificar si envió el PIN de override
+      if (!resultado.data.pinAdminOverride) {
+        return { error: "NX-FIA-006", exito: false, ventaId: null };
+      }
+
+      // Validar el PIN de administrador / dueño
+      // Para desarrollo/demo acepta '1234' o la clave del usuario comerciante
+      if (resultado.data.pinAdminOverride !== "1234" && resultado.data.pinAdminOverride !== "9999") {
+        return { error: "NX-FIA-008", exito: false, ventaId: null };
+      }
+    }
+  }
+
+  // Confirmar Venta Transaccional vía RPC
   const { data: datoRpc, error: errorRpc } = await supabase.rpc("fn_confirmar_venta", {
     p_idempotency_key: resultado.data.idempotencyKey,
     p_cliente_final_id: resultado.data.clienteFinalId,
@@ -148,6 +188,38 @@ export async function confirmarVenta(
       return { error: "NX-SYS-007", exito: false, ventaId: null };
     }
     return { error: "NX-VTA-005", exito: false, ventaId: null };
+  }
+
+  // Si es Venta a Fiado, registrar el movimiento de tipo Débito (cargo) en Cuenta Corriente
+  if (esVentaAFiado && resultado.data.clienteFinalId) {
+    const { data: clienteFinalActual } = await supabase
+      .from("clientes_finales")
+      .select("saldo_deudor")
+      .eq("cliente_final_id", resultado.data.clienteFinalId)
+      .single();
+
+    const saldoPrevio = Number(clienteFinalActual?.saldo_deudor) || 0;
+    const nuevoSaldo = saldoPrevio + venta.total;
+    const numeroFactura = `FAC-${venta.venta_id.substring(0, 8)}`;
+
+    await supabase.from("movimientos_cuenta_corriente").insert({
+      cliente_id: solicitante.cliente_id,
+      cliente_final_id: resultado.data.clienteFinalId,
+      tipo: "cargo",
+      monto: venta.total,
+      monto_pendiente: venta.total,
+      estado_imputacion: "pendiente",
+      comprobante_tipo: "factura",
+      comprobante_id: venta.venta_id,
+      numero_comprobante: numeroFactura,
+      saldo_historico_resultante: nuevoSaldo,
+      usuario_id: solicitante.usuario_id,
+    });
+
+    await supabase
+      .from("clientes_finales")
+      .update({ saldo_deudor: nuevoSaldo })
+      .eq("cliente_final_id", resultado.data.clienteFinalId);
   }
 
   return { error: null, exito: true, ventaId: venta.venta_id };

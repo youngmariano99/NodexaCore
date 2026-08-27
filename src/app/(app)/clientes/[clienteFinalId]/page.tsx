@@ -141,6 +141,12 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
     );
   }
 
+  const { data: clienteTenant } = await supabase
+    .from("clientes")
+    .select("nombre_comercio")
+    .eq("cliente_id", solicitante.cliente_id)
+    .maybeSingle();
+
   const paginaActual = Math.max(1, Number.parseInt(page ?? "1", 10) || 1);
   const resultado = await obtenerMovimientosCuentaCorrientePaginados(supabase, clienteFinalId, paginaActual);
 
@@ -154,6 +160,15 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
 
   const { movimientos, total, porPagina } = resultado.data;
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+
+  const debitosParaImputar = movimientos
+    .filter((m) => m.tipo === "cargo" && (m.monto_pendiente ?? 0) > 0)
+    .map((m) => ({
+      movimientoCcId: m.movimiento_cc_id,
+      montoPendiente: m.monto_pendiente ?? m.monto,
+      comprobanteTipo: m.comprobante_tipo ?? "factura",
+      numeroComprobante: m.numero_comprobante,
+    }));
 
   return (
     <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
@@ -172,9 +187,14 @@ export default async function EstadoCuentaCorrientePage({ params, searchParams }
           </div>
           <FormularioPagoCuentaCorriente
             clienteFinalId={clienteFinalId}
+            nombreCliente={clienteFinal.nombre}
+            telefonoCliente={clienteFinal.telefono}
+            nombreComercio={clienteTenant?.nombre_comercio ?? "Comercio"}
             saldoDeudor={clienteFinal.saldo_deudor}
+            debitosPendientes={debitosParaImputar}
           />
         </header>
+
 
         <section className="flex flex-col gap-1 rounded-md border border-[#222A27] bg-[#111615] p-6">
           <span className="text-xs text-slate-400">Saldo deudor actual</span>

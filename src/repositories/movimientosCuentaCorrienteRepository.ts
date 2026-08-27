@@ -4,12 +4,18 @@ import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 
 export const MOVIMIENTOS_CUENTA_CORRIENTE_POR_PAGINA = 25;
 
-export type TipoMovimientoCuenta = "cargo" | "pago";
+export type TipoMovimientoCuenta = "cargo" | "pago" | "anulacion";
 
 export interface FilaMovimientoCuentaCorrienteListado {
   movimiento_cc_id: string;
   tipo: TipoMovimientoCuenta;
   monto: number;
+  monto_pendiente?: number;
+  estado_imputacion?: "pendiente" | "parcial" | "total";
+  comprobante_tipo?: string;
+  numero_comprobante?: string | null;
+  saldo_historico_resultante?: number;
+  metodo_pago?: string | null;
   venta_id: string | null;
   creado_en: string;
 }
@@ -21,28 +27,6 @@ export interface ResultadoMovimientosCuentaCorrientePaginados {
   porPagina: number;
 }
 
-/**
- * Listado paginado del historial de cuenta corriente de un cliente final
- * (docs/BACKLOG.md "Vista de historial de cuenta corriente por cliente",
- * Paso 1). El filtro `.eq('cliente_final_id', ...)` + `.order('creado_en')`
- * calza exactamente con `idx_movcc_clientefinal (cliente_final_id,
- * creado_en DESC)` de docs/SCHEMA.md §10 — orden cronológico, más reciente
- * primero, mismo criterio ya usado por `obtenerMovimientosStockPaginados`
- * para el resumen tipo "extracto".
- *
- * `.order()` agrega `movimiento_cc_id` como desempate: los movimientos
- * sembrados en un mismo lote comparten literalmente el mismo `creado_en`
- * (Postgres evalúa `DEFAULT now()` una sola vez por sentencia en un INSERT
- * masivo), mismo hallazgo ya documentado en `obtenerProductosPaginados` y
- * `obtenerMovimientosStockPaginados` — sin desempate, `.range()` no
- * garantiza el mismo orden entre dos páginas.
- *
- * No filtra por `cliente_id` acá: el guard de pertenencia de tenant del
- * `cliente_final_id` ya corrió antes de llamar a esta función
- * (`verificarPertenenciaTenant`, docs/ROLES.md §3.8), y la política RLS
- * `movimientos_cuenta_corriente_select_tenant` (vía subconsulta a
- * `clientes_finales`) sigue siendo la autoridad real de todas formas.
- */
 export async function obtenerMovimientosCuentaCorrientePaginados(
   supabase: SupabaseClient,
   clienteFinalId: string,
@@ -56,7 +40,7 @@ export async function obtenerMovimientosCuentaCorrientePaginados(
 
   const { data, error, count } = await supabase
     .from("movimientos_cuenta_corriente")
-    .select("movimiento_cc_id, tipo, monto, venta_id, creado_en", { count: "exact" })
+    .select("movimiento_cc_id, tipo, monto, monto_pendiente, estado_imputacion, comprobante_tipo, numero_comprobante, saldo_historico_resultante, metodo_pago, venta_id, creado_en", { count: "exact" })
     .eq("cliente_final_id", clienteFinalId)
     .order("creado_en", { ascending: false })
     .order("movimiento_cc_id", { ascending: true })
@@ -77,3 +61,35 @@ export async function obtenerMovimientosCuentaCorrientePaginados(
     },
   };
 }
+
+export interface FilaDebitoPendiente {
+  movimiento_cc_id: string;
+  monto: number;
+  monto_pendiente: number;
+  comprobante_tipo: string;
+  numero_comprobante: string | null;
+  creado_en: string;
+}
+
+/**
+ * Obtiene los débitos/facturas pendientes de cancelar de un cliente ordenados FIFO (más antiguos primero)
+ */
+export async function obtenerDebitosPendientes(
+  supabase: SupabaseClient,
+  clienteFinalId: string
+): Promise<ResultadoRepositorio<FilaDebitoPendiente[]>> {
+  const { data, error } = await supabase
+    .from("movimientos_cuenta_corriente")
+    .select("movimiento_cc_id, monto, monto_pendiente, comprobante_tipo, numero_comprobante, creado_en")
+    .eq("cliente_final_id", clienteFinalId)
+    .eq("tipo", "cargo")
+    .gt("monto_pendiente", 0)
+    .order("creado_en", { ascending: true });
+
+  if (error) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return { ok: true, data: data ?? [] };
+}
+

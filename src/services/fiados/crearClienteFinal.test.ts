@@ -133,7 +133,7 @@ describe("crearClienteFinal", () => {
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
     vi.mocked(insertarClienteFinal).mockResolvedValue({
       ok: true,
-      data: { cliente_final_id: "cf-1", cliente_id: CLIENTE_ID, nombre: "Juan Pérez", telefono: null, saldo_deudor: 0 },
+      data: { cliente_final_id: "cf-1", cliente_id: CLIENTE_ID, nombre: "Juan Pérez", telefono: null, saldo_deudor: 0, limite_credito: 0, cuit_cuil: null, email: null, estado: "activo" },
     });
 
     const resultado = await crearClienteFinal(
@@ -164,8 +164,9 @@ describe("crearClienteFinal", () => {
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
     vi.mocked(insertarClienteFinal).mockResolvedValue({
       ok: true,
-      data: { cliente_final_id: "cf-2", cliente_id: CLIENTE_ID, nombre: "María López", telefono: "+5492920002222", saldo_deudor: 0 },
+      data: { cliente_final_id: "cf-2", cliente_id: CLIENTE_ID, nombre: "María López", telefono: "+5492920002222", saldo_deudor: 0, limite_credito: 0, cuit_cuil: null, email: null, estado: "activo" },
     });
+
 
     const resultado = await crearClienteFinal(
       ESTADO_CREAR_CLIENTE_FINAL_INICIAL,

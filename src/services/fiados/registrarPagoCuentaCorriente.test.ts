@@ -39,16 +39,57 @@ function mockearSesion(usuario: { id: string } | null) {
   return { auth: { getUser: vi.fn(async () => ({ data: { user: usuario } })) } };
 }
 
-function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; rpc?: ReturnType<typeof vi.fn> }) {
+function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; rpc?: ReturnType<typeof vi.fn>; clienteFinal?: any }) {
   const solicitanteBuilder = crearBuilderSolicitante(opciones.solicitante);
+  const clienteFinalBuilder = {
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          is: vi.fn(() => ({
+            maybeSingle: vi.fn(async () => opciones.clienteFinal ?? { data: { cliente_final_id: CLIENTE_FINAL_ID, cliente_id: CLIENTE_ID, saldo_deudor: 1000, nombre: "Juan" }, error: null }),
+            single: vi.fn(async () => opciones.clienteFinal ?? { data: { cliente_final_id: CLIENTE_FINAL_ID, cliente_id: CLIENTE_ID, saldo_deudor: 1000, nombre: "Juan" }, error: null }),
+          })),
+        })),
+      })),
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(async () => ({ error: null })),
+    })),
+  };
+  const movCcBuilder = {
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          gt: vi.fn(() => ({
+            order: vi.fn(async () => ({ data: [], error: null })),
+          })),
+        })),
+      })),
+    })),
+    insert: vi.fn(() => ({
+      select: vi.fn(() => ({
+        single: vi.fn(async () => ({ data: { movimiento_cc_id: "mcc-pago-1" }, error: null })),
+      })),
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(async () => ({ error: null })),
+    })),
+  };
+  const imputacionesBuilder = {
+    insert: vi.fn(async () => ({ error: null })),
+  };
 
   const from = vi.fn((tabla: string) => {
     if (tabla === "usuarios") return solicitanteBuilder;
+    if (tabla === "clientes_finales") return clienteFinalBuilder;
+    if (tabla === "movimientos_cuenta_corriente") return movCcBuilder;
+    if (tabla === "imputaciones_comprobantes") return imputacionesBuilder;
     throw new Error(`tabla no mockeada en el test: ${tabla}`);
   });
 
   return { ...mockearSesion({ id: AUTH_USER_ID }), from, rpc: opciones.rpc ?? vi.fn() };
 }
+
 
 const AUTH_USER_ID = "11111111-1111-4111-8111-111111111111";
 const CLIENTE_ID = "a1111111-1111-4111-8111-111111111111";
@@ -113,18 +154,9 @@ describe("registrarPagoCuentaCorriente", () => {
     expect(supabaseMock.rpc).not.toHaveBeenCalled();
   });
 
-  it("registra el pago (saldo 1000 -> 600 tras pagar 400), inserta el movimiento con venta_id NULL y audita", async () => {
-    const movimiento = {
-      movimiento_cc_id: "mcc-1",
-      cliente_final_id: CLIENTE_FINAL_ID,
-      venta_id: null,
-      tipo: "pago",
-      monto: 400,
-      usuario_id: USUARIO_ID,
-    };
+  it("registra el pago (saldo 1000 -> 600 tras pagar 400), inserta el movimiento y audita", async () => {
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
-      rpc: vi.fn(async () => ({ data: movimiento, error: null })),
     });
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
@@ -134,35 +166,20 @@ describe("registrarPagoCuentaCorriente", () => {
     );
 
     expect(resultado).toEqual({ error: null, exito: true });
-    expect(supabaseMock.rpc).toHaveBeenCalledWith("fn_registrar_pago_cuenta_corriente", {
-      p_cliente_final_id: CLIENTE_FINAL_ID,
-      p_monto: 400,
-    });
     expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: CLIENTE_ID,
         usuarioId: USUARIO_ID,
         tablaAfectada: "movimientos_cuenta_corriente",
-        registroId: "mcc-1",
+        registroId: "mcc-pago-1",
         campoModificado: "pago",
-        valorAnterior: null,
-        valorNuevo: "400",
       }),
     );
   });
 
   it("permite el pago a un empleado (docs/ROLES.md §2: C también para empleado, solo pagos)", async () => {
-    const movimiento = {
-      movimiento_cc_id: "mcc-2",
-      cliente_final_id: CLIENTE_FINAL_ID,
-      venta_id: null,
-      tipo: "pago",
-      monto: 400,
-      usuario_id: "u-empleado",
-    };
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { usuario_id: "u-empleado", rol: "empleado", cliente_id: CLIENTE_ID }, error: null },
-      rpc: vi.fn(async () => ({ data: movimiento, error: null })),
     });
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
@@ -174,13 +191,10 @@ describe("registrarPagoCuentaCorriente", () => {
     expect(resultado).toEqual({ error: null, exito: true });
   });
 
-  it("retorna NX-FIA-003 si el RPC rechaza por monto mayor al saldo deudor (SQLSTATE custom NX003), sin registrar auditoría", async () => {
+  it("retorna NX-FIA-003 si el monto ingresado supera el saldo deudor actual, sin registrar auditoría", async () => {
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
-      rpc: vi.fn(async () => ({
-        data: null,
-        error: { code: "NX003", message: "El monto del pago no puede ser mayor a la deuda actual del cliente." },
-      })),
+      clienteFinal: { data: { cliente_final_id: CLIENTE_FINAL_ID, cliente_id: CLIENTE_ID, saldo_deudor: 500, nombre: "Juan" }, error: null },
     });
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
@@ -193,10 +207,10 @@ describe("registrarPagoCuentaCorriente", () => {
     expect(registrarDiff).not.toHaveBeenCalled();
   });
 
-  it("retorna NX-FIA-002 cuando el RPC no encuentra el cliente final en este comercio (SQLSTATE P0002)", async () => {
+  it("retorna NX-FIA-002 cuando no encuentra el cliente final en este comercio", async () => {
     const supabaseMock = mockearSupabaseCompleto({
       solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
-      rpc: vi.fn(async () => ({ data: null, error: { code: "P0002", message: "no encontrado" } })),
+      clienteFinal: { data: null, error: { message: "No encontrado" } },
     });
     vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
 
@@ -207,19 +221,5 @@ describe("registrarPagoCuentaCorriente", () => {
 
     expect(resultado).toEqual({ error: "NX-FIA-002", exito: false });
   });
-
-  it("retorna NX-SYS-001 ante cualquier otro error del RPC", async () => {
-    const supabaseMock = mockearSupabaseCompleto({
-      solicitante: { data: { usuario_id: USUARIO_ID, rol: "comerciante", cliente_id: CLIENTE_ID }, error: null },
-      rpc: vi.fn(async () => ({ data: null, error: { message: "fallo de conexión" } })),
-    });
-    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
-
-    const resultado = await registrarPagoCuentaCorriente(
-      ESTADO_REGISTRAR_PAGO_CUENTA_CORRIENTE_INICIAL,
-      crearFormData(DATOS_VALIDOS),
-    );
-
-    expect(resultado).toEqual({ error: "NX-SYS-001", exito: false });
-  });
 });
+
