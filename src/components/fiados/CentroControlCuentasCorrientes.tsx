@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Users, BookOpen, Plus } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen } from "lucide-react";
+
 
 import type { DashboardCuentasCorrientesCompleto } from "@/repositories/cuentasCorrientesDashboardRepository";
 import { DashboardRiesgoCaja } from "./DashboardRiesgoCaja";

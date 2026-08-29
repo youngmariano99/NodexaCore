@@ -20,10 +20,6 @@ export function PadronClientesTabla({ clientes, nombreComercio = "Comercio" }: P
     return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(monto);
   };
 
-  const formatearFecha = (fechaStr: string | null) => {
-    if (!fechaStr) return "Sin compras";
-    return new Date(fechaStr).toLocaleDateString("es-AR", { dateStyle: "short" });
-  };
 
   const abrirWhatsApp = (nombre: string, telefono: string | null, saldo: number) => {
     if (!telefono) return;

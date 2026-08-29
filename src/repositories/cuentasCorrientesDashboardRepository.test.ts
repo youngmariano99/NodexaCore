@@ -151,11 +151,12 @@ describe("cuentasCorrientesDashboardRepository", () => {
 
       // Top 5 Deudores
       expect(resultado.data.top5Deudores).toHaveLength(2);
-      expect(resultado.data.top5Deudores[0].nombre).toBe("Maria Garcia"); // Saldo 25000 es #1
+      expect(resultado.data.top5Deudores[0]?.nombre).toBe("Maria Garcia"); // Saldo 25000 es #1
 
       // Padrón Enriquecido
-      expect(resultado.data.padronClientes[0].estadoAlerta).toBe("excedido"); // Maria Garcia superó su límite
-      expect(resultado.data.padronClientes[1].estadoAlerta).toBe("al_dia");
+      expect(resultado.data.padronClientes[0]?.estadoAlerta).toBe("excedido"); // Maria Garcia superó su límite
+      expect(resultado.data.padronClientes[1]?.estadoAlerta).toBe("al_dia");
     }
   });
 });
+
