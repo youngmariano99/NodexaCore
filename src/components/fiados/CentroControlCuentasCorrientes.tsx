@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { LayoutDashboard, Users, BookOpen } from "lucide-react";
 
-
 import type { DashboardCuentasCorrientesCompleto } from "@/repositories/cuentasCorrientesDashboardRepository";
 import { DashboardRiesgoCaja } from "./DashboardRiesgoCaja";
 import { PadronClientesTabla } from "./PadronClientesTabla";
@@ -26,7 +25,7 @@ export function CentroControlCuentasCorrientes({
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
       {/* Encabezado Principal */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#222A27] pb-5">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-slate-50 tracking-tight">
             Cuentas Corrientes (Fiados)
@@ -42,7 +41,7 @@ export function CentroControlCuentasCorrientes({
       </header>
 
       {/* Navegación por Pestañas Superiores */}
-      <nav className="flex rounded-2xl bg-slate-900 p-1.5 border border-slate-800 shadow-lg self-start">
+      <nav className="flex rounded-2xl bg-[#111615] p-1.5 border border-[#222A27] shadow-lg self-start">
         <button
           type="button"
           onClick={() => setTabActiva("dashboard")}
@@ -91,6 +90,8 @@ export function CentroControlCuentasCorrientes({
             controlClientes={datosDashboard.controlClientes}
             semaforoRiesgo={datosDashboard.semaforoRiesgo}
             top5Deudores={datosDashboard.top5Deudores}
+            padronClientes={datosDashboard.padronClientes}
+            movimientosTodos={datosDashboard.movimientosLibroDiario}
             nombreComercio={nombreComercio}
             esComerciante={esComerciante}
           />
@@ -99,6 +100,7 @@ export function CentroControlCuentasCorrientes({
         {tabActiva === "padron" && (
           <PadronClientesTabla
             clientes={datosDashboard.padronClientes}
+            movimientosTodos={datosDashboard.movimientosLibroDiario}
             nombreComercio={nombreComercio}
           />
         )}

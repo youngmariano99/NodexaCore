@@ -5,22 +5,13 @@ import { z } from "zod";
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
+import type { EstadoActualizarConfiguracionRiesgo } from "./tipos";
 
 const esquemaConfiguracionRiesgo = z.object({
   modoFacturacionEstimada: z.enum(["automatico", "manual"]),
   facturacionManualMonto: z.coerce.number().min(0, "El monto no puede ser negativo."),
   topeDeudaTolerablePct: z.coerce.number().min(1, "El porcentaje mínimo es 1%.").max(100, "El porcentaje máximo es 100%."),
 });
-
-export interface EstadoActualizarConfiguracionRiesgo {
-  error: string | null;
-  exito: boolean;
-}
-
-export const ESTADO_ACTUALIZAR_CONFIGURACION_RIESGO_INICIAL: EstadoActualizarConfiguracionRiesgo = {
-  error: null,
-  exito: false,
-};
 
 interface FilaUsuarioSolicitante {
   usuario_id: string;
@@ -30,6 +21,7 @@ interface FilaUsuarioSolicitante {
 
 /**
  * Server Action para actualizar la configuración de riesgo crediticio y facturación estimada del comercio.
+ * Exporta únicamente la función asíncrona para cumplir con las reglas de Next.js ("use server").
  */
 export async function actualizarConfiguracionRiesgoFiados(
   _estadoPrevio: EstadoActualizarConfiguracionRiesgo,
