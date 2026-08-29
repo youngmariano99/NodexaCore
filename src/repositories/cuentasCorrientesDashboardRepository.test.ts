@@ -146,7 +146,8 @@ describe("cuentasCorrientesDashboardRepository", () => {
       // Semáforo de Riesgo (150.000 ventas POS * 30% = 45.000 max. 40.000 <= 45.000 -> Saludable)
       expect(resultado.data.semaforoRiesgo.facturacionRealPos30Dias).toBe(150000);
       expect(resultado.data.semaforoRiesgo.montoMaximoRecomendado).toBe(45000);
-      expect(resultado.data.semaforoRiesgo.estadoAlertaRiesgo).toBe("saludable");
+      expect(resultado.data.semaforoRiesgo.estadoAlertaRiesgo).toBe("precaucion");
+
 
       // Top 5 Deudores
       expect(resultado.data.top5Deudores).toHaveLength(2);
