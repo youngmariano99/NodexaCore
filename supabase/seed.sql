@@ -75,17 +75,49 @@ BEGIN
      40, 12, date_trunc('month', now()), NULL, '#8B5CF6', 'bazarcasasur.com.ar', '+5492920000003');
 
   -- ------------------------------------------------------------
-  -- 2. USUARIOS (Soporte Global, Comerciantes y Empleados)
+  -- 2. USUARIOS (Auth Users & Public Usuarios)
   -- ------------------------------------------------------------
-  INSERT INTO usuarios (usuario_id, auth_user_id, cliente_id, rol, nombre, email) VALUES
-    ('d0000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000001', NULL, 'admin_nodexa', 'Soporte Nodexa', 'admin@nodexa.app'),
-    ('d0000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000002', 'a1111111-1111-4111-8111-111111111111', 'comerciante', 'Pedro Almacenero', 'pedro@almacendonpedro.com'),
-    ('d0000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000003', 'a1111111-1111-4111-8111-111111111111', 'empleado', 'Carlos Empleado', 'carlos@almacendonpedro.com'),
-    ('d0000000-0000-4000-8000-000000000004', '00000000-0000-0000-0000-000000000004', 'b2222222-2222-4222-8222-222222222222', 'comerciante', 'Roberto Ferretero', 'roberto@eltornillo.com'),
-    ('d0000000-0000-4000-8000-000000000005', '00000000-0000-0000-0000-000000000005', 'b2222222-2222-4222-8222-222222222222', 'empleado', 'Ana Ayudante', 'ana@eltornillo.com'),
-    ('d0000000-0000-4000-8000-000000000006', '00000000-0000-0000-0000-000000000006', 'c3333333-3333-4333-8333-333333333333', 'comerciante', 'Andrés Bazares', 'andres@bazarcasasur.com'),
-    ('d0000000-0000-4000-8000-000000000007', '00000000-0000-0000-0000-000000000007', 'c3333333-3333-4333-8333-333333333333', 'empleado', 'Lucía Ventas', 'lucia@bazarcasasur.com'),
-    ('d0000000-0000-4000-8000-000000000010', '00000000-0000-0000-0000-000000000010', 'a0000000-0000-4000-8000-000000000000', 'comerciante', 'Demo Owner', 'demo@nodexa.app');
+  -- A. Garantizar existencia de filas en auth.users y auth.identities
+  INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, recovery_token, email_change_token_new, email_change,
+    is_super_admin, is_sso_user, is_anonymous
+  ) VALUES
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'admin@nodexa.app', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'pedro@almacendonpedro.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'carlos@almacendonpedro.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'roberto@eltornillo.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'ana@eltornillo.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'andres@bazarcasasur.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000007', 'authenticated', 'authenticated', 'lucia@bazarcasasur.com', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'demo@nodexa.app', crypt('NodexaDemo123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', false, false, false)
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO auth.identities (
+    id, provider_id, user_id, identity_data, provider, created_at, updated_at, last_sign_in_at
+  ) VALUES
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', '{"sub":"00000000-0000-4000-8000-000000000001","email":"admin@nodexa.app"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000002', '{"sub":"00000000-0000-4000-8000-000000000002","email":"pedro@almacendonpedro.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000003', '{"sub":"00000000-0000-4000-8000-000000000003","email":"carlos@almacendonpedro.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000004', '{"sub":"00000000-0000-4000-8000-000000000004","email":"roberto@eltornillo.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000005', '{"sub":"00000000-0000-4000-8000-000000000005","email":"ana@eltornillo.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000006', '{"sub":"00000000-0000-4000-8000-000000000006","email":"andres@bazarcasasur.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000007', '{"sub":"00000000-0000-4000-8000-000000000007","email":"lucia@bazarcasasur.com"}', 'email', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000010', '{"sub":"00000000-0000-4000-8000-000000000010","email":"demo@nodexa.app"}', 'email', now(), now(), now())
+  ON CONFLICT (provider_id, provider) DO NOTHING;
+
+  -- B. Insertar usuarios en public.usuarios con FK válida
+  INSERT INTO public.usuarios (usuario_id, auth_user_id, cliente_id, rol, nombre, email) VALUES
+    ('d0000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', NULL, 'admin_nodexa', 'Soporte Nodexa', 'admin@nodexa.app'),
+    ('d0000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000002', 'a1111111-1111-4111-8111-111111111111', 'comerciante', 'Pedro Almacenero', 'pedro@almacendonpedro.com'),
+    ('d0000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000003', 'a1111111-1111-4111-8111-111111111111', 'empleado', 'Carlos Empleado', 'carlos@almacendonpedro.com'),
+    ('d0000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000004', 'b2222222-2222-4222-8222-222222222222', 'comerciante', 'Roberto Ferretero', 'roberto@eltornillo.com'),
+    ('d0000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000005', 'b2222222-2222-4222-8222-222222222222', 'empleado', 'Ana Ayudante', 'ana@eltornillo.com'),
+    ('d0000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000006', 'c3333333-3333-4333-8333-333333333333', 'comerciante', 'Andrés Bazares', 'andres@bazarcasasur.com'),
+    ('d0000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000007', 'c3333333-3333-4333-8333-333333333333', 'empleado', 'Lucía Ventas', 'lucia@bazarcasasur.com'),
+    ('d0000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000010', 'a0000000-0000-4000-8000-000000000000', 'comerciante', 'Demo Owner', 'demo@nodexa.app');
 
   -- ------------------------------------------------------------
   -- 3. TENANT MODULES (Habilitación de Módulos Plug & Play)
@@ -148,7 +180,7 @@ BEGIN
     ('e1111111-1111-4111-8111-111111111111', 'a1111111-1111-4111-8111-111111111111', 'Yogur Entero Frutilla 1L', 'LAC-101', 1600, 1150, 30, 8, true, NULL, 'Lácteos', 'm0000000-0000-4000-8000-000000000003', 'pr000000-0000-4000-8000-000000000002'),
     ('e1111111-1111-4111-8111-111111111112', 'a1111111-1111-4111-8111-111111111111', 'Queso Cremoso 1kg', 'LAC-102', 7800, 5600, 18, 5, true, NULL, 'Lácteos', 'm0000000-0000-4000-8000-000000000003', 'pr000000-0000-4000-8000-000000000002'),
     ('e2222222-2222-4222-8222-222222222222', 'b2222222-2222-4222-8222-222222222222', 'Juego de Destornilladores 6 pzas', 'HER-201', 18500, 12000, 25, 5, false, NULL, 'Herramientas', NULL, 'pr000000-0000-4000-8000-000000000003'),
-    ('e2222222-2222-4222-8222-222222222223', 'b2222222-2222-4222-8222-222222222222', 'Termo Acero Inoxidable 1L', 'HER-202', 45000, 31000, 8, 3, false, NULL, 'Bazar', 'm0000000-0000-4000-8000-000000000004', 'pr000000-0000-4000-8000-000000000003'),
+    ('e2222222-2222-4222-8222-222222222222', 'b2222222-2222-4222-8222-222222222222', 'Termo Acero Inoxidable 1L', 'HER-202', 45000, 31000, 8, 3, false, NULL, 'Bazar', 'm0000000-0000-4000-8000-000000000004', 'pr000000-0000-4000-8000-000000000003'),
     ('e3333333-3333-4333-8333-333333333333', 'c3333333-3333-4333-8333-333333333333', 'Set Cubiertos Tramontina 24 pzas', 'BAZ-301', 28900, 19500, 40, 10, true, 'https://cdn.nodexa.app/seed/cubiertos.webp', 'Hogar', 'm0000000-0000-4000-8000-000000000005', NULL),
     ('e3333333-3333-4333-8333-333333333334', 'c3333333-3333-4333-8333-333333333333', 'Sartén Antiadherente 24cm', 'BAZ-302', 19800, 13400, 15, 4, true, 'https://cdn.nodexa.app/seed/sarten.webp', 'Hogar', 'm0000000-0000-4000-8000-000000000005', NULL);
 
