@@ -5,17 +5,14 @@ import Link from "next/link";
 import {
   X,
   User,
-  Phone,
-  DollarSign,
-  Calendar,
   MessageCircle,
   ExternalLink,
   ArrowDownRight,
   ArrowUpRight,
   ShieldAlert,
   ShieldCheck,
-  CreditCard,
 } from "lucide-react";
+
 
 import type { ClientePadronEnriquecido, MovimientoLibroDiario } from "@/repositories/cuentasCorrientesDashboardRepository";
 import { FormularioPagoCuentaCorriente } from "@/app/(app)/clientes/[clienteFinalId]/FormularioPagoCuentaCorriente";
