@@ -103,7 +103,8 @@ jobs:
       - run: supabase start
       - run: npm run test:integracion
       - if: ${{ !cancelled() }}
-        run: supabase stop
+        run: which supabase >/dev/null 2>&1 && supabase stop || true
+
 
   e2e-tests:
     name: Pruebas E2E (Playwright)
@@ -159,7 +160,8 @@ jobs:
           path: playwright-report-flujos-criticos/
           retention-days: 7
       - if: always()
-        run: supabase stop
+        run: which supabase >/dev/null 2>&1 && supabase stop || true
+
 
   ci-ok:
     name: CI (requerido para mergear)
