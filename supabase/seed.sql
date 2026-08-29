@@ -2,7 +2,7 @@
 -- SEED.sql — NODEXA CORE
 -- Motor: PostgreSQL (Supabase)
 -- Descripción: Script de siembra de datos de prueba completo,
--- atómico (transaccional) y con opción de limpieza total previa.
+-- atómico (transaccional) y totalmente auditado contra el esquema de migraciones.
 -- ============================================================
 
 DO $$
@@ -122,44 +122,43 @@ BEGIN
     ('fa000000-0000-4000-8000-000000000004', 'b2222222-2222-4222-8222-222222222222', 'Stanley'),
     ('fa000000-0000-4000-8000-000000000005', 'c3333333-3333-4333-8333-333333333333', 'Tramontina');
 
-  INSERT INTO proveedores (proveedor_id, cliente_id, razon_social, cuit, telefono, email, direccion) VALUES
-    ('fb000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Distribuidora Central S.A.', '30-11223344-5', '+5491144332211', 'ventas@distcentral.com', 'Av. Corrientes 1234, CABA'),
-    ('fb000000-0000-4000-8000-000000000002', 'a1111111-1111-4111-8111-111111111111', 'Lácteos del Sur SRL', '30-99887766-4', '+5492914556677', 'pedidos@lacteosdelsur.com', 'Ruta 3 Km 680, Bahía Blanca'),
-    ('fb000000-0000-4000-8000-000000000003', 'b2222222-2222-4222-8222-222222222222', 'Mayorista Ferretero SA', '30-55443322-1', '+5492214889900', 'contacto@mayfer.com.ar', 'Calle 44 nro 890, La Plata');
+  INSERT INTO proveedores (proveedor_id, cliente_id, nombre, contacto, dias_demora) VALUES
+    ('fb000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Distribuidora Central S.A.', 'ventas@distcentral.com (+5491144332211)', 2),
+    ('fb000000-0000-4000-8000-000000000002', 'a1111111-1111-4111-8111-111111111111', 'Lácteos del Sur SRL', 'pedidos@lacteosdelsur.com (+5492914556677)', 1),
+    ('fb000000-0000-4000-8000-000000000003', 'b2222222-2222-4222-8222-222222222222', 'Mayorista Ferretero SA', 'contacto@mayfer.com.ar (+5492214889900)', 3);
 
   -- ------------------------------------------------------------
   -- 5. REPARTIDORES (Deliverys)
   -- ------------------------------------------------------------
-  INSERT INTO repartidores (repartidor_id, cliente_id, nombre, telefono, vehiculo, activo, pin_acceso) VALUES
-    ('fc000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Juan Motero', '+5492920554433', 'Honda Wave 110cc', true, '1234'),
-    ('fc000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'Marcos Bici', '+5492920667788', 'Bicicleta Rodado 29', true, '5678'),
-    ('fc000000-0000-4000-8000-000000000003', 'c3333333-3333-4333-8333-333333333333', 'Diego Delivery', '+5492920990011', 'Fiat Fiorino', true, '9999');
+  INSERT INTO repartidores (repartidor_id, cliente_id, nombre, telefono, activo, pin_acceso) VALUES
+    ('fc000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Juan Motero', '+5492920554433', true, '1234'),
+    ('fc000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'Marcos Bici', '+5492920667788', true, '5678'),
+    ('fc000000-0000-4000-8000-000000000003', 'c3333333-3333-4333-8333-333333333333', 'Diego Delivery', '+5492920990011', true, '9999');
 
   -- ------------------------------------------------------------
   -- 6. PRODUCTOS Y STOCK BASE
   -- ------------------------------------------------------------
   INSERT INTO productos (
-    producto_id, cliente_id, nombre, sku, precio, costo, stock_actual,
-    minimo_stock, publicado, imagen_url, categoria, marca_id, proveedor_id
+    producto_id, cliente_id, nombre, sku, precio, stock_actual,
+    stock_minimo, publicado, imagen_url, categoria, marca_id, proveedor_id
   ) VALUES
-    ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Gaseosa Cola 2.25L', 'BEB-001', 2500, 1800, 45, 10, true, 'https://cdn.nodexa.app/seed/cola.webp', 'Bebidas', 'fa000000-0000-4000-8000-000000000001', 'fb000000-0000-4000-8000-000000000001'),
-    ('e0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'Galletitas Chocolatadas 300g', 'GAL-002', 1400, 950, 12, 15, true, 'https://cdn.nodexa.app/seed/galletitas.webp', 'Almacén', 'fa000000-0000-4000-8000-000000000002', 'fb000000-0000-4000-8000-000000000001'),
-    ('e0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', 'Leche Entera 1L', 'LAC-003', 1100, 820, 80, 20, true, 'https://cdn.nodexa.app/seed/leche.webp', 'Lácteos', NULL, 'fb000000-0000-4000-8000-000000000001'),
-    ('e1111111-1111-4111-8111-111111111111', 'a1111111-1111-4111-8111-111111111111', 'Yogur Entero Frutilla 1L', 'LAC-101', 1600, 1150, 30, 8, true, NULL, 'Lácteos', 'fa000000-0000-4000-8000-000000000003', 'fb000000-0000-4000-8000-000000000002'),
-    ('e1111111-1111-4111-8111-111111111112', 'a1111111-1111-4111-8111-111111111111', 'Queso Cremoso 1kg', 'LAC-102', 7800, 5600, 18, 5, true, NULL, 'Lácteos', 'fa000000-0000-4000-8000-000000000003', 'fb000000-0000-4000-8000-000000000002'),
-    ('e2222222-2222-4222-8222-222222222222', 'b2222222-2222-4222-8222-222222222222', 'Juego de Destornilladores 6 pzas', 'HER-201', 18500, 12000, 25, 5, false, NULL, 'Herramientas', NULL, 'fb000000-0000-4000-8000-000000000003'),
-    ('e2222222-2222-4222-8222-222222222223', 'b2222222-2222-4222-8222-222222222222', 'Termo Acero Inoxidable 1L', 'HER-202', 45000, 31000, 8, 3, false, NULL, 'Bazar', 'fa000000-0000-4000-8000-000000000004', 'fb000000-0000-4000-8000-000000000003'),
-    ('e3333333-3333-4333-8333-333333333333', 'c3333333-3333-4333-8333-333333333333', 'Set Cubiertos Tramontina 24 pzas', 'BAZ-301', 28900, 19500, 40, 10, true, 'https://cdn.nodexa.app/seed/cubiertos.webp', 'Hogar', 'fa000000-0000-4000-8000-000000000005', NULL),
-    ('e3333333-3333-4333-8333-333333333334', 'c3333333-3333-4333-8333-333333333333', 'Sartén Antiadherente 24cm', 'BAZ-302', 19800, 13400, 15, 4, true, 'https://cdn.nodexa.app/seed/sarten.webp', 'Hogar', 'fa000000-0000-4000-8000-000000000005', NULL);
+    ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Gaseosa Cola 2.25L', 'BEB-001', 2500, 45, 10, true, 'https://cdn.nodexa.app/seed/cola.webp', 'Bebidas', 'fa000000-0000-4000-8000-000000000001', 'fb000000-0000-4000-8000-000000000001'),
+    ('e0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'Galletitas Chocolatadas 300g', 'GAL-002', 1400, 12, 15, true, 'https://cdn.nodexa.app/seed/galletitas.webp', 'Almacén', 'fa000000-0000-4000-8000-000000000002', 'fb000000-0000-4000-8000-000000000001'),
+    ('e0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', 'Leche Entera 1L', 'LAC-003', 1100, 80, 20, true, 'https://cdn.nodexa.app/seed/leche.webp', 'Lácteos', NULL, 'fb000000-0000-4000-8000-000000000001'),
+    ('e1111111-1111-4111-8111-111111111111', 'a1111111-1111-4111-8111-111111111111', 'Yogur Entero Frutilla 1L', 'LAC-101', 1600, 30, 8, true, NULL, 'Lácteos', 'fa000000-0000-4000-8000-000000000003', 'fb000000-0000-4000-8000-000000000002'),
+    ('e1111111-1111-4111-8111-111111111112', 'a1111111-1111-4111-8111-111111111111', 'Queso Cremoso 1kg', 'LAC-102', 7800, 18, 5, true, NULL, 'Lácteos', 'fa000000-0000-4000-8000-000000000003', 'fb000000-0000-4000-8000-000000000002'),
+    ('e2222222-2222-4222-8222-222222222222', 'b2222222-2222-4222-8222-222222222222', 'Juego de Destornilladores 6 pzas', 'HER-201', 18500, 25, 5, false, NULL, 'Herramientas', NULL, 'fb000000-0000-4000-8000-000000000003'),
+    ('e2222222-2222-4222-8222-222222222223', 'b2222222-2222-4222-8222-222222222222', 'Termo Acero Inoxidable 1L', 'HER-202', 45000, 8, 3, false, NULL, 'Bazar', 'fa000000-0000-4000-8000-000000000004', 'fb000000-0000-4000-8000-000000000003'),
+    ('e3333333-3333-4333-8333-333333333333', 'c3333333-3333-4333-8333-333333333333', 'Set Cubiertos Tramontina 24 pzas', 'BAZ-301', 28900, 40, 10, true, 'https://cdn.nodexa.app/seed/cubiertos.webp', 'Hogar', 'fa000000-0000-4000-8000-000000000005', NULL),
+    ('e3333333-3333-4333-8333-333333333334', 'c3333333-3333-4333-8333-333333333333', 'Sartén Antiadherente 24cm', 'BAZ-302', 19800, 15, 4, true, 'https://cdn.nodexa.app/seed/sarten.webp', 'Hogar', 'fa000000-0000-4000-8000-000000000005', NULL);
 
   -- Volumetría de productos adicionada
-  INSERT INTO productos (cliente_id, nombre, sku, precio, costo, stock_actual, minimo_stock, publicado, categoria)
+  INSERT INTO productos (cliente_id, nombre, sku, precio, stock_actual, stock_minimo, publicado, categoria)
   SELECT
     'a0000000-0000-4000-8000-000000000000',
     'Producto Demo ' || n,
     'SKU-DEMO-' || LPAD(n::text, 4, '0'),
     ROUND((100 + random() * 5000)::numeric, 2),
-    ROUND((50 + random() * 2500)::numeric, 2),
     FLOOR(random() * 100)::int,
     5,
     true,
@@ -189,12 +188,10 @@ BEGIN
   -- ------------------------------------------------------------
   -- 8. CUENTAS CORRIENTES INICIALES
   -- ------------------------------------------------------------
-  INSERT INTO cuentas_corrientes (cliente_id, cliente_final_id, saldo_deudor, limite_credito, estado)
+  INSERT INTO cuentas_corrientes (cliente_id, cliente_final_id, estado)
   SELECT
     cf.cliente_id,
     cf.cliente_final_id,
-    cf.saldo_deudor,
-    cf.limite_credito,
     cf.estado
   FROM clientes_finales cf;
 
@@ -286,21 +283,21 @@ BEGIN
   -- 10. PEDIDOS WEB (TABLERO KANBAN DE COMANDAS Y DELIVERYS)
   -- ------------------------------------------------------------
   INSERT INTO pedidos_web (
-    pedido_id, cliente_id, codigo_seguimiento, estado, cliente_nombre,
-    cliente_telefono, direccion_envio, metodo_envio, costo_envio,
-    metodo_pago, total, notas, repartidor_id
+    pedido_id, cliente_id, datos_cliente, metodo_pago, opcion_entrega,
+    estado, subtotal, costo_envio, total, repartidor_id
   ) VALUES
-    ('fd000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'PED-1001', 'pendiente', 'Laura Gómez', '+5492920112233', 'Mitre 450', 'delivery', 1500, 'efectivo', 8500, 'Sin cebolla por favor', NULL),
-    ('fd000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'PED-1002', 'en_preparacion', 'Esteban Quito', '+5492920445566', 'Rivadavia 120', 'delivery', 1500, 'mercado_pago', 12000, 'Timbre 2B', NULL),
-    ('fd000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', 'PED-1003', 'listo', 'Patricia Paz', '+5492920778899', 'Av. San Martín 890', 'delivery', 1500, 'transferencia', 6400, NULL, 'fc000000-0000-4000-8000-000000000001'),
-    ('fd000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000000', 'PED-1004', 'en_camino', 'Mariano López', '+5492920119988', 'Belgrano 340', 'delivery', 1500, 'efectivo', 9800, 'Llevar cambio de $10000', 'fc000000-0000-4000-8000-000000000001'),
-    ('fd000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000000', 'PED-1005', 'entregado', 'Gonzalo Ruiz', '+5492920223344', 'Retira en local', 'takeaway', 0, 'efectivo', 4500, NULL, NULL);
+    ('fd000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Laura Gómez", "telefono": "+5492920112233", "direccion": "Mitre 450", "notas": "Sin cebolla por favor"}'::jsonb, 'efectivo', 'envio', 'pendiente', 7000, 1500, 8500, NULL),
+    ('fd000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Esteban Quito", "telefono": "+5492920445566", "direccion": "Rivadavia 120", "notas": "Timbre 2B"}'::jsonb, 'mercado_pago', 'envio', 'en_preparacion', 10500, 1500, 12000, NULL),
+    ('fd000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Patricia Paz", "telefono": "+5492920778899", "direccion": "Av. San Martín 890"}'::jsonb, 'transferencia', 'envio', 'despachado', 4900, 1500, 6400, 'fc000000-0000-4000-8000-000000000001'),
+    ('fd000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Mariano López", "telefono": "+5492920119988", "direccion": "Belgrano 340", "notas": "Llevar cambio de $10000"}'::jsonb, 'efectivo', 'envio', 'despachado', 8300, 1500, 9800, 'fc000000-0000-4000-8000-000000000001'),
+    ('fd000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Gonzalo Ruiz", "telefono": "+5492920223344"}'::jsonb, 'efectivo', 'retiro', 'completado', 4500, 0, 4500, NULL);
 
   -- Ítems de pedidos web
-  INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario, subtotal)
+  INSERT INTO pedido_items (pedido_id, producto_id, nombre, cantidad, precio_unitario, subtotal)
   SELECT
     pw.pedido_id,
     p.producto_id,
+    p.nombre,
     2,
     p.precio,
     (p.precio * 2)
