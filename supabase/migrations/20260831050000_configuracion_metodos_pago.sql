@@ -4,14 +4,51 @@
 -- 1. Agregar columna configuracion_metodos_pago a la tabla clientes
 ALTER TABLE clientes
   ADD COLUMN IF NOT EXISTS configuracion_metodos_pago jsonb NOT NULL DEFAULT '[
-    {"metodo_pago":"efectivo","etiqueta":"Efectivo","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"transferencia","etiqueta":"Transferencia","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"debito","etiqueta":"Débito","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"credito","etiqueta":"Crédito","tipo_ajuste":"recargo","porcentaje":10,"activo":true},
-    {"metodo_pago":"cuenta_corriente","etiqueta":"Cta. Cte.","tipo_ajuste":"ninguno","porcentaje":0,"activo":true}
+    {"metodoPago":"efectivo","etiqueta":"Efectivo","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"transferencia","etiqueta":"Transferencia","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"debito","etiqueta":"Débito","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"credito","etiqueta":"Crédito","tipoAjuste":"recargo","porcentaje":10,"activo":true},
+    {"metodoPago":"cuenta_corriente","etiqueta":"Cta. Cte.","tipoAjuste":"ninguno","porcentaje":0,"activo":true}
   ]'::jsonb;
 
--- 2. Trazabilidad de recargos / descuentos en la tabla ventas
+-- 2. Función RPC para actualizar métodos de pago sin exponer columnas administrativas a UPDATE directo (docs/ROLES.md)
+CREATE OR REPLACE FUNCTION public.fn_actualizar_metodos_pago(
+  p_configuracion jsonb
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_cliente_id uuid;
+BEGIN
+  IF auth_rol() IS DISTINCT FROM 'comerciante' THEN
+    RAISE EXCEPTION 'No tenés permiso para modificar los métodos de pago de este comercio.' USING errcode = 'P0001';
+  END IF;
+
+  v_cliente_id := auth_cliente_id();
+
+  IF v_cliente_id IS NULL THEN
+    RAISE EXCEPTION 'No se encontró el comercio del usuario solicitante.' USING errcode = 'P0002';
+  END IF;
+
+  UPDATE clientes
+  SET configuracion_metodos_pago = p_configuracion
+  WHERE cliente_id = v_cliente_id
+    AND eliminado_en IS NULL;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'No se encontró el comercio del usuario solicitante.' USING errcode = 'P0002';
+  END IF;
+
+  RETURN p_configuracion;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.fn_actualizar_metodos_pago(jsonb) TO authenticated;
+
+-- 3. Trazabilidad de recargos / descuentos en la tabla ventas
 ALTER TABLE ventas
   ADD COLUMN IF NOT EXISTS porcentaje_ajuste numeric(5,2) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS monto_ajuste numeric(12,2) NOT NULL DEFAULT 0;
