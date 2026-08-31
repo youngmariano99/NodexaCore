@@ -66,6 +66,7 @@ export async function actualizarMetodosPago(
     .eq("cliente_id", solicitante.cliente_id);
 
   if (errorUpdate) {
+    console.error("[actualizarMetodosPago] Error en Supabase:", errorUpdate);
     return { ok: false, error: "NX-SYS-001" };
   }
 

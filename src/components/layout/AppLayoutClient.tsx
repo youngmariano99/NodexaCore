@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -193,16 +194,30 @@ export function AppLayoutClient({
   const contenidoSidebar = (
     <div className="flex flex-col h-full bg-[#0D1110]">
       {/* Cabecera / Identidad */}
-      <div className="flex flex-col px-6 py-6 border-b border-[#222A27]">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold tracking-widest text-[#F3F5F4]">N O D E X A</span>
-          <span className="text-xs px-2 py-0.5 rounded bg-[#151A18] border border-[#222A27] text-[#16D39A] font-mono capitalize">
-            {rol}
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-[#222A27]">
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-[#151A18] shadow-inner">
+          <Image
+            src="/Isotipo.png"
+            alt="Isotipo Nodexa"
+            width={32}
+            height={32}
+            className="h-7 w-7 object-contain drop-shadow"
+            priority
+          />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-sans text-base font-bold tracking-tight text-[#F3F5F4] whitespace-nowrap">
+              NODEXA
+            </span>
+            <span className="rounded bg-[#16D39A]/10 border border-[#16D39A]/20 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#16D39A] capitalize">
+              {rol}
+            </span>
+          </div>
+          <span className="truncate font-mono text-[10px] tracking-wider text-[#737C78] uppercase">
+            {nombreComercio}
           </span>
         </div>
-        <span className="text-[10px] tracking-wider text-[#737C78] mt-1 font-mono uppercase">
-          ESTRUCTURA · DATOS · RESULTADOS
-        </span>
       </div>
 
       {/* Navegación de Módulos */}

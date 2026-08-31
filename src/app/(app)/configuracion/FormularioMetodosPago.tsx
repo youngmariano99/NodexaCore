@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Banknote,
   Building2,
@@ -17,7 +18,7 @@ import {
 import {
   type ReglaMetodoPago,
   type TipoAjustePago,
-  METODOS_PAGO_POR_DEFECTO,
+  normalizarReglasMetodosPago,
 } from "@/lib/dominio/ventas/calcularTotalVenta";
 import { actualizarMetodosPago } from "@/services/configuracion/actualizarMetodosPago";
 
@@ -44,12 +45,16 @@ function obtenerIconoMetodo(metodoPago: string) {
 
 export function FormularioMetodosPago({ metodosIniciales }: FormularioMetodosPagoProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [prevMetodosIniciales, setPrevMetodosIniciales] = useState(metodosIniciales);
   const [reglas, setReglas] = useState<ReglaMetodoPago[]>(() => {
-    if (metodosIniciales && Array.isArray(metodosIniciales) && metodosIniciales.length > 0) {
-      return metodosIniciales;
-    }
-    return METODOS_PAGO_POR_DEFECTO;
+    return normalizarReglasMetodosPago(metodosIniciales);
   });
+
+  if (metodosIniciales !== prevMetodosIniciales) {
+    setPrevMetodosIniciales(metodosIniciales);
+    setReglas(normalizarReglasMetodosPago(metodosIniciales));
+  }
 
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
   const [exito, setExito] = useState(false);
@@ -100,6 +105,7 @@ export function FormularioMetodosPago({ metodosIniciales }: FormularioMetodosPag
       const res = await actualizarMetodosPago(reglas);
       if (res.ok) {
         setExito(true);
+        await queryClient.invalidateQueries({ queryKey: ["metodos-pago-comercio"] });
         router.refresh();
       } else {
         setErrorLocal(res.error || "NX-SYS-001");
