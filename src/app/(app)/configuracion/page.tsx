@@ -6,6 +6,8 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 import { FormularioConfiguracion } from "./FormularioConfiguracion";
+import { FormularioMetodosPago } from "./FormularioMetodosPago";
+import type { ReglaMetodoPago } from "@/lib/dominio/ventas/calcularTotalVenta";
 
 export const metadata: Metadata = {
   title: "Configuración del Comercio — Nodexa Core",
@@ -22,6 +24,7 @@ interface FilaCliente {
   nombre_comercio: string;
   telefono_whatsapp: string;
   logo_url: string | null;
+  configuracion_metodos_pago: ReglaMetodoPago[] | null;
 }
 
 export default async function ConfiguracionPage() {
@@ -53,7 +56,7 @@ export default async function ConfiguracionPage() {
 
   const { data: cliente, error: errorCliente } = await supabase
     .from("clientes")
-    .select("nombre_comercio, telefono_whatsapp, logo_url")
+    .select("nombre_comercio, telefono_whatsapp, logo_url, configuracion_metodos_pago")
     .eq("cliente_id", solicitante.cliente_id)
     .maybeSingle<FilaCliente>();
 
@@ -67,11 +70,11 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
         <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-2xl font-semibold text-slate-50 font-sans">Configuración del Comercio</h1>
           <p className="text-sm text-slate-400">
-            Mantené actualizados los datos comerciales de tu tienda y su identidad visual básica.
+            Mantené actualizados los datos comerciales de tu tienda y sus políticas de cobro y promociones.
           </p>
         </header>
 
@@ -79,6 +82,10 @@ export default async function ConfiguracionPage() {
           nombreInicial={cliente.nombre_comercio}
           whatsappInicial={cliente.telefono_whatsapp}
           logoInicial={cliente.logo_url}
+        />
+
+        <FormularioMetodosPago
+          metodosIniciales={cliente.configuracion_metodos_pago}
         />
       </div>
     </div>

@@ -30,18 +30,43 @@
   * TDD (Test-Driven Development) para lógica core de negocio
   * Pirámide 70% Unitarias (Vitest), 20% Integración, 10% E2E (Playwright)
 - **trazabilidad:**
-  * Auditoría Asíncrona registrando únicamente Diffs de base de datos
+  * Auditoría Asíncrona registrando únicamente Diffs de base de datos (con after())
   * Catálogo de Errores Normalizados en cliente y servidor (ERRORS.md)
   * Prohibición de logs en consola con datos sensibles o credenciales
 - **robustez:**
   * DTOs validados y tipados de extremo a extremo
   * Patrón Repository para desacoplar el ORM de la interfaz
-  * Idempotencia y Anti-Race Conditions con concurrencia optimista
+  * Idempotencia y Anti-Race Conditions con concurrencia optimista (lock_version)
   * Borrado Lógico obligatorio (Soft Delete con columna eliminado_en)
 - **devops:**
   * Pipelines CI/CD automatizados con validación de tests previa al deploy
   * Aislamiento de Service Role Key exclusiva para servidor/cron jobs
   * Prohibición de hardcoding y exposición de credenciales en NEXT_PUBLIC_
+- **motor_ledger:**
+  * Contabilidad de Partida Doble: sumatoria de débitos y créditos igual a cero (entidades segregadas transactions, accounts, entries)
+  * Inmutabilidad estricta (Append-Only Log): prohibido UPDATE o DELETE sobre historial financiero o movimientos de stock; corrección exclusiva vía contra-asientos/reversiones
+  * Cumplimiento fiscal argentino: integración con controladores fiscales, emisión obligatoria de Reporte Z y Cinta Testigo Digital (CTD)
+  * Retención documental (Ley 11.683): almacenamiento estratificado Hot (0-24m), Warm (25-48m) y Cold con candados WORM (5-11 años)
+- **rendimiento_saas:**
+  * Concurrencia Optimista con lock_version e Idempotencia con idempotency_key
+  * Aislamiento Multi-Tenant estricto vía RLS con cliente_id (prohibido USING (true) en mutaciones)
+  * Paginación en servidor y Edge Caching en vistas públicas
+  * Captura Única de Datos (BPR): cero doble carga
+- **trazabilidad_sod:**
+  * Segregación de Funciones (SoD): controles cruzados de autorización/ejecución/reconciliación
+  * Auditoría asíncrona por Diffs en background (after())
+  * Borrado Lógico universal (eliminado_en) en todas las tablas principales
+- **nux_interfaz:**
+  * Leyes Cero de Nodexa: Cero Emojis (solo lucide-react), Fail-Fast con Zod y ERRORS.md, Fondo Base Oscuro (#090B0B) con Verde Nodexa (#16D39A) exclusivo para CTA primario, y Áreas Táctiles mínimas de 44x44px
+  * Jerarquía tipográfica: Inter para lectura/UI general y JetBrains Mono para precios, datos y tablas
+  * Trinidad de conversión y gestiones inline: altas rápidas contextuales, CTA evidente y feedback inmediato con toasts
+- **bi_estrategico:**
+  * Tableros minimalistas con KPIs estratégicos (DSO, Rotación de Inventario, Margen Neto Estimado)
+  * Técnica Drill-Down para desglosar métricas de lo macro a lo micro bajo demanda
+- **ai_data_science:**
+  * Modelos predictivos: Suavizamiento Exponencial, ARIMA y Monte Carlo para inventario de seguridad
+  * Visión artificial multimodal: LayoutLMv3 para comprobantes con validación Human-in-the-Loop
+  * Asistentes RAG interactivos para digitalización de SOPs y manuales operativos
 
 ## 5. Índice de Documentación (Leer Bajo Demanda)
 Antes de planificar o ejecutar una tarea compleja, lee el documento correspondiente en la carpeta `docs/`:

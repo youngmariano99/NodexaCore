@@ -7,7 +7,12 @@ import { MensajeError } from "@/components/errores/MensajeError";
 import { useBuscarProductos } from "@/hooks/useBuscarProductos";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useHotkeys } from "@/hooks/useHotkeys";
-import { calcularTotalVenta } from "@/lib/dominio/ventas/calcularTotalVenta";
+import { useMetodosPagoComercio } from "@/hooks/useMetodosPagoComercio";
+import {
+  calcularTotalVentaConAjuste,
+  METODOS_PAGO_POR_DEFECTO,
+  type ReglaMetodoPago,
+} from "@/lib/dominio/ventas/calcularTotalVenta";
 import { ESTADO_CARRITO_INICIAL, reducirCarrito } from "@/lib/dominio/ventas/carritoReducer";
 import type { FilaProductoBusqueda } from "@/repositories/productosRepository";
 import { confirmarVenta } from "@/services/ventas/confirmarVenta";
@@ -17,6 +22,7 @@ import { CarritoVenta } from "@/app/(app)/mostrador/CarritoVenta";
 import { ConfirmarCobro } from "@/app/(app)/mostrador/ConfirmarCobro";
 import { ResumenTotal } from "@/app/(app)/mostrador/ResumenTotal";
 import { SelectorClienteMostrador } from "@/app/(app)/mostrador/SelectorClienteMostrador";
+import { SelectorMetodoPagoMostrador } from "@/app/(app)/mostrador/SelectorMetodoPagoMostrador";
 import type { ClienteFinalBusqueda } from "@/hooks/useBuscarClientesFinales";
 
 const FORMATO_PRECIO = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
@@ -45,6 +51,10 @@ export function BuscadorProductos() {
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [carrito, dispatch] = useReducer(reducirCarrito, ESTADO_CARRITO_INICIAL);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState("efectivo");
+  const { data: metodosData } = useMetodosPagoComercio();
+  const metodos: ReglaMetodoPago[] = metodosData || METODOS_PAGO_POR_DEFECTO;
+
   const [estadoVenta, accionConfirmarVenta, confirmandoVenta] = useActionState(
     confirmarVenta,
     ESTADO_CONFIRMAR_VENTA_INICIAL,
@@ -112,6 +122,35 @@ export function BuscadorProductos() {
         formCobroRef.current?.requestSubmit();
       }
     }
+  );
+
+  // Atajos numéricos para seleccionar método de pago (1 - 5) cuando el foco no está en inputs
+  useHotkeys(
+    ["1", "2", "3", "4", "5"],
+    (evento) => {
+      const index = Number.parseInt(evento.key, 10) - 1;
+      const metodosActivos = metodos.filter((m) => m.activo);
+      const metodo = metodosActivos[index];
+      if (metodo) {
+        setMetodoPagoSeleccionado(metodo.metodoPago);
+      }
+    }
+  );
+
+  // Atajos con Alt (Alt+1 a Alt+5) disponibles incluso con foco
+  useHotkeys(
+    ["alt+1", "alt+2", "alt+3", "alt+4", "alt+5"],
+    (evento) => {
+      evento.preventDefault();
+      const numStr = evento.key;
+      const index = Number.parseInt(numStr, 10) - 1;
+      const metodosActivos = metodos.filter((m) => m.activo);
+      const metodo = metodosActivos[index];
+      if (metodo) {
+        setMetodoPagoSeleccionado(metodo.metodoPago);
+      }
+    },
+    { allowInInputs: true }
   );
 
   function agregarAlCarrito(producto: FilaProductoBusqueda) {
@@ -291,31 +330,61 @@ export function BuscadorProductos() {
 
         <section className="flex flex-col gap-4">
           <h2 className="text-sm font-medium text-slate-400">Venta en curso</h2>
+          <SelectorMetodoPagoMostrador
+            metodos={metodos}
+            metodoSeleccionado={metodoPagoSeleccionado}
+            onSeleccionarMetodo={setMetodoPagoSeleccionado}
+          />
           <SelectorClienteMostrador
             clienteSeleccionado={clienteSeleccionado}
             onSeleccionarCliente={setClienteSeleccionado}
           />
           <CarritoVenta items={carrito} dispatch={dispatch} />
-          <ResumenTotal items={carrito} />
-          <ConfirmarCobro
-            formRef={formCobroRef}
-            idempotencyKey={idempotencyKey}
-            clienteFinalId={clienteSeleccionado?.cliente_final_id || null}
-            items={JSON.stringify(
-              carrito.map((item) => ({ productoId: item.productoId, cantidad: item.cantidad })),
-            )}
-            total={calcularTotalVenta(
-              carrito.map((item) => ({
-                productoId: item.productoId,
-                precioUnitario: item.precio,
-                cantidad: item.cantidad,
-              })),
-            )}
-            carritoVacio={carrito.length === 0}
-            estado={estadoVenta}
-            estaEnviando={confirmandoVenta}
-            accionFormulario={accionConfirmarVenta}
-          />
+          {(() => {
+            const reglaActual =
+              metodos.find((m) => m.metodoPago === metodoPagoSeleccionado) ||
+              metodos[0] ||
+              METODOS_PAGO_POR_DEFECTO[0]!;
+
+            const itemsDeVenta = carrito.map((item) => ({
+              productoId: item.productoId,
+              precioUnitario: item.precio,
+              cantidad: item.cantidad,
+            }));
+
+            const calculoTotal = calcularTotalVentaConAjuste(
+              itemsDeVenta,
+              reglaActual.tipoAjuste,
+              reglaActual.porcentaje
+            );
+
+            return (
+              <>
+                <ResumenTotal
+                  items={carrito}
+                  tipoAjuste={reglaActual.tipoAjuste}
+                  porcentaje={reglaActual.porcentaje}
+                  etiquetaMetodo={reglaActual.etiqueta}
+                />
+                <ConfirmarCobro
+                  formRef={formCobroRef}
+                  idempotencyKey={idempotencyKey}
+                  clienteFinalId={clienteSeleccionado?.cliente_final_id || null}
+                  metodoPago={metodoPagoSeleccionado}
+                  porcentajeAjuste={reglaActual.porcentaje}
+                  montoAjuste={calculoTotal.montoAjuste}
+                  items={JSON.stringify(
+                    carrito.map((item) => ({ productoId: item.productoId, cantidad: item.cantidad })),
+                  )}
+                  total={calculoTotal.totalFinal}
+                  carritoVacio={carrito.length === 0}
+                  estado={estadoVenta}
+                  estaEnviando={confirmandoVenta}
+                  accionFormulario={accionConfirmarVenta}
+                />
+              </>
+            );
+          })()}
         </section>
       </div>
     </div>

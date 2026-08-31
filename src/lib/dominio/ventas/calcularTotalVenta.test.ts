@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calcularSubtotalItem, calcularTotalVenta, type VentaItem } from "./calcularTotalVenta";
+import { calcularSubtotalItem, calcularTotalVenta, calcularTotalVentaConAjuste, type VentaItem } from "./calcularTotalVenta";
 
 describe("calcularTotalVenta", () => {
   it("retorna 0 con un arreglo vacío, sin lanzar excepción", () => {
@@ -124,5 +124,45 @@ describe("calcularSubtotalItem", () => {
 
   it("con cantidad cero el subtotal es 0 (caso límite)", () => {
     expect(calcularSubtotalItem({ productoId: "p-1", precioUnitario: 3500, cantidad: 0 })).toBe(0);
+  });
+});
+
+describe("calcularAjusteComercial y calcularTotalVentaConAjuste", () => {
+  it("con tipoAjuste 'ninguno' no altera el total", () => {
+    const items: VentaItem[] = [{ productoId: "p-1", precioUnitario: 1000, cantidad: 1 }];
+    const resultado = calcularTotalVentaConAjuste(items, "ninguno", 10);
+
+    expect(resultado.subtotalBruto).toBe(1000);
+    expect(resultado.montoAjuste).toBe(0);
+    expect(resultado.totalFinal).toBe(1000);
+  });
+
+  it("calcula descuento del 10% correctamente", () => {
+    const items: VentaItem[] = [{ productoId: "p-1", precioUnitario: 1000, cantidad: 1 }];
+    const resultado = calcularTotalVentaConAjuste(items, "descuento", 10);
+
+    expect(resultado.subtotalBruto).toBe(1000);
+    expect(resultado.montoAjuste).toBe(-100);
+    expect(resultado.totalFinal).toBe(900);
+  });
+
+  it("calcula recargo del 10% correctamente", () => {
+    const items: VentaItem[] = [{ productoId: "p-1", precioUnitario: 1000, cantidad: 1 }];
+    const resultado = calcularTotalVentaConAjuste(items, "recargo", 10);
+
+    expect(resultado.subtotalBruto).toBe(1000);
+    expect(resultado.montoAjuste).toBe(100);
+    expect(resultado.totalFinal).toBe(1100);
+  });
+
+  it("mantiene precisión exacta en centavos con porcentajes decimales", () => {
+    const items: VentaItem[] = [{ productoId: "p-1", precioUnitario: 33.33, cantidad: 3 }]; // 99.99
+    const resultado = calcularTotalVentaConAjuste(items, "descuento", 15);
+
+    // 99.99 * 0.15 = 14.9985 -> redondeo a centavos 15.00
+    // 99.99 - 15.00 = 84.99
+    expect(resultado.subtotalBruto).toBe(99.99);
+    expect(resultado.montoAjuste).toBe(-15);
+    expect(resultado.totalFinal).toBe(84.99);
   });
 });
