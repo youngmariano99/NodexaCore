@@ -93,6 +93,9 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `descripcion` | `text` | `NULL` |
 | `categoria` | `text` | `NULL` |
 | `precio` | `numeric(12,2)` | `NOT NULL`, `CHECK (precio >= 0)` |
+| `costo_promedio` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (costo_promedio >= 0)` |
+| `ultimo_costo` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (ultimo_costo >= 0)` |
+| `codigo_barras` | `text` | `NULL` |
 | `stock_actual` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (stock_actual >= 0)` |
 | `imagen_url` | `text` | `NULL` |
 | `publicado` | `boolean` | `NOT NULL`, `DEFAULT false` |
@@ -107,7 +110,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `stock_minimo` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (stock_minimo >= 0)` |
 
 **Restricción:** `UNIQUE (cliente_id, sku)`
-**Índices:** `idx_productos_cliente_publicado (cliente_id, publicado) WHERE eliminado_en IS NULL`, `idx_productos_cliente_activos (cliente_id) WHERE eliminado_en IS NULL` (soporte al conteo de límite de SKU), `idx_productos_padre_id (producto_padre_id)`, `idx_productos_categoria_id (categoria_id)`, `idx_productos_marca_id (marca_id)`, `idx_productos_proveedor_id (proveedor_id)`
+**Índices:** `idx_productos_cliente_publicado (cliente_id, publicado) WHERE eliminado_en IS NULL`, `idx_productos_cliente_activos (cliente_id) WHERE eliminado_en IS NULL` (soporte al conteo de límite de SKU), `idx_productos_codigo_barras (cliente_id, codigo_barras) WHERE codigo_barras IS NOT NULL AND eliminado_en IS NULL`, `idx_productos_padre_id (producto_padre_id)`, `idx_productos_categoria_id (categoria_id)`, `idx_productos_marca_id (marca_id)`, `idx_productos_proveedor_id (proveedor_id)`
 
 ---
 
@@ -162,6 +165,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `tipo` | `tipo_movimiento_stock` | `NOT NULL` |
 | `cantidad` | `integer` | `NOT NULL`, `CHECK (cantidad > 0)` |
 | `saldo_resultante` | `integer` | `NOT NULL`, `CHECK (saldo_resultante >= 0)` |
+| `costo_unitario` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (costo_unitario >= 0)` |
 | `referencia_venta_id` | `uuid` | `NULL`, `REFERENCES ventas(venta_id)` |
 | `referencia_devolucion_id` | `uuid` | `NULL`, `REFERENCES devoluciones(devolucion_id)` |
 | `lock_version` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (lock_version >= 0)` |
