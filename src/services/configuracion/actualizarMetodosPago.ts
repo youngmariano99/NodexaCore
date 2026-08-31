@@ -58,6 +58,16 @@ export async function actualizarMetodosPago(
     return { ok: false, error: validacion.error.issues[0]?.message || "NX-SYS-001" };
   }
 
+  // 1. Intentar vía función RPC con SECURITY DEFINER (estándar multi-tenant de Nodexa Core)
+  const { data: dataRpc, error: errorRpc } = await supabase.rpc("fn_actualizar_metodos_pago", {
+    p_configuracion: validacion.data,
+  });
+
+  if (!errorRpc && dataRpc) {
+    return { ok: true };
+  }
+
+  // 2. Fallback a UPDATE directo
   const { data: filasActualizadas, error: errorUpdate } = await supabase
     .from("clientes")
     .update({
@@ -67,7 +77,8 @@ export async function actualizarMetodosPago(
     .select("cliente_id");
 
   if (errorUpdate || !filasActualizadas || filasActualizadas.length === 0) {
-    console.error("[actualizarMetodosPago] Error en Supabase o 0 filas afectadas por RLS:", {
+    console.error("[actualizarMetodosPago] Error en Supabase:", {
+      errorRpc,
       errorUpdate,
       filasActualizadas,
     });
