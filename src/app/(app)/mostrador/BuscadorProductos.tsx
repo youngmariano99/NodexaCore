@@ -1,11 +1,12 @@
 "use client";
 
 import { Plus, Search } from "lucide-react";
-import { useActionState, useReducer, useState } from "react";
+import { useActionState, useReducer, useState, useRef, useEffect } from "react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { useBuscarProductos } from "@/hooks/useBuscarProductos";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useHotkeys } from "@/hooks/useHotkeys";
 import { calcularTotalVenta } from "@/lib/dominio/ventas/calcularTotalVenta";
 import { ESTADO_CARRITO_INICIAL, reducirCarrito } from "@/lib/dominio/ventas/carritoReducer";
 import type { FilaProductoBusqueda } from "@/repositories/productosRepository";
@@ -50,6 +51,10 @@ export function BuscadorProductos() {
   );
   const [ultimoEstadoVentaVisto, setUltimoEstadoVentaVisto] = useState(estadoVenta);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<ClienteFinalBusqueda | null>(null);
+  const [indiceSeleccionado, setIndiceSeleccionado] = useState(0);
+
+  const inputBusquedaRef = useRef<HTMLInputElement>(null);
+  const formCobroRef = useRef<HTMLFormElement>(null);
 
   // Ajuste de estado durante el render (patrón recomendado por React en vez
   // de un efecto: https://react.dev/learn/you-might-not-need-an-effect):
@@ -68,6 +73,47 @@ export function BuscadorProductos() {
   const terminoDebounced = useDebouncedValue(terminoBusqueda, DEMORA_DEBOUNCE_MS);
   const { data: resultados, isFetching, isError } = useBuscarProductos(terminoDebounced);
 
+  // Foco inicial al cargar y tras confirmar venta exitosa
+  useEffect(() => {
+    if (estadoVenta.exito) {
+      inputBusquedaRef.current?.focus();
+    }
+  }, [estadoVenta.exito]);
+
+  // Atajo para enfocar el buscador (F2, F3, /, Ctrl+K, Cmd+K)
+  useHotkeys(
+    ["f2", "f3", "/", "ctrl+k", "meta+k"],
+    (evento) => {
+      evento.preventDefault();
+      inputBusquedaRef.current?.focus();
+      inputBusquedaRef.current?.select();
+    }
+  );
+
+  // Atajo para cancelar operaciones (Escape)
+  useHotkeys(
+    "Escape",
+    () => {
+      if (terminoBusqueda) {
+        setTerminoBusqueda("");
+      } else if (clienteSeleccionado) {
+        setClienteSeleccionado(null);
+      }
+      inputBusquedaRef.current?.focus();
+    },
+    { allowInInputs: true }
+  );
+
+  // Atajo global para confirmar cobro (Enter cuando el foco no está en un input o cuando el carrito tiene items)
+  useHotkeys(
+    "Enter",
+    () => {
+      if (carrito.length > 0 && !confirmandoVenta) {
+        formCobroRef.current?.requestSubmit();
+      }
+    }
+  );
+
   function agregarAlCarrito(producto: FilaProductoBusqueda) {
     dispatch({
       tipo: "AGREGAR_PRODUCTO",
@@ -82,6 +128,32 @@ export function BuscadorProductos() {
   }
 
   const mostrandoResultados = terminoDebounced.trim().length > 0;
+
+  function manejarKeyDownInput(evento: React.KeyboardEvent<HTMLInputElement>) {
+    if (evento.key === "ArrowDown" && mostrandoResultados && resultados && resultados.length > 0) {
+      evento.preventDefault();
+      setIndiceSeleccionado((prev) => Math.min(prev + 1, resultados.length - 1));
+    } else if (evento.key === "ArrowUp" && mostrandoResultados && resultados && resultados.length > 0) {
+      evento.preventDefault();
+      setIndiceSeleccionado((prev) => Math.max(prev - 1, 0));
+    } else if (evento.key === "Enter") {
+      if (mostrandoResultados && resultados && resultados.length > 0) {
+        const prod = resultados[indiceSeleccionado] ?? resultados[0];
+        if (prod && prod.stock_actual > 0) {
+          evento.preventDefault();
+          agregarAlCarrito(prod);
+          setTerminoBusqueda("");
+          setIndiceSeleccionado(0);
+        }
+      } else if (terminoBusqueda.trim() === "" && carrito.length > 0 && !confirmandoVenta) {
+        evento.preventDefault();
+        formCobroRef.current?.requestSubmit();
+      }
+    } else if (evento.key === "Escape") {
+      setTerminoBusqueda("");
+      setIndiceSeleccionado(0);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
@@ -98,13 +170,27 @@ export function BuscadorProductos() {
               aria-hidden="true"
             />
             <input
+              ref={inputBusquedaRef}
               type="text"
               value={terminoBusqueda}
-              onChange={(evento) => setTerminoBusqueda(evento.target.value)}
+              onChange={(evento) => {
+                setTerminoBusqueda(evento.target.value);
+                setIndiceSeleccionado(0);
+              }}
+              onKeyDown={manejarKeyDownInput}
               placeholder="ej. yerba, DP-00001"
               aria-label="Buscar producto por SKU o nombre"
-              className="min-h-11 w-full rounded-md border border-[#222A27] bg-[#111615] py-2 pl-10 pr-3 text-sm text-slate-50 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="min-h-11 w-full rounded-md border border-[#222A27] bg-[#111615] py-2 pl-10 pr-20 text-sm text-slate-50 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none"
             />
+            <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1">
+              <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
+                F2
+              </kbd>
+              <span className="text-[10px] text-slate-500">o</span>
+              <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
+                /
+              </kbd>
+            </div>
           </div>
 
           {isError ? <MensajeError codigo="NX-SYS-001" /> : null}
@@ -123,13 +209,18 @@ export function BuscadorProductos() {
                 </li>
               ) : null}
 
-              {resultados?.map((producto) => {
+              {resultados?.map((producto, index) => {
                 const sinStock = producto.stock_actual <= 0;
+                const esActivo = index === indiceSeleccionado;
 
                 return (
                   <li
                     key={producto.producto_id}
-                    className="flex items-center justify-between gap-3 rounded-md border border-[#222A27] bg-[#111615] px-4 py-3"
+                    className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 transition-colors ${
+                      esActivo
+                        ? "border-emerald-500/70 bg-[#151A18] ring-1 ring-emerald-500/30"
+                        : "border-[#222A27] bg-[#111615]"
+                    }`}
                   >
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium text-slate-50">{producto.nombre}</span>
@@ -160,9 +251,41 @@ export function BuscadorProductos() {
               })}
             </ul>
           ) : (
-            <p className="rounded-md border border-dashed border-[#222A27] bg-[#111615] px-4 py-6 text-center text-sm text-slate-400">
-              Empezá a escribir para buscar productos.
-            </p>
+            <div className="flex flex-col gap-3">
+              <p className="rounded-md border border-dashed border-[#222A27] bg-[#111615] px-4 py-6 text-center text-sm text-slate-400">
+                Empezá a escribir para buscar productos.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400">
+                <span className="flex items-center gap-1">
+                  <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                    F2
+                  </kbd>{" "}
+                  o{" "}
+                  <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                    /
+                  </kbd>{" "}
+                  Buscar
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                    ↑ ↓
+                  </kbd>{" "}
+                  Navegar
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                    ↵ Enter
+                  </kbd>{" "}
+                  Agregar / Cobrar
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="rounded border border-[#222A27] bg-[#151A18] px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+                    Esc
+                  </kbd>{" "}
+                  Cancelar
+                </span>
+              </div>
+            </div>
           )}
         </section>
 
@@ -175,6 +298,7 @@ export function BuscadorProductos() {
           <CarritoVenta items={carrito} dispatch={dispatch} />
           <ResumenTotal items={carrito} />
           <ConfirmarCobro
+            formRef={formCobroRef}
             idempotencyKey={idempotencyKey}
             clienteFinalId={clienteSeleccionado?.cliente_final_id || null}
             items={JSON.stringify(

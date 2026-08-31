@@ -14,6 +14,7 @@ interface ConfirmarCobroProps {
   estado: EstadoConfirmarVenta;
   estaEnviando: boolean;
   accionFormulario: (formData: FormData) => void;
+  formRef?: React.RefObject<HTMLFormElement | null>;
 }
 
 /**
@@ -41,9 +42,10 @@ export function ConfirmarCobro({
   estado,
   estaEnviando,
   accionFormulario,
+  formRef,
 }: ConfirmarCobroProps) {
   return (
-    <form action={accionFormulario} className="flex flex-col gap-3">
+    <form ref={formRef} action={accionFormulario} className="flex flex-col gap-3">
       <input type="hidden" name="idempotency_key" value={idempotencyKey} readOnly />
       {clienteFinalId && (
         <input type="hidden" name="cliente_final_id" value={clienteFinalId} readOnly />
@@ -63,9 +65,20 @@ export function ConfirmarCobro({
       <button
         type="submit"
         disabled={estaEnviando || carritoVacio}
-        className="min-h-11 rounded-md bg-emerald-500 px-4 text-base font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 text-base font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {estaEnviando ? "Confirmando..." : "Confirmar cobro"}
+        {estaEnviando ? (
+          "Confirmando..."
+        ) : (
+          <>
+            <span>Confirmar cobro</span>
+            {!carritoVacio && (
+              <kbd className="rounded border border-emerald-700/50 bg-emerald-600/30 px-1.5 py-0.5 font-mono text-xs font-normal text-slate-950">
+                ↵ Enter
+              </kbd>
+            )}
+          </>
+        )}
       </button>
     </form>
   );
