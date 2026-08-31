@@ -3,6 +3,7 @@ import { crearClienteSupabaseNavegador } from "@/lib/supabase/client";
 import {
   type ReglaMetodoPago,
   METODOS_PAGO_POR_DEFECTO,
+  normalizarReglasMetodosPago,
 } from "@/lib/dominio/ventas/calcularTotalVenta";
 
 async function obtenerMetodosPagoComercio(): Promise<ReglaMetodoPago[]> {
@@ -37,18 +38,14 @@ async function obtenerMetodosPagoComercio(): Promise<ReglaMetodoPago[]> {
     return METODOS_PAGO_POR_DEFECTO;
   }
 
-  const metodos = cliente.configuracion_metodos_pago as ReglaMetodoPago[];
-  if (Array.isArray(metodos) && metodos.length > 0) {
-    return metodos;
-  }
-
-  return METODOS_PAGO_POR_DEFECTO;
+  return normalizarReglasMetodosPago(cliente.configuracion_metodos_pago);
 }
 
 export function useMetodosPagoComercio() {
   return useQuery({
     queryKey: ["metodos-pago-comercio"],
     queryFn: obtenerMetodosPagoComercio,
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 }

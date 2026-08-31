@@ -7,7 +7,11 @@ import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 import { FormularioConfiguracion } from "./FormularioConfiguracion";
 import { FormularioMetodosPago } from "./FormularioMetodosPago";
-import type { ReglaMetodoPago } from "@/lib/dominio/ventas/calcularTotalVenta";
+import {
+  type ReglaMetodoPago,
+  METODOS_PAGO_POR_DEFECTO,
+  normalizarReglasMetodosPago,
+} from "@/lib/dominio/ventas/calcularTotalVenta";
 
 export const metadata: Metadata = {
   title: "Configuración del Comercio — Nodexa Core",
@@ -24,7 +28,6 @@ interface FilaCliente {
   nombre_comercio: string;
   telefono_whatsapp: string;
   logo_url: string | null;
-  configuracion_metodos_pago: ReglaMetodoPago[] | null;
 }
 
 export default async function ConfiguracionPage() {
@@ -69,16 +72,16 @@ export default async function ConfiguracionPage() {
   }
 
   // Consulta opcional de métodos de pago (resiliente si la migración de la columna está pendiente)
-  let metodosIniciales: ReglaMetodoPago[] | null = null;
+  let metodosIniciales: ReglaMetodoPago[] = METODOS_PAGO_POR_DEFECTO;
   try {
     const { data: metodosData } = await supabase
       .from("clientes")
       .select("configuracion_metodos_pago")
       .eq("cliente_id", solicitante.cliente_id)
-      .maybeSingle<{ configuracion_metodos_pago: ReglaMetodoPago[] | null }>();
+      .maybeSingle<{ configuracion_metodos_pago: unknown }>();
 
     if (metodosData?.configuracion_metodos_pago) {
-      metodosIniciales = metodosData.configuracion_metodos_pago;
+      metodosIniciales = normalizarReglasMetodosPago(metodosData.configuracion_metodos_pago);
     }
   } catch {
     // Si la columna aún no está creada en la BD remota, usa null/defaults

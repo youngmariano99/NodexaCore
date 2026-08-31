@@ -84,6 +84,45 @@ export const METODOS_PAGO_POR_DEFECTO: ReglaMetodoPago[] = [
 ];
 
 /**
+ * Normaliza cualquier array de configuración de métodos de pago (soportando
+ * tanto snake_case como camelCase provenientes de PostgreSQL / JSONB).
+ */
+export function normalizarReglasMetodosPago(raw: unknown): ReglaMetodoPago[] {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return METODOS_PAGO_POR_DEFECTO;
+  }
+
+  const parseados = raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const dict = item as Record<string, unknown>;
+      const metodoPago = String(dict.metodoPago || dict.metodo_pago || "");
+      const etiqueta = String(dict.etiqueta || "");
+      const tipoAjuste: TipoAjustePago =
+        dict.tipoAjuste === "descuento" || dict.tipo_ajuste === "descuento"
+          ? "descuento"
+          : dict.tipoAjuste === "recargo" || dict.tipo_ajuste === "recargo"
+          ? "recargo"
+          : "ninguno";
+      const porcentaje = Number(dict.porcentaje) || 0;
+      const activo = dict.activo !== false;
+
+      if (!metodoPago) return null;
+
+      return {
+        metodoPago,
+        etiqueta: etiqueta || metodoPago,
+        tipoAjuste,
+        porcentaje,
+        activo,
+      };
+    })
+    .filter((r): r is ReglaMetodoPago => r !== null);
+
+  return parseados.length > 0 ? parseados : METODOS_PAGO_POR_DEFECTO;
+}
+
+/**
  * Calcula el monto del ajuste (positivo para recargo, negativo para descuento)
  * y el total final a partir del subtotal bruto. Trabaja íntegramente en centavos
  * para garantizar precisión decimal estricta (numeric(12,2)).
