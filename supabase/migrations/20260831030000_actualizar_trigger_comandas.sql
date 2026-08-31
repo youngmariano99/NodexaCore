@@ -1,9 +1,9 @@
-﻿-- Migration: Validación de Geolocalización en Pedidos Web
+-- Migration: Validación de Geolocalización en Pedidos Web
 -- Archivo: supabase/migrations/20260831030000_actualizar_trigger_comandas.sql
 -- Módulo: Logística / Pedidos Web
 
 CREATE OR REPLACE FUNCTION fn_validar_pedido_web()
-RETURNS TRIGGER AS 
+RETURNS TRIGGER AS $$
 BEGIN
   IF jsonb_typeof(NEW.datos_cliente) <> 'object' THEN
     RAISE EXCEPTION 'NX-SYS-006: Los datos del cliente deben ser un objeto JSON válido.'
@@ -31,4 +31,4 @@ BEGIN
   NEW.actualizado_en = NOW();
   RETURN NEW;
 END;
- LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
