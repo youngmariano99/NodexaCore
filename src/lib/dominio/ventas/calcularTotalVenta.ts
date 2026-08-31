@@ -35,6 +35,111 @@ export function calcularSubtotalItem(item: VentaItem): number {
   return centavosASubtotal(subtotalItemEnCentavos(item));
 }
 
+export type TipoAjustePago = "descuento" | "recargo" | "ninguno";
+
+export interface ReglaMetodoPago {
+  metodoPago: string; // ej: "efectivo", "transferencia", "debito", "credito", "cuenta_corriente"
+  etiqueta: string; // ej: "Efectivo", "Transferencia", "Débito", "Crédito", "Cta. Cte."
+  tipoAjuste: TipoAjustePago;
+  porcentaje: number; // ej: 10 para 10%
+  activo: boolean;
+}
+
+export const METODOS_PAGO_POR_DEFECTO: ReglaMetodoPago[] = [
+  {
+    metodoPago: "efectivo",
+    etiqueta: "Efectivo",
+    tipoAjuste: "ninguno",
+    porcentaje: 0,
+    activo: true,
+  },
+  {
+    metodoPago: "transferencia",
+    etiqueta: "Transferencia",
+    tipoAjuste: "ninguno",
+    porcentaje: 0,
+    activo: true,
+  },
+  {
+    metodoPago: "debito",
+    etiqueta: "Débito",
+    tipoAjuste: "ninguno",
+    porcentaje: 0,
+    activo: true,
+  },
+  {
+    metodoPago: "credito",
+    etiqueta: "Crédito",
+    tipoAjuste: "recargo",
+    porcentaje: 10,
+    activo: true,
+  },
+  {
+    metodoPago: "cuenta_corriente",
+    etiqueta: "Cta. Cte.",
+    tipoAjuste: "ninguno",
+    porcentaje: 0,
+    activo: true,
+  },
+];
+
+/**
+ * Calcula el monto del ajuste (positivo para recargo, negativo para descuento)
+ * y el total final a partir del subtotal bruto. Trabaja íntegramente en centavos
+ * para garantizar precisión decimal estricta (numeric(12,2)).
+ */
+export function calcularAjusteComercial(
+  subtotalBruto: number,
+  tipoAjuste: TipoAjustePago,
+  porcentaje: number
+): { montoAjuste: number; totalFinal: number } {
+  if (tipoAjuste === "ninguno" || porcentaje <= 0 || subtotalBruto <= 0) {
+    return {
+      montoAjuste: 0,
+      totalFinal: subtotalBruto,
+    };
+  }
+
+  const subtotalCentavos = aCentavos(subtotalBruto);
+  const porcentajeSeguro = Math.max(0, Math.min(porcentaje, 100));
+  const montoAjusteCentavos = Math.round((subtotalCentavos * porcentajeSeguro) / 100);
+
+  if (tipoAjuste === "descuento") {
+    const descuentoCentavos = Math.min(montoAjusteCentavos, subtotalCentavos);
+    const totalCentavos = subtotalCentavos - descuentoCentavos;
+    return {
+      montoAjuste: -centavosASubtotal(descuentoCentavos),
+      totalFinal: centavosASubtotal(totalCentavos),
+    };
+  }
+
+  // Recargo
+  const totalCentavos = subtotalCentavos + montoAjusteCentavos;
+  return {
+    montoAjuste: centavosASubtotal(montoAjusteCentavos),
+    totalFinal: centavosASubtotal(totalCentavos),
+  };
+}
+
+/**
+ * Calcula el subtotal bruto, el monto del ajuste y el total final de una venta
+ * con precisión bancaria.
+ */
+export function calcularTotalVentaConAjuste(
+  items: VentaItem[],
+  tipoAjuste: TipoAjustePago = "ninguno",
+  porcentaje = 0
+): { subtotalBruto: number; montoAjuste: number; totalFinal: number } {
+  const subtotalBruto = calcularTotalVenta(items);
+  const { montoAjuste, totalFinal } = calcularAjusteComercial(subtotalBruto, tipoAjuste, porcentaje);
+
+  return {
+    subtotalBruto,
+    montoAjuste,
+    totalFinal,
+  };
+}
+
 /**
  * Total de una venta a partir de sus ítems (docs/BACKLOG.md "Cálculo
  * automático del total de la venta", Paso 1). Función pura sin dependencias

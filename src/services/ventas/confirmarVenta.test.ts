@@ -141,6 +141,9 @@ describe("confirmarVenta", () => {
       p_idempotency_key: IDEMPOTENCY_KEY,
       p_cliente_final_id: null,
       p_items: [{ producto_id: PRODUCTO_ID, cantidad: 2 }],
+      p_metodo_pago: "efectivo",
+      p_porcentaje_ajuste: 0,
+      p_monto_ajuste: 0,
     });
   });
 

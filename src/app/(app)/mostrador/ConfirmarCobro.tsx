@@ -8,6 +8,9 @@ import type { EstadoConfirmarVenta } from "@/services/ventas/tipos";
 interface ConfirmarCobroProps {
   idempotencyKey: string;
   clienteFinalId: string | null;
+  metodoPago?: string;
+  porcentajeAjuste?: number;
+  montoAjuste?: number;
   items: string;
   total: number;
   carritoVacio: boolean;
@@ -36,6 +39,9 @@ interface ConfirmarCobroProps {
 export function ConfirmarCobro({
   idempotencyKey,
   clienteFinalId,
+  metodoPago = "efectivo",
+  porcentajeAjuste = 0,
+  montoAjuste = 0,
   items,
   total,
   carritoVacio,
@@ -50,6 +56,9 @@ export function ConfirmarCobro({
       {clienteFinalId && (
         <input type="hidden" name="cliente_final_id" value={clienteFinalId} readOnly />
       )}
+      <input type="hidden" name="metodo_pago" value={metodoPago} readOnly />
+      <input type="hidden" name="porcentaje_ajuste" value={porcentajeAjuste} readOnly />
+      <input type="hidden" name="monto_ajuste" value={montoAjuste} readOnly />
       <input type="hidden" name="items" value={items} readOnly />
       <input type="hidden" name="total" value={total} readOnly />
 

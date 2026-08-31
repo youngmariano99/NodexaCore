@@ -21,6 +21,8 @@ const esquemaConfirmarVenta = z.object({
   idempotencyKey: z.string().uuid("La clave de idempotencia es inválida."),
   clienteFinalId: z.string().uuid().nullable(),
   metodoPago: z.string().optional().default("efectivo"),
+  porcentajeAjuste: z.coerce.number().optional().default(0),
+  montoAjuste: z.coerce.number().optional().default(0),
   items: z.array(esquemaItemVenta).min(1, "La venta necesita al menos un producto."),
   total: zMonedaNoNegativa("El total de la venta es obligatorio.", "El total de la venta no puede ser negativo."),
   pinAdminOverride: z.string().optional(),
@@ -68,12 +70,16 @@ export async function confirmarVenta(
 ): Promise<EstadoConfirmarVenta> {
   const clienteFinalIdCrudo = formData.get("cliente_final_id");
   const metodoPagoCrudo = formData.get("metodo_pago");
+  const porcentajeAjusteCrudo = formData.get("porcentaje_ajuste");
+  const montoAjusteCrudo = formData.get("monto_ajuste");
   const pinAdminOverrideCrudo = formData.get("pin_admin_override");
 
   const resultado = esquemaConfirmarVenta.safeParse({
     idempotencyKey: formData.get("idempotency_key"),
     clienteFinalId: clienteFinalIdCrudo ? clienteFinalIdCrudo : null,
     metodoPago: metodoPagoCrudo ? String(metodoPagoCrudo) : "efectivo",
+    porcentajeAjuste: porcentajeAjusteCrudo ? Number(porcentajeAjusteCrudo) : 0,
+    montoAjuste: montoAjusteCrudo ? Number(montoAjusteCrudo) : 0,
     items: parsearItems(formData.get("items")),
     total: formData.get("total"),
     pinAdminOverride: pinAdminOverrideCrudo ? String(pinAdminOverrideCrudo) : undefined,
@@ -171,6 +177,9 @@ export async function confirmarVenta(
     p_idempotency_key: resultado.data.idempotencyKey,
     p_cliente_final_id: resultado.data.clienteFinalId,
     p_items: resultado.data.items.map((item) => ({ producto_id: item.productoId, cantidad: item.cantidad })),
+    p_metodo_pago: resultado.data.metodoPago,
+    p_porcentaje_ajuste: resultado.data.porcentajeAjuste,
+    p_monto_ajuste: resultado.data.montoAjuste,
   });
   const venta = datoRpc as FilaVenta | null;
 
