@@ -9,6 +9,7 @@ import { MensajeError } from "@/components/errores/MensajeError";
 import { crearProveedor } from "@/services/stock/crearProveedor";
 import { ESTADO_CREAR_PROVEEDOR_INICIAL } from "@/services/stock/tipos";
 import type { FilaProveedor } from "@/repositories/proveedoresRepository";
+import { useToast } from "@/components/ui/Toast";
 
 const esquemaZodProveedor = z.object({
   nombre: z.string().min(1, "El nombre del proveedor es obligatorio."),
@@ -22,6 +23,7 @@ interface FormularioProveedoresProps {
 
 export function FormularioProveedores({ proveedores }: FormularioProveedoresProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [nombre, setNombre] = useState("");
   const [contacto, setContacto] = useState("");
@@ -77,6 +79,7 @@ export function FormularioProveedores({ proveedores }: FormularioProveedoresProp
       const resultado = await crearProveedor(ESTADO_CREAR_PROVEEDOR_INICIAL, formData);
 
       if (resultado.exito) {
+        toast.exito("Proveedor registrado exitosamente.");
         setIsOpen(false);
         router.refresh();
       } else {
@@ -96,7 +99,7 @@ export function FormularioProveedores({ proveedores }: FormularioProveedoresProp
         </div>
         <button
           onClick={handleOpen}
-          className="flex min-h-11 items-center gap-2 rounded-md bg-emerald-500 px-4 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+          className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-[#13b885] focus:outline-none focus:ring-2 focus:ring-[#16D39A] focus:ring-offset-2 focus:ring-offset-[#090B0B]"
         >
           <Plus className="h-4 w-4" />
           Nuevo Proveedor
@@ -108,39 +111,26 @@ export function FormularioProveedores({ proveedores }: FormularioProveedoresProp
           <Truck className="h-8 w-8 text-slate-400" aria-hidden="true" />
           <p className="text-base text-slate-50">No hay proveedores registrados.</p>
           <p className="text-sm text-slate-400">
-            Cargá tus proveedores habituales para asociarlos a tus productos y controlar los tiempos de reabastecimiento.
+            Comenzá agregando tu primer proveedor para asociar el tiempo de demora a los productos.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-md border border-[#222A27] bg-[#111615]">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-[#222A27] text-slate-400">
-                <th className="px-4 py-3 font-medium">Nombre</th>
-                <th className="px-4 py-3 font-medium">Contacto / Teléfono</th>
-                <th className="px-4 py-3 font-medium">Demora Estimada de Entrega</th>
+        <div className="overflow-hidden rounded-md border border-[#222A27]">
+          <table className="w-full text-left text-sm text-slate-50">
+            <thead className="border-b border-[#222A27] bg-[#111615] text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <tr>
+                <th className="px-6 py-3">Nombre</th>
+                <th className="px-6 py-3">Contacto</th>
+                <th className="px-6 py-3">Demora Estimada</th>
               </tr>
             </thead>
-            <tbody>
-              {proveedores.map((prov) => (
-                <tr
-                  key={prov.proveedor_id}
-                  className="border-b border-[#222A27] last:border-b-0 hover:bg-[#151c1b] transition-colors"
-                >
-                  <td className="px-4 py-3 text-slate-200 font-medium">
-                    {prov.nombre}
-                  </td>
-                  <td className="px-4 py-3 text-slate-400">
-                    <span className="flex items-center gap-2">
-                      <PhoneCall className="h-3.5 w-3.5 text-slate-500" />
-                      {prov.contacto}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-400">
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                      {prov.dias_demora} {prov.dias_demora === 1 ? "día" : "días"}
-                    </span>
+            <tbody className="divide-y divide-[#222A27] bg-[#0D1110]">
+              {proveedores.map((p) => (
+                <tr key={p.proveedor_id} className="hover:bg-[#111615]/50 transition-colors">
+                  <td className="px-6 py-4 font-medium">{p.nombre}</td>
+                  <td className="px-6 py-4 text-slate-400">{p.contacto}</td>
+                  <td className="px-6 py-4 text-slate-400">
+                    {p.dias_demora === 0 ? "Inmediata (0 días)" : `${p.dias_demora} días`}
                   </td>
                 </tr>
               ))}
@@ -150,7 +140,7 @@ export function FormularioProveedores({ proveedores }: FormularioProveedoresProp
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-lg border border-[#222A27] bg-[#0D1110] p-6 text-slate-50 shadow-xl">
             <div className="flex items-center justify-between border-b border-[#222A27] pb-4">
               <h2 className="text-lg font-semibold text-slate-50">Dar de Alta Proveedor</h2>

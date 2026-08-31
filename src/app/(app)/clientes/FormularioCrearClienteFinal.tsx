@@ -7,26 +7,23 @@ import { X, Loader2, UserPlus } from "lucide-react";
 import { MensajeError } from "@/components/errores/MensajeError";
 import { crearClienteFinal } from "@/services/fiados/crearClienteFinal";
 import { ESTADO_CREAR_CLIENTE_FINAL_INICIAL } from "@/services/fiados/tipos";
+import { useToast } from "@/components/ui/Toast";
 
 export function FormularioCrearClienteFinal() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handleOpen = () => {
+  const handleClose = () => {
+    if (isPending) return;
+    setIsOpen(false);
     setNombre("");
     setTelefono("");
     setErrorLocal(null);
-    setIsOpen(true);
-  };
-
-  const handleClose = () => {
-    if (!isPending) {
-      setIsOpen(false);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,7 +46,10 @@ export function FormularioCrearClienteFinal() {
       );
 
       if (resultado.exito) {
+        toast.exito("Cliente registrado exitosamente.");
         setIsOpen(false);
+        setNombre("");
+        setTelefono("");
         router.refresh();
       } else {
         setErrorLocal(resultado.error);
@@ -60,15 +60,15 @@ export function FormularioCrearClienteFinal() {
   return (
     <>
       <button
-        onClick={handleOpen}
-        className="flex min-h-11 items-center gap-2 rounded-md bg-emerald-500 px-4 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-md bg-[#16D39A] px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-[#13b885] focus:outline-none focus:ring-2 focus:ring-[#16D39A] focus:ring-offset-2 focus:ring-offset-[#090B0B]"
       >
         <UserPlus className="h-4 w-4" />
         Nuevo Cliente
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-lg border border-[#222A27] bg-[#0D1110] p-6 text-slate-50 shadow-xl">
             <div className="flex items-center justify-between border-b border-[#222A27] pb-4">
               <h2 className="text-lg font-semibold text-slate-50">Dar de Alta Cliente</h2>

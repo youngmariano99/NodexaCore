@@ -209,23 +209,27 @@ export function PadronClientesTabla({
                   </td>
                   <td className="px-4 py-3.5 text-center">
                     {c.estadoAlerta === "al_dia" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-3xs font-bold text-emerald-400">
-                        🟢 Al día
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-3xs font-bold text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                        Al día
                       </span>
                     )}
                     {c.estadoAlerta === "precaucion" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-3xs font-bold text-amber-400">
-                        🟡 Atención
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-3xs font-bold text-amber-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                        Atención
                       </span>
                     )}
                     {c.estadoAlerta === "excedido" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/30 px-2 py-0.5 text-3xs font-bold text-red-400">
-                        🔴 Excedido
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/30 px-2 py-0.5 text-3xs font-bold text-red-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400 shrink-0" />
+                        Excedido
                       </span>
                     )}
                     {c.estadoAlerta === "suspendido" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#222A27] px-2 py-0.5 text-3xs font-bold text-slate-400">
-                        ⛔ Suspendido
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#222A27] px-2 py-0.5 text-3xs font-bold text-slate-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+                        Suspendido
                       </span>
                     )}
                   </td>

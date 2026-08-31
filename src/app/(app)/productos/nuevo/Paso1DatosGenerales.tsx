@@ -1,6 +1,7 @@
 "use client";
 
 import { Upload, X, HelpCircle } from "lucide-react";
+import { InputDinero } from "@/components/ui/InputDinero";
 
 interface Paso1DatosGeneralesProps {
   sku: string;
@@ -122,14 +123,11 @@ export function Paso1DatosGenerales({
 
       <div className="flex flex-col gap-2">
         <label htmlFor="precio" className="text-sm font-medium text-slate-300">Precio base ($)</label>
-        <input
+        <InputDinero
           id="precio"
-          type="number"
-          min="0"
-          placeholder="ej. 8500"
+          placeholder="0,00"
           value={precio || ""}
-          onChange={(e) => setPrecio(Number(e.target.value))}
-          className={CLASES_CAMPO_BASE}
+          onValueChange={(val) => setPrecio(val)}
         />
         {errores.precio && <span className="text-xs text-red-500">{errores.precio}</span>}
       </div>

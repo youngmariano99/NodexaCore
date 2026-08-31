@@ -22,6 +22,7 @@ import {
   Shield,
 } from "lucide-react";
 import { cerrarSesion } from "@/services/autenticacion/cerrarSesion";
+import { ToastProvider } from "@/components/ui/Toast";
 
 interface AppLayoutClientProps {
   children: React.ReactNode;
@@ -254,87 +255,89 @@ export function AppLayoutClient({
   );
 
   return (
-    <div className="flex h-screen bg-[#090B0B] text-[#F3F5F4] overflow-hidden">
-      {/* Sidebar Desktop */}
-      <aside className="hidden md:block w-64 border-r border-[#222A27] shrink-0 h-full">
-        {contenidoSidebar}
-      </aside>
+    <ToastProvider>
+      <div className="flex h-screen bg-[#090B0B] text-[#F3F5F4] overflow-hidden">
+        {/* Sidebar Desktop */}
+        <aside className="hidden md:block w-64 border-r border-[#222A27] shrink-0 h-full">
+          {contenidoSidebar}
+        </aside>
 
-      {/* Mobile Sidebar Modal Overlay */}
-      {menuMovilAbierto && (
-        <div className="fixed inset-0 z-50 flex md:hidden bg-[#090B0B]/80 backdrop-blur-sm transition-opacity duration-200">
-          <div className="relative flex flex-col w-72 h-full border-r border-[#222A27]">
-            <div className="absolute top-4 right-4 z-50">
-              <button
-                onClick={() => setMenuMovilAbierto(false)}
-                className="flex items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
-                aria-label="Cerrar menú"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="h-full">
-              {contenidoSidebar}
-            </div>
-          </div>
-          <div className="flex-1" onClick={() => setMenuMovilAbierto(false)} />
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Topbar */}
-        <header className="h-16 border-b border-[#222A27] bg-[#0D1110] flex items-center justify-between px-6 shrink-0 z-10">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setMenuMovilAbierto(true)}
-              className="flex md:hidden items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
-              aria-label="Abrir menú"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <div className="flex flex-col">
-              <span className="text-xs text-[#737C78] font-medium tracking-wide uppercase">
-                Panel Operativo
-              </span>
-              <span className="text-sm font-semibold text-[#F3F5F4] truncate">
-                {nombreComercio}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Quick module indicator badges for merchant */}
-            {rol === "comerciante" && (
-              <div className="hidden sm:flex items-center gap-2">
-                {modulosActivos.fiados && (
-                  <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
-                    Fiados
-                  </span>
-                )}
-                {modulosActivos.devoluciones && (
-                  <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
-                    Devoluciones
-                  </span>
-                )}
-                {modulosActivos.catalogo_web && (
-                  <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
-                    Web
-                  </span>
-                )}
+        {/* Mobile Sidebar Modal Overlay */}
+        {menuMovilAbierto && (
+          <div className="fixed inset-0 z-50 flex md:hidden bg-[#090B0B]/80 backdrop-blur-sm transition-opacity duration-200">
+            <div className="relative flex flex-col w-72 h-full border-r border-[#222A27]">
+              <div className="absolute top-4 right-4 z-50">
+                <button
+                  onClick={() => setMenuMovilAbierto(false)}
+                  className="flex items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
+                  aria-label="Cerrar menú"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-            )}
-            <div className="text-xs text-[#A6AEAA] font-mono bg-[#111615] border border-[#222A27] px-3 py-1.5 rounded-md">
-              {email}
+              <div className="h-full">
+                {contenidoSidebar}
+              </div>
             </div>
+            <div className="flex-1" onClick={() => setMenuMovilAbierto(false)} />
           </div>
-        </header>
+        )}
 
-        {/* Dynamic page content */}
-        <main className="flex-1 overflow-y-auto bg-[#090B0B] relative">
-          {children}
-        </main>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          {/* Topbar */}
+          <header className="h-16 border-b border-[#222A27] bg-[#0D1110] flex items-center justify-between px-6 shrink-0 z-10">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setMenuMovilAbierto(true)}
+                className="flex md:hidden items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
+                aria-label="Abrir menú"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div className="flex flex-col">
+                <span className="text-xs text-[#737C78] font-medium tracking-wide uppercase">
+                  Panel Operativo
+                </span>
+                <span className="text-sm font-semibold text-[#F3F5F4] truncate">
+                  {nombreComercio}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Quick module indicator badges for merchant */}
+              {rol === "comerciante" && (
+                <div className="hidden sm:flex items-center gap-2">
+                  {modulosActivos.fiados && (
+                    <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
+                      Fiados
+                    </span>
+                  )}
+                  {modulosActivos.devoluciones && (
+                    <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
+                      Devoluciones
+                    </span>
+                  )}
+                  {modulosActivos.catalogo_web && (
+                    <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
+                      Web
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className="text-xs text-[#A6AEAA] font-mono bg-[#111615] border border-[#222A27] px-3 py-1.5 rounded-md">
+                {email}
+              </div>
+            </div>
+          </header>
+
+          {/* Dynamic page content */}
+          <main className="flex-1 overflow-y-auto bg-[#090B0B] relative">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }
