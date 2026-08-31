@@ -477,6 +477,6 @@ CREATE POLICY productos_lectura_publica ON productos
   FOR SELECT USING (publicado = true AND eliminado_en IS NULL);
 ```
 
-> Aplicar el mismo patrón (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `movimientos_cuenta_corriente`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`, `repartidores`. Ninguna política de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
+> Aplicar el mismo patrón (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `cuentas_corrientes`, `movimientos_cuenta_corriente`, `imputaciones_comprobantes`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`, `repartidores`. Ninguna política de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
 >
 > `ajustes_facturacion` es un caso especial dentro de este patrón: `SELECT` sigue la regla genérica (`cliente_id = auth_cliente_id() OR es_admin_nodexa()`), pero `INSERT` es exclusivo de `es_admin_nodexa()` (nunca `cliente_id = auth_cliente_id()`) — un comercio nunca genera sus propios cargos, mismo criterio ya aplicado a `clientes_update_admin`.
