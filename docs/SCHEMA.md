@@ -164,6 +164,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `saldo_resultante` | `integer` | `NOT NULL`, `CHECK (saldo_resultante >= 0)` |
 | `referencia_venta_id` | `uuid` | `NULL`, `REFERENCES ventas(venta_id)` |
 | `referencia_devolucion_id` | `uuid` | `NULL`, `REFERENCES devoluciones(devolucion_id)` |
+| `lock_version` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (lock_version >= 0)` |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 
 **Índices:** `idx_movstock_producto (producto_id, creado_en DESC)`, `idx_movstock_cliente (cliente_id, creado_en DESC)`
@@ -179,8 +180,15 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `usuario_id` | `uuid` | `NOT NULL`, `REFERENCES usuarios(usuario_id)` |
 | `cliente_final_id` | `uuid` | `NULL`, `REFERENCES clientes_finales(cliente_final_id)` (venta a cuenta corriente) |
 | `total` | `numeric(12,2)` | `NOT NULL`, `CHECK (total >= 0)` |
+| `base_imponible` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (base_imponible >= 0)` |
+| `iva_10_5` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (iva_10_5 >= 0)` |
+| `iva_21` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (iva_21 >= 0)` |
+| `percepciones` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (percepciones >= 0)` |
+| `exento` | `numeric(12,2)` | `NOT NULL`, `DEFAULT 0`, `CHECK (exento >= 0)` |
+| `metodo_pago` | `text` | `NOT NULL`, `DEFAULT 'efectivo'` |
 | `estado` | `estado_venta` | `NOT NULL`, `DEFAULT 'confirmada'` |
 | `idempotency_key` | `text` | `NOT NULL`, `UNIQUE` (control de concurrencia/duplicados) |
+| `lock_version` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (lock_version >= 0)` |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
 
@@ -229,6 +237,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | `tipo` | `tipo_movimiento_cuenta` | `NOT NULL` |
 | `monto` | `numeric(12,2)` | `NOT NULL`, `CHECK (monto > 0)` |
 | `usuario_id` | `uuid` | `NOT NULL`, `REFERENCES usuarios(usuario_id)` |
+| `lock_version` | `integer` | `NOT NULL`, `DEFAULT 0`, `CHECK (lock_version >= 0)` |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 
 **Índices:** `idx_movcc_clientefinal (cliente_final_id, creado_en DESC)`
