@@ -9,9 +9,11 @@ import { procesarImputacionFifo } from "@/services/fiados/procesarImputacionFifo
 import type { EstadoRegistrarPagoCuentaCorriente } from "@/services/fiados/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
+import { zMonedaPositiva } from "@/lib/validaciones/transformadores";
+
 const esquemaRegistrarPago = z.object({
   clienteFinalId: z.string().uuid("El cliente final es obligatorio."),
-  monto: z.coerce.number({ message: "El monto es obligatorio." }).positive("El monto debe ser mayor a cero."),
+  monto: zMonedaPositiva("El monto es obligatorio.", "El monto debe ser mayor a cero."),
   metodoPago: z.string().optional().default("efectivo"),
   debitoEspecificoId: z.string().uuid().optional(),
 });

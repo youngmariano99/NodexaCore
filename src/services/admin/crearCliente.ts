@@ -11,6 +11,8 @@ const LIMITE_SKU_INICIAL = 1000;
 
 const CODIGO_UNIQUE_VIOLATION_POSTGRES = "23505";
 
+import { zTelefonoObligatorio } from "@/lib/validaciones/transformadores";
+
 const esquemaCrearCliente = z.object({
   nombre_comercio: z
     .string({ message: "El nombre del comercio es obligatorio." })
@@ -21,10 +23,7 @@ const esquemaCrearCliente = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "El slug solo puede tener minúsculas, números y guiones medios."),
-  telefono_whatsapp: z
-    .string({ message: "El teléfono de WhatsApp es obligatorio." })
-    .trim()
-    .regex(/^\+[1-9]\d{7,14}$/, "Ingresá el teléfono en formato internacional, ej. +5492920000000."),
+  telefono_whatsapp: zTelefonoObligatorio("El teléfono de WhatsApp es obligatorio."),
   limite_sku: z.coerce.number().int().positive().optional(),
   modulos: z.array(z.enum(MODULOS_NODEXA as [ModuloNodexa, ...ModuloNodexa[]])).optional(),
 });
