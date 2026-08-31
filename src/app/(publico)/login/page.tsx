@@ -21,25 +21,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       <div className="relative flex w-full max-w-md flex-col gap-8 rounded-2xl border border-[#222A27]/60 bg-[#111615]/80 backdrop-blur-md p-8 shadow-2xl">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/30 bg-[#151A18] p-2 shadow-lg shadow-emerald-500/5">
+          <div className="flex items-center justify-center gap-2.5">
             <Image
-              src="/Isotipo.png"
+              src="/Logo.png"
               alt="Nodexa Logo"
-              width={56}
-              height={56}
-              className="h-12 w-12 object-contain drop-shadow-md"
+              width={220}
+              height={55}
+              className="h-11 w-auto object-contain drop-shadow"
               priority
             />
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <span className="font-sans text-2xl font-bold tracking-tight text-[#F3F5F4]">
-              NODEXA
-            </span>
             <span className="rounded bg-[#16D39A]/10 border border-[#16D39A]/20 px-2 py-0.5 font-mono text-xs font-semibold text-[#16D39A] uppercase tracking-wider">
               Core
             </span>
           </div>
-          <p className="text-sm text-[#A6AEAA]">
+          <p className="text-sm text-[#A6AEAA] mt-1">
             Ingresá tus credenciales para acceder a tu panel de control.
           </p>
         </div>
