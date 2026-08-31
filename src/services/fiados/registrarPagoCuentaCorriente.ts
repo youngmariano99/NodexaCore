@@ -129,7 +129,7 @@ export async function registrarPagoCuentaCorriente(
     return { error: "NX-SYS-001", exito: false };
   }
 
-  // 5. Imputaciones M:N e inserción en imputaciones_comprobantes
+  // 5. Imputaciones M:N e inserción inmutable en imputaciones_comprobantes
   for (const imp of calculoImputacion.imputaciones) {
     await supabase.from("imputaciones_comprobantes").insert({
       cliente_id: solicitante.cliente_id,
@@ -137,14 +137,6 @@ export async function registrarPagoCuentaCorriente(
       movimiento_debito_id: imp.movimientoDebitoId,
       monto_imputado: imp.montoImputado,
     });
-
-    await supabase
-      .from("movimientos_cuenta_corriente")
-      .update({
-        monto_pendiente: imp.nuevoMontoPendiente,
-        estado_imputacion: imp.nuevoEstadoImputacion,
-      })
-      .eq("movimiento_cc_id", imp.movimientoDebitoId);
   }
 
   // 6. Actualizar saldo_deudor en cliente final

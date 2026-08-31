@@ -88,7 +88,7 @@ function mockearSupabaseCompleto(opciones: { solicitante: ResultadoSupabase; rpc
     throw new Error(`tabla no mockeada en el test: ${tabla}`);
   });
 
-  return { ...mockearSesion({ id: AUTH_USER_ID }), from, rpc: opciones.rpc ?? vi.fn() };
+  return { ...mockearSesion({ id: AUTH_USER_ID }), from, rpc: opciones.rpc ?? vi.fn(), movCcBuilder };
 }
 
 
@@ -167,6 +167,7 @@ describe("registrarPagoCuentaCorriente", () => {
     );
 
     expect(resultado).toEqual({ error: null, exito: true });
+    expect(supabaseMock.movCcBuilder.update).not.toHaveBeenCalled();
     expect(registrarDiff).toHaveBeenCalledWith(
       expect.objectContaining({
         clienteId: CLIENTE_ID,
