@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
@@ -19,16 +20,25 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="absolute bottom-10 right-10 w-[200px] h-[200px] bg-emerald-500/5 rounded-full blur-[80px] pointer-events-none" />
 
       <div className="relative flex w-full max-w-md flex-col gap-8 rounded-2xl border border-[#222A27]/60 bg-[#111615]/80 backdrop-blur-md p-8 shadow-2xl">
-        <div className="flex flex-col gap-2 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-xl font-bold tracking-widest text-[#F3F5F4]">
-              N O D E X A
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/30 bg-[#151A18] p-2 shadow-lg shadow-emerald-500/5">
+            <Image
+              src="/Isotipo.png"
+              alt="Nodexa Logo"
+              width={56}
+              height={56}
+              className="h-12 w-12 object-contain drop-shadow-md"
+              priority
+            />
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <span className="font-sans text-2xl font-bold tracking-tight text-[#F3F5F4]">
+              NODEXA
             </span>
-            <span className="rounded bg-[#16D39A]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16D39A] uppercase tracking-wider">
+            <span className="rounded bg-[#16D39A]/10 border border-[#16D39A]/20 px-2 py-0.5 font-mono text-xs font-semibold text-[#16D39A] uppercase tracking-wider">
               Core
             </span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#F3F5F4]">Iniciar sesión</h1>
           <p className="text-sm text-[#A6AEAA]">
             Ingresá tus credenciales para acceder a tu panel de control.
           </p>
