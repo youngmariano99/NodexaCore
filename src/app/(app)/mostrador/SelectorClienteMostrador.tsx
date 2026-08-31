@@ -5,6 +5,7 @@ import { Search, User, X, Loader2 } from "lucide-react";
 
 import { useBuscarClientesFinales, type ClienteFinalBusqueda } from "@/hooks/useBuscarClientesFinales";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useHotkeys } from "@/hooks/useHotkeys";
 
 interface SelectorClienteMostradorProps {
   clienteSeleccionado: ClienteFinalBusqueda | null;
@@ -21,6 +22,14 @@ export function SelectorClienteMostrador({
   
   const [isOpen, setIsOpen] = useState(false);
   const refContainer = useRef<HTMLDivElement>(null);
+
+  useHotkeys(
+    "Escape",
+    () => {
+      setIsOpen(false);
+    },
+    { enabled: isOpen, allowInInputs: true }
+  );
 
   // Cerrar dropdown al hacer clic afuera
   useEffect(() => {
