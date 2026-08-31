@@ -286,10 +286,10 @@ BEGIN
     pedido_id, cliente_id, datos_cliente, metodo_pago, opcion_entrega,
     estado, subtotal, costo_envio, total, repartidor_id
   ) VALUES
-    ('fd000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Laura Gómez", "telefono": "+5492920112233", "direccion": "Mitre 450", "notas": "Sin cebolla por favor"}'::jsonb, 'efectivo', 'envio', 'pendiente', 7000, 1500, 8500, NULL),
-    ('fd000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Esteban Quito", "telefono": "+5492920445566", "direccion": "Rivadavia 120", "notas": "Timbre 2B"}'::jsonb, 'mercado_pago', 'envio', 'en_preparacion', 10500, 1500, 12000, NULL),
-    ('fd000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Patricia Paz", "telefono": "+5492920778899", "direccion": "Av. San Martín 890"}'::jsonb, 'transferencia', 'envio', 'despachado', 4900, 1500, 6400, 'fc000000-0000-4000-8000-000000000001'),
-    ('fd000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Mariano López", "telefono": "+5492920119988", "direccion": "Belgrano 340", "notas": "Llevar cambio de $10000"}'::jsonb, 'efectivo', 'envio', 'despachado', 8300, 1500, 9800, 'fc000000-0000-4000-8000-000000000001'),
+    ('fd000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Laura Gómez", "telefono": "+5492920112233", "direccion": "Mitre 450", "latitud": -34.6037, "longitud": -58.3816, "notas": "Sin cebolla por favor"}'::jsonb, 'efectivo', 'envio', 'pendiente', 7000, 1500, 8500, NULL),
+    ('fd000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Esteban Quito", "telefono": "+5492920445566", "direccion": "Rivadavia 120", "latitud": -34.6083, "longitud": -58.3712, "notas": "Timbre 2B"}'::jsonb, 'mercado_pago', 'envio', 'en_preparacion', 10500, 1500, 12000, NULL),
+    ('fd000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Patricia Paz", "telefono": "+5492920778899", "direccion": "Av. San Martín 890", "latitud": -34.6150, "longitud": -58.3800}'::jsonb, 'transferencia', 'envio', 'despachado', 4900, 1500, 6400, 'fc000000-0000-4000-8000-000000000001'),
+    ('fd000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Mariano López", "telefono": "+5492920119988", "direccion": "Belgrano 340", "latitud": -34.6100, "longitud": -58.3750, "notas": "Llevar cambio de $10000"}'::jsonb, 'efectivo', 'envio', 'despachado', 8300, 1500, 9800, 'fc000000-0000-4000-8000-000000000001'),
     ('fd000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000000', '{"nombre": "Gonzalo Ruiz", "telefono": "+5492920223344"}'::jsonb, 'efectivo', 'retiro', 'completado', 4500, 0, 4500, NULL);
 
   -- Ítems de pedidos web

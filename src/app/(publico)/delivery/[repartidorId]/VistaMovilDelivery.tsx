@@ -38,7 +38,12 @@ export function VistaMovilDelivery({
     }
   };
 
-  const abrirNavegadorMapa = (direccion?: string) => {
+  const abrirNavegadorMapa = (direccion?: string, latitud?: number | string, longitud?: number | string) => {
+    if (latitud !== undefined && longitud !== undefined && String(latitud).trim() !== "" && String(longitud).trim() !== "") {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitud},${longitud}`)}`;
+      window.open(url, "_blank");
+      return;
+    }
     if (!direccion) return;
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
     window.open(url, "_blank");
@@ -169,7 +174,7 @@ export function VistaMovilDelivery({
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => abrirNavegadorMapa(pedido.datos_cliente.direccion)}
+                  onClick={() => abrirNavegadorMapa(pedido.datos_cliente.direccion, pedido.datos_cliente.latitud, pedido.datos_cliente.longitud)}
                   className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-700"
                 >
                   <Navigation className="h-4 w-4 text-[#16D39A]" />
