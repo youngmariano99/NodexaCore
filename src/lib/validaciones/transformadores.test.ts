@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
   transformarNumeroLocal,
@@ -84,5 +84,19 @@ describe("Zod Schemas", () => {
     const res2 = esquema.safeParse({ telefono: "" });
     expect(res2.success).toBe(true);
     if (res2.success) expect(res2.data.telefono).toBeNull();
+  });
+
+  it("zTelefonoObligatorio sanitiza y valida teléfonos requeridos", () => {
+    const esquema = z.object({ telefono: zTelefonoObligatorio() });
+
+    const res1 = esquema.safeParse({ telefono: "+54 9 2920 00-0000" });
+    expect(res1.success).toBe(true);
+    if (res1.success) expect(res1.data.telefono).toBe("+5492920000000");
+
+    const res2 = esquema.safeParse({ telefono: "" });
+    expect(res2.success).toBe(false);
+
+    const res3 = esquema.safeParse({ telefono: "invalido" });
+    expect(res3.success).toBe(false);
   });
 });

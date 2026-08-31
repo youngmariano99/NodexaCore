@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 /**
  * Limpia y convierte formatos numéricos/moneda en string (locales ARS o estándar) a tipo Number de JS.
@@ -41,7 +41,7 @@ export function transformarNumeroLocal(valor: unknown): number {
       return Number(sinMoneda.replace(/\./g, ""));
     }
     // Si tiene 1 punto seguido de exactamente 3 dígitos (ej: 30.000), se interpreta como miles en contexto ARS
-    if (partes[1].length === 3) {
+    if (partes[1] && partes[1].length === 3) {
       return Number(sinMoneda.replace(/\./g, ""));
     }
     return Number(sinMoneda);
@@ -69,7 +69,7 @@ export const zMonedaNoNegativa = (
 ) =>
   z.preprocess(
     transformarNumeroLocal,
-    z.number({ message: mensajeObligatorio, invalid_type_error: mensajeObligatorio }).min(0, mensajeNoNegativo),
+    z.number({ message: mensajeObligatorio }).min(0, mensajeNoNegativo),
   );
 
 /**
@@ -81,7 +81,7 @@ export const zMonedaPositiva = (
 ) =>
   z.preprocess(
     transformarNumeroLocal,
-    z.number({ message: mensajeObligatorio, invalid_type_error: mensajeObligatorio }).positive(mensajePositivo),
+    z.number({ message: mensajeObligatorio }).positive(mensajePositivo),
   );
 
 /**
@@ -103,6 +103,6 @@ export const zTelefonoObligatorio = (mensajeObligatorio: string = "El teléfono 
   z
     .string({ message: mensajeObligatorio })
     .transform(transformarTelefono)
-    .refine((val) => val !== null && /^\+?[1-9]\d{7,14}$/.test(val), {
+    .refine((val): val is string => val !== null && /^\+?[1-9]\d{7,14}$/.test(val), {
       message: "Ingresá el teléfono en formato internacional, ej. +5492920000000.",
     });

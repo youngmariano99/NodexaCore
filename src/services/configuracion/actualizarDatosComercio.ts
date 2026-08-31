@@ -14,7 +14,7 @@ const esquemaActualizarDatosComercio = z.object({
   telefonoWhatsapp: z
     .string()
     .transform(transformarTelefono)
-    .refine((val) => val !== null && val.length >= 8, { message: "El número de WhatsApp debe ser válido." }),
+    .refine((val): val is string => val !== null && val.length >= 8, { message: "El número de WhatsApp debe ser válido." }),
   logoUrl: z.string().url("El logo debe ser una URL válida.").or(z.literal("")).nullable(),
 });
 
@@ -68,8 +68,6 @@ export async function actualizarDatosComercio(
     .select("nombre_comercio, telefono_whatsapp, logo_url")
     .eq("cliente_id", clienteId)
     .maybeSingle<{ nombre_comercio: string; telefono_whatsapp: string; logo_url: string | null }>();
-
-  const logoNormalizado = logoUrl && logoUrl.trim() !== "" ? logoUrl.trim() : null;
 
   const { error: errorUpdate } = await supabase
     .from("clientes")
