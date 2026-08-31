@@ -46,15 +46,9 @@ function obtenerIconoMetodo(metodoPago: string) {
 export function FormularioMetodosPago({ metodosIniciales }: FormularioMetodosPagoProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [prevMetodosIniciales, setPrevMetodosIniciales] = useState(metodosIniciales);
   const [reglas, setReglas] = useState<ReglaMetodoPago[]>(() => {
     return normalizarReglasMetodosPago(metodosIniciales);
   });
-
-  if (metodosIniciales !== prevMetodosIniciales) {
-    setPrevMetodosIniciales(metodosIniciales);
-    setReglas(normalizarReglasMetodosPago(metodosIniciales));
-  }
 
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
   const [exito, setExito] = useState(false);
@@ -216,8 +210,14 @@ export function FormularioMetodosPago({ metodosIniciales }: FormularioMetodosPag
             disabled={isPending}
             className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#16D39A] px-6 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-[#13b584] disabled:opacity-50"
           >
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            <span>Guardar Métodos de Pago</span>
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Guardando cambios...</span>
+              </>
+            ) : (
+              <span>Guardar Métodos de Pago</span>
+            )}
           </button>
         </div>
       </form>
