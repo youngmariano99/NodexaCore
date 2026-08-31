@@ -56,7 +56,7 @@ export default async function ConfiguracionPage() {
 
   const { data: cliente, error: errorCliente } = await supabase
     .from("clientes")
-    .select("nombre_comercio, telefono_whatsapp, logo_url, configuracion_metodos_pago")
+    .select("nombre_comercio, telefono_whatsapp, logo_url")
     .eq("cliente_id", solicitante.cliente_id)
     .maybeSingle<FilaCliente>();
 
@@ -66,6 +66,22 @@ export default async function ConfiguracionPage() {
         <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       </div>
     );
+  }
+
+  // Consulta opcional de métodos de pago (resiliente si la migración de la columna está pendiente)
+  let metodosIniciales: ReglaMetodoPago[] | null = null;
+  try {
+    const { data: metodosData } = await supabase
+      .from("clientes")
+      .select("configuracion_metodos_pago")
+      .eq("cliente_id", solicitante.cliente_id)
+      .maybeSingle<{ configuracion_metodos_pago: ReglaMetodoPago[] | null }>();
+
+    if (metodosData?.configuracion_metodos_pago) {
+      metodosIniciales = metodosData.configuracion_metodos_pago;
+    }
+  } catch {
+    // Si la columna aún no está creada en la BD remota, usa null/defaults
   }
 
   return (
@@ -85,7 +101,7 @@ export default async function ConfiguracionPage() {
         />
 
         <FormularioMetodosPago
-          metodosIniciales={cliente.configuracion_metodos_pago}
+          metodosIniciales={metodosIniciales}
         />
       </div>
     </div>
