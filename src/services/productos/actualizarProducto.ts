@@ -9,12 +9,16 @@ import type { EstadoActualizarProducto } from "@/services/productos/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 import { comprimirImagenProducto } from "@/services/imagenes/comprimirImagen";
 
+import { transformarNumeroLocal } from "@/lib/validaciones/transformadores";
+
 const esquemaActualizarProducto = z
   .object({
     nombre: z.string().trim().min(1, "El nombre es obligatorio.").optional(),
     descripcion: z.string().trim().min(1, "La descripción no puede quedar vacía.").optional(),
     categoria: z.string().trim().min(1, "La categoría es obligatoria.").optional(),
-    precio: z.coerce.number().min(0, "El precio no puede ser negativo.").optional(),
+    precio: z
+      .preprocess((val) => (val !== undefined ? transformarNumeroLocal(val) : undefined), z.number().min(0, "El precio no puede ser negativo."))
+      .optional(),
     imagen: z.instanceof(File).optional(),
   })
   .refine((datos) => Object.values(datos).some((valor) => valor !== undefined), {

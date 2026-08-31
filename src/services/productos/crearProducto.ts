@@ -9,12 +9,12 @@ import type { EstadoCrearProducto } from "@/services/productos/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 import { comprimirImagenProducto } from "@/services/imagenes/comprimirImagen";
 
+import { zMonedaNoNegativa } from "@/lib/validaciones/transformadores";
+
 const esquemaCrearProducto = z.object({
   sku: z.string({ message: "El SKU es obligatorio." }).trim().min(1, "El SKU es obligatorio."),
   nombre: z.string({ message: "El nombre es obligatorio." }).trim().min(1, "El nombre es obligatorio."),
-  precio: z.coerce
-    .number({ message: "El precio es obligatorio." })
-    .min(0, "El precio no puede ser negativo."),
+  precio: zMonedaNoNegativa("El precio es obligatorio.", "El precio no puede ser negativo."),
   categoria: z.string({ message: "La categoría es obligatoria." }).trim().min(1, "La categoría es obligatoria."),
   imagen: z.instanceof(File).optional(),
 });

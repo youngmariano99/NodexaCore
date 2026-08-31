@@ -8,13 +8,11 @@ import { insertarClienteFinal } from "@/repositories/clientesFinales";
 import type { EstadoCrearClienteFinal } from "@/services/fiados/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
+import { zTelefonoOpcional } from "@/lib/validaciones/transformadores";
+
 const esquemaCrearClienteFinal = z.object({
   nombre: z.string({ message: "El nombre es obligatorio." }).trim().min(1, "El nombre es obligatorio."),
-  telefono: z
-    .string()
-    .trim()
-    .nullish()
-    .transform((valor) => (valor && valor.length > 0 ? valor : null)),
+  telefono: zTelefonoOpcional(),
 });
 
 interface FilaUsuarioSolicitante {

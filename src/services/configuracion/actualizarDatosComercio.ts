@@ -7,9 +7,14 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { ResultadoRepositorio } from "@/repositories/base/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
+import { transformarTelefono } from "@/lib/validaciones/transformadores";
+
 const esquemaActualizarDatosComercio = z.object({
   nombreComercio: z.string().min(1, "El nombre del comercio es obligatorio."),
-  telefonoWhatsapp: z.string().min(8, "El número de WhatsApp debe ser válido."),
+  telefonoWhatsapp: z
+    .string()
+    .transform(transformarTelefono)
+    .refine((val) => val !== null && val.length >= 8, { message: "El número de WhatsApp debe ser válido." }),
   logoUrl: z.string().url("El logo debe ser una URL válida.").or(z.literal("")).nullable(),
 });
 
@@ -69,9 +74,9 @@ export async function actualizarDatosComercio(
   const { error: errorUpdate } = await supabase
     .from("clientes")
     .update({
-      nombre_comercio: nombreComercio.trim(),
-      telefono_whatsapp: telefonoWhatsapp.trim(),
-      logo_url: logoNormalizado,
+      nombre_comercio: validacion.data.nombreComercio.trim(),
+      telefono_whatsapp: validacion.data.telefonoWhatsapp,
+      logo_url: validacion.data.logoUrl && validacion.data.logoUrl.trim() !== "" ? validacion.data.logoUrl.trim() : null,
     })
     .eq("cliente_id", clienteId);
 
@@ -88,18 +93,18 @@ export async function actualizarDatosComercio(
     campoModificado: "datos_comerciales",
     valorAnterior: JSON.stringify(clientePrevio),
     valorNuevo: JSON.stringify({
-      nombre_comercio: nombreComercio,
-      telefono_whatsapp: telefonoWhatsapp,
-      logo_url: logoNormalizado,
+      nombre_comercio: validacion.data.nombreComercio.trim(),
+      telefono_whatsapp: validacion.data.telefonoWhatsapp,
+      logo_url: validacion.data.logoUrl && validacion.data.logoUrl.trim() !== "" ? validacion.data.logoUrl.trim() : null,
     }),
   });
 
   return {
     ok: true,
     data: {
-      nombreComercio,
-      telefonoWhatsapp,
-      logoUrl: logoNormalizado,
+      nombreComercio: validacion.data.nombreComercio.trim(),
+      telefonoWhatsapp: validacion.data.telefonoWhatsapp,
+      logoUrl: validacion.data.logoUrl && validacion.data.logoUrl.trim() !== "" ? validacion.data.logoUrl.trim() : null,
     },
   };
 }

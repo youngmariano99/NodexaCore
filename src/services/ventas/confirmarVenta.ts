@@ -10,6 +10,8 @@ const CODIGO_POSTGRES_NO_DATA_FOUND = "P0002";
 const CODIGO_VENTA_DUPLICADA = "NX002";
 const CODIGO_STOCK_INSUFICIENTE = "NX001";
 
+import { zMonedaNoNegativa } from "@/lib/validaciones/transformadores";
+
 const esquemaItemVenta = z.object({
   productoId: z.string().uuid(),
   cantidad: z.coerce.number().int().positive(),
@@ -20,7 +22,7 @@ const esquemaConfirmarVenta = z.object({
   clienteFinalId: z.string().uuid().nullable(),
   metodoPago: z.string().optional().default("efectivo"),
   items: z.array(esquemaItemVenta).min(1, "La venta necesita al menos un producto."),
-  total: z.coerce.number({ message: "El total de la venta es obligatorio." }),
+  total: zMonedaNoNegativa("El total de la venta es obligatorio.", "El total de la venta no puede ser negativo."),
   pinAdminOverride: z.string().optional(),
 });
 
@@ -78,11 +80,8 @@ export async function confirmarVenta(
   });
 
   if (!resultado.success) {
-    return { error: "NX-SYS-006", exito: false, ventaId: null };
-  }
-
-  if (resultado.data.total < 0) {
-    return { error: "NX-VTA-003", exito: false, ventaId: null };
+    const errorTotal = resultado.error.issues.some((issue) => issue.path[0] === "total");
+    return { error: errorTotal ? "NX-VTA-003" : "NX-SYS-006", exito: false, ventaId: null };
   }
 
   const supabase = await crearClienteSupabaseServidor();
