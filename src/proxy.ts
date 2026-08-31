@@ -45,7 +45,15 @@ export function obtenerSubdominioDesdeHost(host: string): string | null {
   const hostSeguro = host ?? "";
   const hostLimpio = hostSeguro.split(":")[0]?.toLowerCase() ?? "";
 
-  if (!hostLimpio || DOMINIOS_PRINCIPALES.includes(hostLimpio)) {
+  if (
+    !hostLimpio ||
+    DOMINIOS_PRINCIPALES.includes(hostLimpio) ||
+    hostLimpio.endsWith(".vercel.app") ||
+    hostLimpio.endsWith(".up.railway.app") ||
+    hostLimpio.endsWith(".render.com") ||
+    hostLimpio.endsWith(".pages.dev") ||
+    hostLimpio.endsWith(".netlify.app")
+  ) {
     return null;
   }
 
@@ -70,6 +78,18 @@ export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
   const subdominioOHost = obtenerSubdominioDesdeHost(host);
+
+  // Excluir rutas públicas del sistema de cualquier rewrite de subdominio
+  if (
+    pathname === "/manifest.json" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.next();
+  }
 
   // 1. Ruteo Dinámico del Catálogo Web por Subdominio / Dominio Personalizado
   if (subdominioOHost && !pathname.startsWith("/c/")) {
@@ -185,6 +205,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|webmanifest|js|txt)$).*)",
   ],
 };
