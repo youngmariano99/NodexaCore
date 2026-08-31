@@ -43,6 +43,7 @@ export function FormularioEdicionProducto({ producto }: FormularioEdicionProduct
       toast.exito("Producto actualizado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["productos"] });
       router.push("/productos");
+      router.refresh();
     }
   }, [estado.exito, router, queryClient, toast]);
 

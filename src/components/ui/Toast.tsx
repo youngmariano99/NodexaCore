@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { CheckCircle2, AlertTriangle, XCircle, Info, X } from "lucide-react";
 
 export type TipoToast = "exito" | "error" | "advertencia" | "info";
@@ -44,15 +44,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     [removerToast]
   );
 
-  const toast = {
-    exito: useCallback((mensaje: string, titulo?: string) => agregarToast("exito", mensaje, titulo), [agregarToast]),
-    error: useCallback((mensaje: string, titulo?: string) => agregarToast("error", mensaje, titulo), [agregarToast]),
-    advertencia: useCallback((mensaje: string, titulo?: string) => agregarToast("advertencia", mensaje, titulo), [agregarToast]),
-    info: useCallback((mensaje: string, titulo?: string) => agregarToast("info", mensaje, titulo), [agregarToast]),
-  };
+  const exito = useCallback((mensaje: string, titulo?: string) => agregarToast("exito", mensaje, titulo), [agregarToast]);
+  const error = useCallback((mensaje: string, titulo?: string) => agregarToast("error", mensaje, titulo), [agregarToast]);
+  const advertencia = useCallback((mensaje: string, titulo?: string) => agregarToast("advertencia", mensaje, titulo), [agregarToast]);
+  const info = useCallback((mensaje: string, titulo?: string) => agregarToast("info", mensaje, titulo), [agregarToast]);
+
+  const toast = useMemo(() => ({ exito, error, advertencia, info }), [exito, error, advertencia, info]);
+  const contextValue = useMemo(() => ({ toast, removerToast }), [toast, removerToast]);
 
   return (
-    <ToastContext.Provider value={{ toast, removerToast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       {/* Toast Container */}
       <div
