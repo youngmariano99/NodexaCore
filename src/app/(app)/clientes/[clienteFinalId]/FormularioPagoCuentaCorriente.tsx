@@ -177,10 +177,12 @@ export function FormularioPagoCuentaCorriente({
                     </label>
 
                     <InputDinero
+                      id="monto"
+                      name="monto"
                       required
                       value={monto}
                       onValueChange={(val) => setMonto(String(val))}
-                      placeholder="0,00"
+                      placeholder="0.00"
                       disabled={isPending}
                     />
                   </div>
