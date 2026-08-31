@@ -1,15 +1,28 @@
 -- Migración: Configuración de Métodos de Pago y Desglose en Ventas
 -- Ticket: Métodos de Pago y Promociones en Mostrador y Configuración
 
--- 1. Agregar columna configuracion_metodos_pago a la tabla clientes
+-- 1. Agregar columna configuracion_metodos_pago a la tabla clientes y habilitar actualización para el comercio
 ALTER TABLE clientes
   ADD COLUMN IF NOT EXISTS configuracion_metodos_pago jsonb NOT NULL DEFAULT '[
-    {"metodo_pago":"efectivo","etiqueta":"Efectivo","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"transferencia","etiqueta":"Transferencia","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"debito","etiqueta":"Débito","tipo_ajuste":"ninguno","porcentaje":0,"activo":true},
-    {"metodo_pago":"credito","etiqueta":"Crédito","tipo_ajuste":"recargo","porcentaje":10,"activo":true},
-    {"metodo_pago":"cuenta_corriente","etiqueta":"Cta. Cte.","tipo_ajuste":"ninguno","porcentaje":0,"activo":true}
+    {"metodoPago":"efectivo","etiqueta":"Efectivo","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"transferencia","etiqueta":"Transferencia","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"debito","etiqueta":"Débito","tipoAjuste":"ninguno","porcentaje":0,"activo":true},
+    {"metodoPago":"credito","etiqueta":"Crédito","tipoAjuste":"recargo","porcentaje":10,"activo":true},
+    {"metodoPago":"cuenta_corriente","etiqueta":"Cta. Cte.","tipoAjuste":"ninguno","porcentaje":0,"activo":true}
   ]'::jsonb;
+
+DROP POLICY IF EXISTS clientes_update_tenant ON clientes;
+CREATE POLICY clientes_update_tenant ON clientes
+  FOR UPDATE USING (
+    cliente_id = (auth.jwt() ->> 'cliente_id')::uuid
+    OR cliente_id = auth_cliente_id()
+    OR es_admin_nodexa()
+  )
+  WITH CHECK (
+    cliente_id = (auth.jwt() ->> 'cliente_id')::uuid
+    OR cliente_id = auth_cliente_id()
+    OR es_admin_nodexa()
+  );
 
 -- 2. Trazabilidad de recargos / descuentos en la tabla ventas
 ALTER TABLE ventas

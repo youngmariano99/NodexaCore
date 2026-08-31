@@ -58,15 +58,19 @@ export async function actualizarMetodosPago(
     return { ok: false, error: validacion.error.issues[0]?.message || "NX-SYS-001" };
   }
 
-  const { error: errorUpdate } = await supabase
+  const { data: filasActualizadas, error: errorUpdate } = await supabase
     .from("clientes")
     .update({
       configuracion_metodos_pago: validacion.data,
     })
-    .eq("cliente_id", solicitante.cliente_id);
+    .eq("cliente_id", solicitante.cliente_id)
+    .select("cliente_id");
 
-  if (errorUpdate) {
-    console.error("[actualizarMetodosPago] Error en Supabase:", errorUpdate);
+  if (errorUpdate || !filasActualizadas || filasActualizadas.length === 0) {
+    console.error("[actualizarMetodosPago] Error en Supabase o 0 filas afectadas por RLS:", {
+      errorUpdate,
+      filasActualizadas,
+    });
     return { ok: false, error: "NX-SYS-001" };
   }
 
