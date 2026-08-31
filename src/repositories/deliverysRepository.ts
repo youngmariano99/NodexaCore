@@ -19,6 +19,8 @@ export interface PedidoDeliveryEntity {
     telefono: string;
     direccion?: string;
     notas?: string;
+    latitud?: number | string;
+    longitud?: number | string;
   };
   metodo_pago: string;
   opcion_entrega: string;

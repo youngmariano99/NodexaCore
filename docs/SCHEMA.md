@@ -368,7 +368,7 @@ Extiende `auth.users` de Supabase (1:1 vía `auth_user_id`).
 | :--- | :--- | :--- |
 | `pedido_id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` |
 | `cliente_id` | `uuid` | `NOT NULL`, `REFERENCES clientes(cliente_id)` |
-| `datos_cliente` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` (nombre, telefono, direccion, notas) |
+| `datos_cliente` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` (nombre, telefono, direccion, notas, latitud, longitud — latitud/longitud obligatorios si `opcion_entrega = 'envio'`) |
 | `metodo_pago` | `text` | `NOT NULL`, `DEFAULT 'efectivo'` (efectivo, transferencia, tarjeta) |
 | `opcion_entrega` | `text` | `NOT NULL`, `DEFAULT 'envio'`, `CHECK (opcion_entrega IN ('envio', 'retiro'))` |
 | `estado` | `estado_pedido_web` | `NOT NULL`, `DEFAULT 'pendiente'` ('pendiente', 'en_preparacion', 'despachado', 'completado', 'cancelado') |
