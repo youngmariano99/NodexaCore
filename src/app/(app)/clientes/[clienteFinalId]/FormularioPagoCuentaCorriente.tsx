@@ -8,6 +8,8 @@ import { MensajeError } from "@/components/errores/MensajeError";
 import { ComprobanteCobroTicket } from "@/components/fiados/ComprobanteCobroTicket";
 import { registrarPagoCuentaCorriente } from "@/services/fiados/registrarPagoCuentaCorriente";
 import { ESTADO_REGISTRAR_PAGO_CUENTA_CORRIENTE_INICIAL } from "@/services/fiados/tipos";
+import { useToast } from "@/components/ui/Toast";
+import { InputDinero } from "@/components/ui/InputDinero";
 
 interface ItemDebitoOpcion {
   movimientoCcId: string;
@@ -16,43 +18,50 @@ interface ItemDebitoOpcion {
   numeroComprobante?: string | null;
 }
 
+interface TicketEmitidoState {
+  numeroRecibo: string;
+  monto: number;
+  metodoPago: string;
+  saldoDeudorRestante: number;
+}
+
 interface FormularioPagoCuentaCorrienteProps {
   clienteFinalId: string;
-  nombreCliente: string;
-  telefonoCliente?: string | null;
-  nombreComercio?: string;
   saldoDeudor: number;
+  nombreComercio?: string;
+  nombreCliente?: string;
+  telefonoCliente?: string | null;
+  debitoEspecificoId?: string;
+  montoSugerido?: number;
   debitosPendientes?: ItemDebitoOpcion[];
 }
 
 export function FormularioPagoCuentaCorriente({
   clienteFinalId,
-  nombreCliente,
-  telefonoCliente,
-  nombreComercio = "Comercio",
   saldoDeudor,
+  nombreComercio = "Nodexa Comercio",
+  nombreCliente = "Cliente Final",
+  telefonoCliente,
+  debitoEspecificoId: debitoEspecificoIdProp,
+  montoSugerido,
   debitosPendientes = [],
 }: FormularioPagoCuentaCorrienteProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [monto, setMonto] = useState("");
-  const [metodoPago, setMetodoPago] = useState("efectivo");
-  const [debitoEspecificoId, setDebitoEspecificoId] = useState("");
+  const [monto, setMonto] = useState(montoSugerido ? String(montoSugerido) : "");
+  const [metodoPago, setMetodoPago] = useState<string>("efectivo");
+  const [debitoEspecificoId, setDebitoEspecificoId] = useState(debitoEspecificoIdProp || "");
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Estado del ticket generado
-  const [ticketEmitido, setTicketEmitido] = useState<{
-    numeroRecibo: string;
-    monto: number;
-    metodoPago: string;
-    saldoDeudorRestante: number;
-  } | null>(null);
+  const [ticketEmitido, setTicketEmitido] = useState<TicketEmitidoState | null>(null);
 
   const handleOpen = () => {
-    setMonto("");
+    setMonto(montoSugerido ? String(montoSugerido) : "");
     setMetodoPago("efectivo");
-    setDebitoEspecificoId("");
+    setDebitoEspecificoId(debitoEspecificoIdProp || "");
     setErrorLocal(null);
     setTicketEmitido(null);
     setIsOpen(true);
@@ -62,6 +71,7 @@ export function FormularioPagoCuentaCorriente({
     if (!isPending) {
       setIsOpen(false);
       setTicketEmitido(null);
+      setErrorLocal(null);
     }
   };
 
@@ -69,10 +79,10 @@ export function FormularioPagoCuentaCorriente({
     e.preventDefault();
     setErrorLocal(null);
 
-    const montoNum = Number(monto);
+    const montoNum = Number(monto.replace(/\./g, "").replace(",", "."));
 
-    if (!monto || Number.isNaN(montoNum) || montoNum <= 0) {
-      setErrorLocal("NX-FIA-004");
+    if (isNaN(montoNum) || montoNum <= 0) {
+      setErrorLocal("NX-SYS-006");
       return;
     }
 
@@ -96,6 +106,7 @@ export function FormularioPagoCuentaCorriente({
       );
 
       if (resultado.exito) {
+        toast.exito("Pago registrado exitosamente.");
         const saldoRestante = Math.max(0, Number((saldoDeudor - montoNum).toFixed(2)));
         setTicketEmitido({
           numeroRecibo: `REC-${Date.now().toString().slice(-6)}`,
@@ -115,14 +126,14 @@ export function FormularioPagoCuentaCorriente({
       <button
         onClick={handleOpen}
         disabled={saldoDeudor <= 0}
-        className="flex min-h-11 items-center rounded-xl bg-emerald-500 px-4 text-sm font-bold text-slate-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-40 disabled:pointer-events-none"
+        className="flex min-h-11 items-center rounded-xl bg-[#16D39A] px-4 text-sm font-bold text-slate-950 transition-colors duration-150 hover:bg-[#13b885] focus:outline-none focus:ring-2 focus:ring-[#16D39A] focus:ring-offset-2 focus:ring-offset-[#090B0B] disabled:opacity-40 disabled:pointer-events-none"
       >
         Registrar Pago
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-50 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#222A27] bg-[#0D1110] p-6 text-slate-50 shadow-2xl">
             {ticketEmitido ? (
               <ComprobanteCobroTicket
                 nombreComercio={nombreComercio}
@@ -137,13 +148,13 @@ export function FormularioPagoCuentaCorriente({
               />
             ) : (
               <>
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center justify-between border-b border-[#222A27] pb-3">
                   <h2 className="text-base font-bold text-slate-50">Registrar Pago</h2>
                   <button
                     type="button"
                     onClick={handleClose}
                     disabled={isPending}
-                    className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                    className="rounded-lg p-1 text-slate-400 hover:bg-[#111615] hover:text-slate-100 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -152,9 +163,9 @@ export function FormularioPagoCuentaCorriente({
                 <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
                   {errorLocal && <MensajeError codigo={errorLocal} className="w-full" />}
 
-                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-3 text-xs text-slate-400 flex flex-col gap-0.5">
+                  <div className="rounded-xl bg-[#111615] border border-[#222A27] p-3 text-xs text-slate-400 flex flex-col gap-0.5">
                     <span>Saldo Deudor Vigente:</span>
-                    <span className="text-base font-bold text-emerald-400 font-mono">
+                    <span className="text-base font-bold text-[#16D39A] font-mono">
                       ${saldoDeudor.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -165,22 +176,15 @@ export function FormularioPagoCuentaCorriente({
                       Monto del Pago
                     </label>
 
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-mono">
-                        $
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        required
-                        value={monto}
-                        onChange={(e) => setMonto(e.target.value)}
-                        placeholder="0.00"
-                        disabled={isPending}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-950 pl-7 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none font-mono"
-                      />
-                    </div>
+                    <InputDinero
+                      id="monto"
+                      name="monto"
+                      required
+                      value={monto}
+                      onValueChange={(val) => setMonto(String(val))}
+                      placeholder="0.00"
+                      disabled={isPending}
+                    />
                   </div>
 
                   {/* Forma de Pago */}

@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { verificarHorarioAtencion } from "@/lib/dominio/catalogoWeb/verificarHorarioAtencion";
+import { useToast } from "@/components/ui/Toast";
+import { InputDinero } from "@/components/ui/InputDinero";
 
 export interface ZonaEnvioConfig {
   id: string;
@@ -29,62 +31,63 @@ const CONFIG_POR_DEFECTO: ConfiguracionCatalogoData = {
   horarioApertura: "09:00",
   horarioCierre: "21:00",
   horarioActivo: true,
-  bannerTexto: "🔥 10% OFF pagando en efectivo al retirar",
-  bannerActivo: true,
+  bannerTexto: "¡Envíos gratis en compras superiores a $15.000!",
+  bannerActivo: false,
   zonasEnvio: [
-    { id: "z1", nombre: "Centro / Microcentro", costo: 500 },
-    { id: "z2", nombre: "Barrios Aledaños", costo: 900 },
+    { id: "1", nombre: "Zona Céntrica", costo: 1500 },
+    { id: "2", nombre: "Zona Periférica", costo: 2500 },
   ],
 };
 
 export function FormularioConfiguracionCatalogo({
-  configuracionInicial,
+  configuracionInicial = {},
 }: FormularioConfiguracionCatalogoProps) {
-  const [horarioApertura, setHorarioApertura] = useState(
-    configuracionInicial?.horarioApertura ?? CONFIG_POR_DEFECTO.horarioApertura
-  );
-  const [horarioCierre, setHorarioCierre] = useState(
-    configuracionInicial?.horarioCierre ?? CONFIG_POR_DEFECTO.horarioCierre
-  );
-  const [horarioActivo, setHorarioActivo] = useState(
-    configuracionInicial?.horarioActivo ?? CONFIG_POR_DEFECTO.horarioActivo
-  );
+  const { toast } = useToast();
+  const config = { ...CONFIG_POR_DEFECTO, ...configuracionInicial };
 
-  const [bannerTexto, setBannerTexto] = useState(
-    configuracionInicial?.bannerTexto ?? CONFIG_POR_DEFECTO.bannerTexto
-  );
-  const [bannerActivo, setBannerActivo] = useState(
-    configuracionInicial?.bannerActivo ?? CONFIG_POR_DEFECTO.bannerActivo
-  );
+  const [horarioApertura, setHorarioApertura] = useState(config.horarioApertura);
+  const [horarioCierre, setHorarioCierre] = useState(config.horarioCierre);
+  const [horarioActivo, setHorarioActivo] = useState(config.horarioActivo);
 
-  const [zonasEnvio, setZonasEnvio] = useState<ZonaEnvioConfig[]>(
-    configuracionInicial?.zonasEnvio ?? CONFIG_POR_DEFECTO.zonasEnvio
-  );
+  const [bannerTexto, setBannerTexto] = useState(config.bannerTexto);
+  const [bannerActivo, setBannerActivo] = useState(config.bannerActivo);
+
+  const [zonasEnvio, setZonasEnvio] = useState<ZonaEnvioConfig[]>(config.zonasEnvio);
 
   const [estaGuardando, setEstaGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [codigoError, setCodigoError] = useState<string | null>(null);
 
-  // Previsualizar el estado del horario de atención actual
-  const evaluacionHorario = verificarHorarioAtencion(horarioApertura, horarioCierre, horarioActivo);
+  const evaluacionHorario = verificarHorarioAtencion(
+    horarioApertura,
+    horarioCierre,
+    horarioActivo
+  );
 
   const agregarZonaEnvio = () => {
-    const nuevaZona: ZonaEnvioConfig = {
-      id: `zona-${Date.now()}`,
-      nombre: "Nueva Zona de Envío",
-      costo: 500,
-    };
-    setZonasEnvio([...zonasEnvio, nuevaZona]);
-  };
-
-  const actualizarZona = (id: string, campo: "nombre" | "costo", valor: string | number) => {
-    setZonasEnvio(
-      zonasEnvio.map((z) => (z.id === id ? { ...z, [campo]: valor } : z))
-    );
+    setZonasEnvio([
+      ...zonasEnvio,
+      {
+        id: Math.random().toString(36).substring(2, 9),
+        nombre: "",
+        costo: 0,
+      },
+    ]);
   };
 
   const eliminarZona = (id: string) => {
     setZonasEnvio(zonasEnvio.filter((z) => z.id !== id));
+  };
+
+  const actualizarZona = (id: string, campo: keyof ZonaEnvioConfig, valor: string | number) => {
+    setZonasEnvio(
+      zonasEnvio.map((z) => {
+        if (z.id === id) {
+          return { ...z, [campo]: valor };
+        }
+        return z;
+      })
+    );
   };
 
   const manejarGuardar = async () => {
@@ -102,7 +105,9 @@ export function FormularioConfiguracionCatalogo({
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      setMensajeExito("Configuración de horarios, banners y envíos actualizada correctamente.");
+      const msg = "Configuración de horarios, banners y envíos actualizada correctamente.";
+      setMensajeExito(msg);
+      toast.exito(msg);
     } catch {
       setCodigoError("NX-SYS-001");
     } finally {
@@ -255,16 +260,12 @@ export function FormularioConfiguracionCatalogo({
                   placeholder="Nombre de la zona"
                   className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 text-sm text-slate-100 focus:border-[#16D39A] focus:outline-none"
                 />
-                <div className="relative flex w-36 items-center">
-                  <span className="absolute left-3 text-xs text-slate-400">$</span>
-                  <input
-                    type="number"
-                    min="0"
+                <div className="w-36">
+                  <InputDinero
                     value={zona.costo}
-                    onChange={(e) =>
-                      actualizarZona(zona.id, "costo", Number.parseFloat(e.target.value) || 0)
-                    }
-                    className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-900 pl-7 pr-3 text-sm text-slate-100 focus:border-[#16D39A] focus:outline-none"
+                    onValueChange={(val) => actualizarZona(zona.id, "costo", val)}
+                    placeholder="0,00"
+                    className="rounded-xl border-slate-700 bg-slate-900 text-slate-100 focus:border-[#16D39A]"
                   />
                 </div>
                 <button

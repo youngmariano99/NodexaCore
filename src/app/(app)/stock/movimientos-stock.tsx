@@ -16,6 +16,7 @@ import {
   ESTADO_REGISTRAR_ENTRADA_STOCK_INICIAL,
   ESTADO_REGISTRAR_SALIDA_STOCK_INICIAL,
 } from "@/services/stock/tipos";
+import { useToast } from "@/components/ui/Toast";
 import type { FilaMovimientoStockListado } from "@/repositories/movimientosStockRepository";
 import type { FilaProductoBusqueda } from "@/repositories/productosRepository";
 
@@ -49,6 +50,7 @@ interface ModalMovimientoStockProps {
 }
 
 function ModalMovimientoStock({ isOpen, onClose, onSuccess }: ModalMovimientoStockProps) {
+  const { toast } = useToast();
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const terminoDebounced = useDebouncedValue(terminoBusqueda, 300);
   const { data: resultados, isFetching } = useBuscarProductos(terminoDebounced);
@@ -113,6 +115,7 @@ function ModalMovimientoStock({ isOpen, onClose, onSuccess }: ModalMovimientoSto
       const resultado = await serverAction(estadoInicial, formData);
 
       if (resultado.exito) {
+        toast.exito("Movimiento de stock registrado exitosamente.");
         onSuccess();
         onClose();
       } else {
@@ -122,7 +125,7 @@ function ModalMovimientoStock({ isOpen, onClose, onSuccess }: ModalMovimientoSto
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-lg border border-[#222A27] bg-[#0D1110] p-6 text-slate-50 shadow-xl">
         <div className="flex items-center justify-between border-b border-[#222A27] pb-4">
           <h2 className="text-lg font-semibold text-slate-50">Registrar Movimiento de Stock</h2>

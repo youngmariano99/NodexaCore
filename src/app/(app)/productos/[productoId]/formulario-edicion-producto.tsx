@@ -13,22 +13,24 @@ import { ESTADO_ACTUALIZAR_PRODUCTO_INICIAL } from "@/services/productos/tipos";
 const CLASES_CAMPO_BASE =
   "min-h-11 rounded-md border bg-[#0D1110] px-4 text-base text-[#F3F5F4] placeholder:text-[#737C78] outline-none transition-colors duration-150 focus:border-[#16D39A]";
 
-interface ProductoEdit {
-  producto_id: string;
-  sku: string;
-  nombre: string;
-  descripcion: string | null;
-  categoria: string | null;
-  precio: number;
-}
+import { useToast } from "@/components/ui/Toast";
+import { InputDinero } from "@/components/ui/InputDinero";
 
 interface FormularioEdicionProductoProps {
-  producto: ProductoEdit;
+  producto: {
+    producto_id: string;
+    sku: string;
+    nombre: string;
+    descripcion: string | null;
+    categoria: string | null;
+    precio: number;
+  };
 }
 
 export function FormularioEdicionProducto({ producto }: FormularioEdicionProductoProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const actualizarProductoConId = actualizarProducto.bind(null, producto.producto_id);
   const [estado, accionFormulario, estaEnviando] = useActionState(
@@ -38,10 +40,12 @@ export function FormularioEdicionProducto({ producto }: FormularioEdicionProduct
 
   useEffect(() => {
     if (estado.exito) {
+      toast.exito("Producto actualizado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["productos"] });
       router.push("/productos");
+      router.refresh();
     }
-  }, [estado.exito, router, queryClient]);
+  }, [estado.exito, router, queryClient, toast]);
 
   const codigoErrorFormulario = estado.error ? estado.error : null;
 
@@ -68,8 +72,9 @@ export function FormularioEdicionProducto({ producto }: FormularioEdicionProduct
           name="sku"
           type="text"
           value={producto.sku}
-          disabled
-          className={`${CLASES_CAMPO_BASE} border-[#222A27] opacity-50 cursor-not-allowed`}
+          readOnly
+          tabIndex={-1}
+          className={`${CLASES_CAMPO_BASE} cursor-not-allowed opacity-50 border-[#222A27] select-none`}
         />
       </div>
 
@@ -82,7 +87,7 @@ export function FormularioEdicionProducto({ producto }: FormularioEdicionProduct
           id="nombre"
           name="nombre"
           type="text"
-          placeholder="ej. Yerba mate 1kg"
+          placeholder="ej. Yerba Mate Clásica 1kg"
           defaultValue={producto.nombre}
           required
           className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
@@ -124,16 +129,11 @@ export function FormularioEdicionProducto({ producto }: FormularioEdicionProduct
         <label htmlFor="precio" className="text-sm font-medium text-[#F3F5F4]">
           Precio
         </label>
-        <input
+        <InputDinero
           id="precio"
           name="precio"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="ej. 3500"
           defaultValue={producto.precio}
           required
-          className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
         />
       </div>
 

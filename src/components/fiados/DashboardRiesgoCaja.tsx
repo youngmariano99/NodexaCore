@@ -7,6 +7,8 @@ import {
   DollarSign,
   Users,
   AlertTriangle,
+  AlertOctagon,
+  CheckCircle2,
   HelpCircle,
   MessageCircle,
   Settings,
@@ -17,6 +19,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
+import { InputDinero } from "@/components/ui/InputDinero";
 
 import type {
   SituacionCajaYDeuda,
@@ -328,18 +331,27 @@ export function DashboardRiesgoCaja({
           }`}
         >
           {semaforoRiesgo.estadoAlertaRiesgo === "saludable" && (
-            <p>
-              🟢 <strong>TODO EN ORDEN:</strong> Tu nivel de fiados representa el {semaforoRiesgo.deudaSobreFacturacionPct}% de tu facturación mensual, dentro del límite saludable del {semaforoRiesgo.topeDeudaTolerablePct}%. Podés otorgar crédito con tranquilidad.
+            <p className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+              <span>
+                <strong>TODO EN ORDEN:</strong> Tu nivel de fiados representa el {semaforoRiesgo.deudaSobreFacturacionPct}% de tu facturación mensual, dentro del límite saludable del {semaforoRiesgo.topeDeudaTolerablePct}%. Podés otorgar crédito con tranquilidad.
+              </span>
             </p>
           )}
           {semaforoRiesgo.estadoAlertaRiesgo === "precaucion" && (
-            <p>
-              🟡 <strong>PRECAUCIÓN DE CRÉDITO:</strong> Tu deuda en la calle representa el {semaforoRiesgo.deudaSobreFacturacionPct}% de tu facturación (cerca del límite sugerido de {formatearPrecio(semaforoRiesgo.montoMaximoRecomendado)}). Priorizá la cobranza antes de otorgar nuevos fiados.
+            <p className="flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+              <span>
+                <strong>PRECAUCIÓN DE CRÉDITO:</strong> Tu deuda en la calle representa el {semaforoRiesgo.deudaSobreFacturacionPct}% de tu facturación (cerca del límite sugerido de {formatearPrecio(semaforoRiesgo.montoMaximoRecomendado)}). Priorizá la cobranza antes de otorgar nuevos fiados.
+              </span>
             </p>
           )}
           {semaforoRiesgo.estadoAlertaRiesgo === "excesivo" && (
-            <p>
-              🔴 <strong>ALERTA DE RIESGO EXCESIVO:</strong> La deuda en la calle ({formatearPrecio(situacionCaja.deudaTotalCalle)}) superó el máximo recomendado ({formatearPrecio(semaforoRiesgo.montoMaximoRecomendado)}). Te sugerimos suspender nuevos créditos a fiado hasta recuperar liquidez.
+            <p className="flex items-center gap-1.5">
+              <AlertOctagon className="h-4 w-4 shrink-0 text-red-400" />
+              <span>
+                <strong>ALERTA DE RIESGO EXCESIVO:</strong> La deuda en la calle ({formatearPrecio(situacionCaja.deudaTotalCalle)}) superó el máximo recomendado ({formatearPrecio(semaforoRiesgo.montoMaximoRecomendado)}). Te sugerimos suspender nuevos créditos a fiado hasta recuperar liquidez.
+              </span>
             </p>
           )}
         </div>
@@ -497,14 +509,11 @@ export function DashboardRiesgoCaja({
               {modoState === "manual" && (
                 <div className="flex flex-col gap-1.5">
                   <label className="font-bold text-slate-300">Facturación Mensual Estimada ($):</label>
-                  <input
-                    type="number"
-                    step="1000"
-                    min="0"
+                  <InputDinero
                     value={manualMonto}
-                    onChange={(e) => setManualMonto(e.target.value)}
-                    placeholder="ej: 5000000"
-                    className="rounded-xl border border-[#222A27] bg-[#090B0B] p-3 font-mono text-slate-100 focus:border-emerald-500 focus:outline-none"
+                    onValueChange={(val) => setManualMonto(String(val))}
+                    placeholder="0,00"
+                    className="p-3 font-mono text-slate-100 focus:border-emerald-500 focus:outline-none"
                   />
                   <span className="text-3xs text-slate-400">
                     Ingresá cuánto factura tu comercio en un mes normal para tener de referencia.
