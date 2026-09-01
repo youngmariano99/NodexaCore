@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { obtenerMensajeError } from "@/lib/errores/catalogo";
-import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
+import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { contarProductosActivos, insertarProductosEnLote } from "@/repositories/productosRepository";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
@@ -66,16 +66,8 @@ function valorPlanoDeCelda(valor: ExcelJS.CellValue): string | number | null | u
  * `/api/*` no está cubierto por el matcher del proxy global (`src/proxy.ts`),
  * así que la validación de sesión + rol de acá es la autorización primaria
  * del endpoint, no defensa en profundidad. Comerciante y empleado pueden dar
- * de alta productos (docs/ROLES.md §2, fila "productos — alta/edición/baja":
- * `C` para ambos), mismo gate que `crearProducto.ts`.
- *
- * A diferencia de `crearProducto.ts` (que bifurca el precio inválido a
- * `NX-PRD-003`), acá se usa literalmente `NX-PRD-007` para todo error de
- * formato de fila — es el código que el propio checklist de esta actividad
- * nombra explícitamente para "filas con formato inválido", y también para el
- * caso estructural de plantilla incorrecta (columnas faltantes o archivo no
- * parseable como Excel). No es un descuido de la distinción que sí existe en
- * el alta manual: es la instrucción textual de esta estación.
+ * de alta productos en su propio tenant. Además, admin_nodexa puede especificar
+ * `cliente_id_override` para cargar productos en cualquier comercio cliente.
  */
 export async function POST(request: NextRequest) {
   const supabase = await crearClienteSupabaseServidor();
@@ -99,18 +91,35 @@ export async function POST(request: NextRequest) {
     return respuestaError("NX-SYS-001", 500);
   }
 
-  if ((solicitante.rol !== "comerciante" && solicitante.rol !== "empleado") || !solicitante.cliente_id) {
-    return respuestaError("NX-SYS-003", 403);
-  }
-
-  const clienteId = solicitante.cliente_id;
-
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
     return respuestaError("NX-PRD-007", 422, { columnasEsperadas: COLUMNAS_ESPERADAS });
   }
+
+  const clienteIdOverrideRaw = formData.get("cliente_id_override");
+  const clienteIdOverride =
+    typeof clienteIdOverrideRaw === "string" && clienteIdOverrideRaw.trim().length > 0
+      ? clienteIdOverrideRaw.trim()
+      : null;
+
+  let clienteId: string;
+  let supabaseDb = supabase;
+
+  if (clienteIdOverride) {
+    if (solicitante.rol !== "admin_nodexa") {
+      return respuestaError("NX-SYS-003", 403);
+    }
+    clienteId = clienteIdOverride;
+    supabaseDb = crearClienteSupabaseAdmin();
+  } else {
+    if ((solicitante.rol !== "comerciante" && solicitante.rol !== "empleado") || !solicitante.cliente_id) {
+      return respuestaError("NX-SYS-003", 403);
+    }
+    clienteId = solicitante.cliente_id;
+  }
+
 
   const archivo = formData.get("archivo");
 
@@ -190,7 +199,7 @@ export async function POST(request: NextRequest) {
     candidatas.push({ fila: numeroFila, ...resultado.data });
   }
 
-  const { data: cliente, error: errorCliente } = await supabase
+  const { data: cliente, error: errorCliente } = await supabaseDb
     .from("clientes")
     .select("limite_sku")
     .eq("cliente_id", clienteId)
@@ -200,7 +209,7 @@ export async function POST(request: NextRequest) {
     return respuestaError("NX-SYS-001", 500);
   }
 
-  const conteoActivos = await contarProductosActivos(supabase, clienteId);
+  const conteoActivos = await contarProductosActivos(supabaseDb, clienteId);
 
   if (!conteoActivos.ok) {
     return respuestaError(conteoActivos.error, 500);
@@ -218,7 +227,7 @@ export async function POST(request: NextRequest) {
 
   if (dentroDelLimite.length > 0) {
     const resultadoLote = await insertarProductosEnLote(
-      supabase,
+      supabaseDb,
       clienteId,
       dentroDelLimite.map(({ sku, nombre, precio, categoria }) => ({ sku, nombre, precio, categoria })),
     );
