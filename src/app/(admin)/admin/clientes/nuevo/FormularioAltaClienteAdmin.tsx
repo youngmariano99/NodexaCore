@@ -97,7 +97,7 @@ export function FormularioAltaClienteAdmin() {
           required
           disabled={isPending}
           placeholder="Ej: Tienda de Calzados"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none transition-colors"
         />
       </div>
 
@@ -112,7 +112,7 @@ export function FormularioAltaClienteAdmin() {
           required
           disabled={isPending}
           placeholder="Ej: tienda-calzados"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none font-mono transition-colors"
         />
         <p className="text-[11px] text-slate-500 leading-normal">
           Solo minúsculas, números y guiones medios (ej. almacen-pedro).
@@ -130,7 +130,7 @@ export function FormularioAltaClienteAdmin() {
           required
           disabled={isPending}
           placeholder="Ej: +5492920000000"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none font-mono transition-colors"
         />
       </div>
 
@@ -147,7 +147,7 @@ export function FormularioAltaClienteAdmin() {
           required
           disabled={isPending}
           placeholder="Ej: 1000"
-          className="min-h-11 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+          className="min-h-11 rounded-md border border-[#222A27] bg-[#111615] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none font-mono transition-colors"
         />
       </div>
 
@@ -155,18 +155,18 @@ export function FormularioAltaClienteAdmin() {
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Módulos Activos Iniciales
         </span>
-        <div className="grid gap-3 sm:grid-cols-2 rounded-md border border-slate-800 bg-slate-900/30 p-4">
+        <div className="grid gap-3 sm:grid-cols-2 rounded-md border border-[#222A27] bg-[#111615] p-4">
           {listadoModulos.map((modulo) => (
             <label
               key={modulo}
-              className="flex items-center gap-2.5 text-sm text-slate-200 cursor-pointer select-none"
+              className="flex min-h-11 items-center gap-2.5 text-sm text-slate-200 cursor-pointer select-none rounded-md px-2 hover:bg-[#1c2421] transition-colors"
             >
               <input
                 type="checkbox"
                 checked={modulosSeleccionados[modulo]}
                 onChange={() => handleCheckboxChange(modulo)}
                 disabled={isPending}
-                className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 outline-none"
+                className="h-4 w-4 rounded border-[#222A27] bg-[#1c2421] text-[#16D39A] focus:ring-[#16D39A] outline-none"
               />
               <span>{NOMBRE_MODULO_NODEXA[modulo]}</span>
             </label>
@@ -177,7 +177,7 @@ export function FormularioAltaClienteAdmin() {
       <button
         type="submit"
         disabled={isPending}
-        className="flex min-h-11 items-center justify-center rounded-md bg-blue-500 px-4 text-sm font-semibold text-slate-50 hover:bg-blue-400 transition-colors duration-150 disabled:opacity-50"
+        className="flex min-h-11 items-center justify-center rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-slate-950 hover:bg-[#14be8b] transition-colors duration-150 disabled:opacity-50"
       >
         {isPending ? (
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -188,3 +188,4 @@ export function FormularioAltaClienteAdmin() {
     </form>
   );
 }
+

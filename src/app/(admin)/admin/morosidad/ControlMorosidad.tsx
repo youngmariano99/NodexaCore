@@ -65,22 +65,22 @@ export function ControlMorosidad({ clientesIniciales }: ControlMorosidadProps) {
         <MensajeError codigo={errorLocal} className="w-full" />
       )}
 
-      <div className="overflow-hidden rounded-md border border-slate-800 bg-slate-900/30">
+      <div className="overflow-hidden rounded-md border border-[#222A27] bg-[#111615]">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/50">
+            <tr className="border-b border-[#222A27] text-slate-400 bg-[#151c1a]">
               <th className="px-6 py-4 font-medium">Comercio</th>
               <th className="px-6 py-4 font-medium">WhatsApp</th>
               <th className="px-6 py-4 font-medium">Estado Pago</th>
               <th className="px-6 py-4 font-medium text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-[#222A27]">
             {clientes.map((c) => {
               const whatsappLink = notificaciones[c.cliente_id];
 
               return (
-                <tr key={c.cliente_id} className="hover:bg-slate-900/40 transition-colors">
+                <tr key={c.cliente_id} className="hover:bg-[#151c1a] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-200">{c.nombre_comercio}</span>
@@ -110,7 +110,7 @@ export function ControlMorosidad({ clientesIniciales }: ControlMorosidadProps) {
                           href={whatsappLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-3 text-xs font-semibold text-slate-950 hover:bg-emerald-400 transition-colors duration-150"
+                          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md bg-[#16D39A] px-3.5 text-xs font-semibold text-slate-950 hover:bg-[#14be8b] transition-colors duration-150"
                         >
                           <MessageSquare className="h-3.5 w-3.5" />
                           Notificar
@@ -121,10 +121,10 @@ export function ControlMorosidad({ clientesIniciales }: ControlMorosidadProps) {
                         type="button"
                         disabled={isPending}
                         onClick={() => handleToggleEstadoPago(c.cliente_id, c.estado_pago)}
-                        className={`inline-flex min-h-9 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors duration-150 ${
+                        className={`inline-flex min-h-11 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors duration-150 ${
                           c.estado_pago
                             ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
-                            : "bg-blue-500 text-slate-50 hover:bg-blue-400 font-semibold"
+                            : "bg-[#16D39A] text-slate-950 hover:bg-[#14be8b] font-semibold"
                         }`}
                       >
                         {isPending ? (
@@ -146,3 +146,4 @@ export function ControlMorosidad({ clientesIniciales }: ControlMorosidadProps) {
     </div>
   );
 }
+

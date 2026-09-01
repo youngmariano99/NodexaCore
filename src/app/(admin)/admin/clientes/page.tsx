@@ -68,7 +68,7 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
 
   if (!resultado.ok) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6">
         <MensajeError codigo={resultado.error} className="max-w-md" />
       </div>
     );
@@ -78,9 +78,9 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-1">
+        <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-2xl font-semibold text-slate-50">Comercios</h1>
           <p className="text-sm text-slate-400">
             {total} comercio{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"} en NODEXA.
@@ -88,17 +88,17 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
         </header>
 
         {clientes.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-slate-700 bg-slate-800 px-6 py-12 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-12 text-center">
             <p className="text-base text-slate-50">Todavía no hay comercios dados de alta.</p>
             <p className="text-sm text-slate-400">
               Los comercios que se registren van a aparecer acá, ej. Almacén Don Pedro.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-slate-700 bg-slate-800">
+          <div className="overflow-x-auto rounded-md border border-[#222A27] bg-[#111615]">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-700 text-slate-400">
+                <tr className="border-b border-[#222A27] text-slate-400 bg-[#151c1a]">
                   <th className="px-4 py-3 font-medium">Comercio</th>
                   <th className="px-4 py-3 font-medium">Estado de pago</th>
                   <th className="px-4 py-3 font-medium">Límite de SKU</th>
@@ -110,11 +110,11 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
                   const modulosActivos = cliente.tenant_modules.filter((tenantModule) => tenantModule.activo);
 
                   return (
-                    <tr key={cliente.cliente_id} className="border-b border-slate-700 last:border-b-0 hover:bg-slate-700">
+                    <tr key={cliente.cliente_id} className="border-b border-[#222A27] last:border-b-0 hover:bg-[#151c1a] transition-colors">
                       <td className="px-4 py-3">
                         <Link
                           href={`/admin/clientes/${cliente.cliente_id}`}
-                          className="inline-flex min-h-11 items-center font-medium text-slate-50 underline-offset-4 hover:text-blue-500 hover:underline"
+                          className="inline-flex min-h-11 items-center font-medium text-slate-50 underline-offset-4 hover:text-[#16D39A] hover:underline"
                         >
                           {cliente.nombre_comercio}
                         </Link>
@@ -122,12 +122,12 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
                       </td>
                       <td className="px-4 py-3">
                         {cliente.estado_pago ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
                             Al día
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-500">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400">
                             <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
                             Pago suspendido
                           </span>
@@ -144,7 +144,7 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
                             {modulosActivos.map((tenantModule) => (
                               <span
                                 key={tenantModule.modulo}
-                                className="rounded-full bg-slate-700 px-2.5 py-1 text-xs text-slate-50"
+                                className="rounded-full border border-[#222A27] bg-[#1c2421] px-2.5 py-1 text-xs text-slate-200"
                               >
                                 {NOMBRE_MODULO_NODEXA[tenantModule.modulo]}
                               </span>
@@ -165,8 +165,8 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
             <Link
               href={`/admin/clientes?page=${Math.max(1, paginaActual - 1)}`}
               aria-disabled={paginaActual <= 1}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
-                paginaActual <= 1 ? "pointer-events-none opacity-40" : "hover:border-blue-500 hover:text-slate-50"
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] bg-[#111615] px-4 transition-colors duration-150 ${
+                paginaActual <= 1 ? "pointer-events-none opacity-40" : "hover:border-[#16D39A] hover:text-[#16D39A]"
               }`}
             >
               ← Anterior
@@ -177,10 +177,10 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
             <Link
               href={`/admin/clientes?page=${Math.min(totalPaginas, paginaActual + 1)}`}
               aria-disabled={paginaActual >= totalPaginas}
-              className={`flex min-h-11 items-center rounded-md border border-slate-700 px-4 transition-colors duration-150 ${
+              className={`flex min-h-11 items-center rounded-md border border-[#222A27] bg-[#111615] px-4 transition-colors duration-150 ${
                 paginaActual >= totalPaginas
                   ? "pointer-events-none opacity-40"
-                  : "hover:border-blue-500 hover:text-slate-50"
+                  : "hover:border-[#16D39A] hover:text-[#16D39A]"
               }`}
             >
               Siguiente →
@@ -191,3 +191,4 @@ export default async function AdminClientesPage({ searchParams }: AdminClientesP
     </div>
   );
 }
+
