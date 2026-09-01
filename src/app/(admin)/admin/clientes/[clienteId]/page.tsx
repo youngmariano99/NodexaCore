@@ -64,11 +64,11 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
 
   if (!resultado.ok) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-slate-950 px-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-[#090B0B] px-6">
         <MensajeError codigo={resultado.error} className="max-w-md" />
         <Link
           href="/admin/clientes"
-          className="inline-flex min-h-11 items-center rounded-md border border-slate-700 px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-blue-500"
+          className="inline-flex min-h-11 items-center rounded-md border border-[#222A27] bg-[#111615] px-4 text-sm text-slate-50 transition-colors duration-150 hover:border-[#16D39A] hover:text-[#16D39A]"
         >
           ← Volver al listado
         </Link>
@@ -79,27 +79,27 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
   const cliente = resultado.data;
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <Link href="/admin/clientes" className="inline-flex min-h-11 w-fit items-center text-sm text-slate-400 hover:text-blue-500">
+        <Link href="/admin/clientes" className="inline-flex min-h-11 w-fit items-center text-sm text-slate-400 hover:text-[#16D39A] transition-colors">
           ← Volver al listado de comercios
         </Link>
 
-        <header className="flex flex-col gap-1">
+        <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-2xl font-semibold text-slate-50">{cliente.nombre_comercio}</h1>
           <p className="font-mono text-sm text-slate-400">{cliente.slug}</p>
         </header>
 
-        <section className="grid grid-cols-1 gap-4 rounded-md border border-slate-700 bg-slate-800 p-6 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-4 rounded-md border border-[#222A27] bg-[#111615] p-6 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-400">Estado de pago</span>
             {cliente.estado_pago ? (
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
                 Al día
               </span>
             ) : (
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-500">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400">
                 <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
                 Pago suspendido
               </span>
@@ -132,20 +132,28 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-md border border-slate-700 bg-slate-800 p-6">
-          <h2 className="text-base font-semibold text-slate-50">Módulos contratados</h2>
+        <section className="flex flex-col gap-3 rounded-md border border-[#222A27] bg-[#111615] p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-50">Módulos contratados</h2>
+            <Link
+              href={`/admin/clientes/${clienteId}/modulos`}
+              className="inline-flex min-h-11 items-center rounded-md bg-[#16D39A] px-3.5 text-xs font-semibold text-slate-950 hover:bg-[#14be8b] transition-colors"
+            >
+              Administrar Módulos
+            </Link>
+          </div>
           {cliente.tenant_modules.length === 0 ? (
             <p className="text-sm text-slate-400">Este comercio todavía no tiene módulos activados.</p>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2 mt-2">
               {cliente.tenant_modules.map((tenantModule) => (
                 <li
                   key={tenantModule.modulo}
-                  className="flex items-center justify-between rounded-md bg-slate-700 px-4 py-3 text-sm"
+                  className="flex items-center justify-between rounded-md border border-[#222A27] bg-[#1c2421] px-4 py-3 text-sm"
                 >
                   <span className="text-slate-50">{NOMBRE_MODULO_NODEXA[tenantModule.modulo]}</span>
                   <span
-                    className={`font-medium ${tenantModule.activo ? "text-emerald-500" : "text-slate-400"}`}
+                    className={`font-medium ${tenantModule.activo ? "text-[#16D39A]" : "text-slate-400"}`}
                   >
                     {tenantModule.activo ? "Activo" : "Desactivado"}
                   </span>
@@ -158,3 +166,4 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
     </div>
   );
 }
+

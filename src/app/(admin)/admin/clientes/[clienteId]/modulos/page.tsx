@@ -58,7 +58,7 @@ export default async function AdminModulosPage({
   // Exclusivo para admin_nodexa
   if (!solicitante || solicitante.rol !== "admin_nodexa") {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-003" className="max-w-md" />
       </div>
     );
@@ -73,7 +73,7 @@ export default async function AdminModulosPage({
 
   if (errorCliente || !cliente) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-007" className="max-w-md" />
       </div>
     );
@@ -93,19 +93,19 @@ export default async function AdminModulosPage({
   }, {} as Record<ModuloNodexa, boolean>);
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
         <div>
           <Link
             href={`/admin/clientes/${clienteId}`}
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-100 transition-colors"
+            className="inline-flex min-h-11 items-center gap-1.5 text-xs text-slate-400 hover:text-[#16D39A] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver a la ficha del comercio
           </Link>
         </div>
 
-        <header className="flex flex-col gap-1 border-b border-slate-800 pb-4">
+        <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-2xl font-semibold text-slate-50 font-sans">Administrar Módulos</h1>
           <p className="text-sm text-slate-400">
             Comercio: <span className="font-semibold text-slate-200">{cliente.nombre_comercio}</span> ({cliente.slug})
@@ -117,3 +117,4 @@ export default async function AdminModulosPage({
     </div>
   );
 }
+

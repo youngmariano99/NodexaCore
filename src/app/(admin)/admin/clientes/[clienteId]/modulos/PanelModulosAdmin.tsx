@@ -38,20 +38,20 @@ export function PanelModulosAdmin({ clienteId, modulosContratados }: PanelModulo
         <MensajeError codigo={errorLocal} className="w-full" />
       )}
 
-      <div className="overflow-hidden rounded-md border border-slate-800 bg-slate-900/30">
+      <div className="overflow-hidden rounded-md border border-[#222A27] bg-[#111615]">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/50">
+            <tr className="border-b border-[#222A27] text-slate-400 bg-[#151c1a]">
               <th className="px-6 py-4 font-medium">Módulo</th>
               <th className="px-6 py-4 font-medium">Estado actual</th>
               <th className="px-6 py-4 font-medium text-right">Acción</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-[#222A27]">
             {modulosOrdenados.map((modulo) => {
               const activo = modulosContratados[modulo];
               return (
-                <tr key={modulo} className="hover:bg-slate-900/40 transition-colors">
+                <tr key={modulo} className="hover:bg-[#151c1a] transition-colors">
                   <td className="px-6 py-4">
                     <span className="font-semibold text-slate-200">
                       {NOMBRE_MODULO_NODEXA[modulo]}
@@ -59,11 +59,11 @@ export function PanelModulosAdmin({ clienteId, modulosContratados }: PanelModulo
                   </td>
                   <td className="px-6 py-4">
                     {activo ? (
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-[#16D39A]">
                         Activo
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-400">
+                      <span className="inline-flex items-center rounded-full bg-[#1c2421] border border-[#222A27] px-2.5 py-0.5 text-xs font-medium text-slate-400">
                         Inactivo
                       </span>
                     )}
@@ -73,10 +73,10 @@ export function PanelModulosAdmin({ clienteId, modulosContratados }: PanelModulo
                       type="button"
                       disabled={isPending}
                       onClick={() => handleToggle(modulo, activo)}
-                      className={`inline-flex min-h-9 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors duration-150 ${
+                      className={`inline-flex min-h-11 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors duration-150 ${
                         activo
                           ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
-                          : "bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-semibold"
+                          : "bg-[#16D39A] text-slate-950 hover:bg-[#14be8b] font-semibold"
                       }`}
                     >
                       {isPending ? (
@@ -97,3 +97,4 @@ export function PanelModulosAdmin({ clienteId, modulosContratados }: PanelModulo
     </div>
   );
 }
+

@@ -46,7 +46,7 @@ export default async function MorosidadAdminPage() {
   // Exclusivo para admin_nodexa
   if (!solicitante || solicitante.rol !== "admin_nodexa") {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-003" className="max-w-md" />
       </div>
     );
@@ -62,16 +62,16 @@ export default async function MorosidadAdminPage() {
 
   if (errorClientes || !clientes) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 px-6 py-10">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#090B0B] px-6 py-10">
         <MensajeError codigo="NX-SYS-001" className="max-w-md" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-slate-950 px-6 py-10 text-slate-50">
+    <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-1 border-b border-slate-800 pb-4">
+        <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
           <h1 className="text-2xl font-semibold text-slate-50 font-sans">Control de Morosidad</h1>
           <p className="text-sm text-slate-400">
             Administrá el estado de pago de los comercios y aplicá suspensiones o reactivaciones según corresponda.
@@ -83,3 +83,4 @@ export default async function MorosidadAdminPage() {
     </div>
   );
 }
+
