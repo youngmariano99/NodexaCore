@@ -17,6 +17,15 @@ export const MODULOS_NODEXA: readonly ModuloNodexa[] = [
   "bot_whatsapp",
 ];
 
+/** Modalidades operativas del Catálogo Web (docs/SCHEMA.md §20 y configuracion_plantilla). */
+export type ModalidadCatalogo = "vidriera" | "pedidos_whatsapp" | "comandas_realtime";
+
+export const MODALIDADES_CATALOGO: readonly ModalidadCatalogo[] = [
+  "vidriera",
+  "pedidos_whatsapp",
+  "comandas_realtime",
+];
+
 /** Etiqueta en español para mostrar en UI (docs/DESIGN.md: cero tecnicismos crudos). */
 export const NOMBRE_MODULO_NODEXA: Record<ModuloNodexa, string> = {
   catalogo_web: "Catálogo Web",
@@ -25,3 +34,4 @@ export const NOMBRE_MODULO_NODEXA: Record<ModuloNodexa, string> = {
   devoluciones: "Devoluciones",
   bot_whatsapp: "Bot de WhatsApp",
 };
+
