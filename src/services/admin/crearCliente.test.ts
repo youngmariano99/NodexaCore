@@ -318,6 +318,52 @@ describe("crearCliente", () => {
     expect(resultado).toEqual({ error: "NX-SYS-006", exito: false });
   });
 
+  it("siembra atributos iniciales de marcas y categorías cuando se proporciona atributos_json", async () => {
+    const solicitanteBuilder = crearQueryBuilder({
+      data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
+      error: null,
+    });
+    const clienteInsertBuilder = crearQueryBuilder({ data: { cliente_id: "c-con-atributos" }, error: null });
+    const marcasInsertMock = vi.fn(async () => ({ error: null }));
+    const categoriasInsertMock = vi.fn(async () => ({ error: null }));
+
+    const supabaseMock = {
+      ...mockearSesion({ id: AUTH_USER_ID }),
+      from: vi.fn(() => solicitanteBuilder),
+    };
+    vi.mocked(crearClienteSupabaseServidor).mockResolvedValue(supabaseMock as never);
+
+    const adminMock = {
+      from: vi.fn((tabla: string) => {
+        if (tabla === "clientes") return clienteInsertBuilder;
+        if (tabla === "marcas") return { insert: marcasInsertMock };
+        if (tabla === "categorias") return { insert: categoriasInsertMock };
+        return crearQueryBuilder({ data: null, error: null });
+      }),
+    };
+    vi.mocked(crearClienteSupabaseAdmin).mockReturnValue(adminMock as never);
+
+    const formData = crearFormData({
+      ...DATOS_VALIDOS,
+      atributos_json: JSON.stringify({
+        marcas: ["Nike", "Adidas"],
+        categorias: ["Calzado", "Ropa"],
+      }),
+    });
+
+    const resultado = await crearCliente(ESTADO_CREAR_CLIENTE_INICIAL, formData);
+
+    expect(resultado).toEqual({ error: null, exito: true, clienteId: "c-con-atributos" });
+    expect(marcasInsertMock).toHaveBeenCalledWith([
+      { cliente_id: "c-con-atributos", nombre: "Nike" },
+      { cliente_id: "c-con-atributos", nombre: "Adidas" },
+    ]);
+    expect(categoriasInsertMock).toHaveBeenCalledWith([
+      { cliente_id: "c-con-atributos", nombre: "Calzado" },
+      { cliente_id: "c-con-atributos", nombre: "Ropa" },
+    ]);
+  });
+
   it("retorna NX-ADM-001 ante un slug ya existente, sin registrar auditoría", async () => {
     const solicitanteBuilder = crearQueryBuilder({
       data: { usuario_id: USUARIO_ID_ADMIN, rol: "admin_nodexa" },
@@ -343,4 +389,5 @@ describe("crearCliente", () => {
     expect(registrarDiff).not.toHaveBeenCalled();
   });
 });
+
 
