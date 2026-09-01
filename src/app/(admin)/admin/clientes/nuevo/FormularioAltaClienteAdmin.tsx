@@ -11,10 +11,12 @@ import {
   Shield,
   Sparkles,
   ShoppingBag,
+  FileJson,
 } from "lucide-react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { crearCliente } from "@/services/admin/crearCliente";
+import { parsearYValidarAtributosJson } from "@/services/admin/importarAtributosJson";
 import {
   ESTADO_CREAR_CLIENTE_INICIAL,
   type ModuloNodexa,
@@ -22,7 +24,16 @@ import {
   type ModalidadCatalogo,
 } from "@/services/admin/tipos";
 
-type TabActivo = "cuenta" | "modulos";
+type TabActivo = "cuenta" | "modulos" | "catalogo";
+
+const JSON_EJEMPLO = JSON.stringify(
+  {
+    categorias: ["Almacén", "Bebidas", "Limpieza", "Frescos"],
+    marcas: ["Coca Cola", "Arcor", "La Serenísima", "Quilmes"],
+  },
+  null,
+  2
+);
 
 export function FormularioAltaClienteAdmin() {
   const router = useRouter();
@@ -50,11 +61,19 @@ export function FormularioAltaClienteAdmin() {
     bot_whatsapp: false,
   });
 
+  // Tab 3: Catálogo Inicial (JSON)
+  const [atributosJson, setAtributosJson] = useState("");
+
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleCheckboxChange = (modulo: ModuloNodexa) => {
     setModulosSeleccionados((prev) => ({ ...prev, [modulo]: !prev[modulo] }));
+  };
+
+  const cargarEjemploJson = () => {
+    setAtributosJson(JSON_EJEMPLO);
+    setErrorLocal(null);
   };
 
   const validarFormulario = (): boolean => {
@@ -122,6 +141,16 @@ export function FormularioAltaClienteAdmin() {
       return false;
     }
 
+    // Validación de sintaxis y estructura JSON de atributos iniciales
+    if (atributosJson.trim()) {
+      const atributosValidados = parsearYValidarAtributosJson(atributosJson.trim());
+      if (!atributosValidados) {
+        setTabActivo("catalogo");
+        setErrorLocal("El JSON de atributos tiene un error de sintaxis o formato. Verificá que contenga arrays válidos de 'marcas' o 'categorias'.");
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -158,6 +187,9 @@ export function FormularioAltaClienteAdmin() {
       if (logoUrl.trim()) {
         formData.append("logo_url", logoUrl.trim());
       }
+      if (atributosJson.trim()) {
+        formData.append("atributos_json", atributosJson.trim());
+      }
 
       const res = await crearCliente(ESTADO_CREAR_CLIENTE_INICIAL, formData);
 
@@ -175,31 +207,44 @@ export function FormularioAltaClienteAdmin() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       {/* Navegación por pestañas (Tabs) */}
-      <div className="flex border-b border-[#222A27] gap-2">
+      <div className="flex border-b border-[#222A27] gap-2 overflow-x-auto">
         <button
           type="button"
           onClick={() => setTabActivo("cuenta")}
-          className={`flex min-h-11 items-center gap-2 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${
+          className={`flex min-h-11 items-center gap-2 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
             tabActivo === "cuenta"
               ? "border-[#16D39A] text-[#16D39A]"
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <Building2 className="h-4 w-4" />
-          <span>1. Datos de Cuenta</span>
+          <span>1. Cuenta</span>
         </button>
 
         <button
           type="button"
           onClick={() => setTabActivo("modulos")}
-          className={`flex min-h-11 items-center gap-2 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${
+          className={`flex min-h-11 items-center gap-2 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
             tabActivo === "modulos"
               ? "border-[#16D39A] text-[#16D39A]"
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <Layers className="h-4 w-4" />
-          <span>2. Configuración y Módulos</span>
+          <span>2. Configuración</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActivo("catalogo")}
+          className={`flex min-h-11 items-center gap-2 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
+            tabActivo === "catalogo"
+              ? "border-[#16D39A] text-[#16D39A]"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <FileJson className="h-4 w-4" />
+          <span>3. Catálogo Inicial</span>
         </button>
       </div>
 
@@ -521,6 +566,65 @@ export function FormularioAltaClienteAdmin() {
               </button>
 
               <button
+                type="button"
+                onClick={() => setTabActivo("catalogo")}
+                className="flex min-h-11 items-center gap-2 rounded-md bg-[#111615] border border-[#222A27] px-5 text-sm font-semibold text-slate-200 hover:border-[#16D39A] hover:text-[#16D39A] transition-colors"
+              >
+                <span>Siguiente: Catálogo Inicial</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: CATÁLOGO INICIAL (JSON) */}
+        {tabActivo === "catalogo" && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-150">
+            <div className="rounded-lg border border-[#222A27] bg-[#111615] p-5 flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <FileJson className="h-4 w-4 text-[#16D39A]" />
+                  Sembrado Inicial de Atributos (Marcas y Categorías)
+                </h2>
+                <button
+                  type="button"
+                  onClick={cargarEjemploJson}
+                  className="inline-flex items-center text-xs text-[#16D39A] hover:underline"
+                >
+                  Cargar plantilla de ejemplo
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Podés pegar un bloque JSON con las categorías y marcas iniciales (ej. extraídas con IA desde un PDF o lista de precios). Se insertarán automáticamente en la base de datos asociadas a este nuevo comercio.
+              </p>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-slate-300">
+                  JSON de Atributos Iniciales (Opcional)
+                </label>
+                <textarea
+                  rows={9}
+                  value={atributosJson}
+                  onChange={(e) => setAtributosJson(e.target.value)}
+                  disabled={isPending}
+                  placeholder={`{\n  "categorias": ["Almacén", "Bebidas", "Limpieza"],\n  "marcas": ["Coca Cola", "Arcor"]\n}`}
+                  className="rounded-md border border-[#222A27] bg-[#090B0B] p-3 text-xs font-mono text-slate-100 placeholder-slate-600 focus:border-[#16D39A] focus:outline-none transition-colors leading-relaxed"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setTabActivo("modulos")}
+                className="flex min-h-11 items-center gap-2 rounded-md bg-[#111615] border border-[#222A27] px-4 text-sm font-semibold text-slate-300 hover:text-slate-100 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Volver a Configuración</span>
+              </button>
+
+              <button
                 type="submit"
                 disabled={isPending}
                 className="flex min-h-11 items-center justify-center rounded-md bg-[#16D39A] px-6 text-sm font-semibold text-slate-950 hover:bg-[#14be8b] transition-colors duration-150 disabled:opacity-50"
@@ -538,5 +642,6 @@ export function FormularioAltaClienteAdmin() {
     </div>
   );
 }
+
 
 

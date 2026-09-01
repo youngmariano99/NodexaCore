@@ -5,6 +5,7 @@ import { z } from "zod";
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
 import { crearClienteSupabaseAdmin, crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { zTelefonoObligatorio } from "@/lib/validaciones/transformadores";
+import { importarAtributosJson } from "@/services/admin/importarAtributosJson";
 import {
   type EstadoCrearCliente,
   MODALIDADES_CATALOGO,
@@ -39,6 +40,7 @@ const esquemaCrearCliente = z
     cuota_mensual_ia: z.coerce.number().int().nonnegative().optional(),
     color_primario: z.string().trim().optional(),
     logo_url: z.string().trim().optional(),
+    atributos_json: z.string().trim().optional(),
   })
   .refine(
     (data) => {
@@ -121,6 +123,7 @@ export async function crearCliente(
     cuota_mensual_ia: obtenerStringOIndefinido(formData.get("cuota_mensual_ia")),
     color_primario: obtenerStringOIndefinido(formData.get("color_primario")),
     logo_url: obtenerStringOIndefinido(formData.get("logo_url")),
+    atributos_json: obtenerStringOIndefinido(formData.get("atributos_json")),
   });
 
   if (!resultado.success) {
@@ -246,7 +249,23 @@ export async function crearCliente(
     permite_derivar_whatsapp: true,
   });
 
-  // Paso 6: Registrar diff unificado en auditoria_diffs
+  // Paso 6: Sembrado inicial de atributos desde JSON (Fail-Safe)
+  let atributosResumen: { marcas: number; categorias: number } | null = null;
+  if (resultado.data.atributos_json) {
+    const resAtributos = await importarAtributosJson(
+      supabaseAdmin,
+      clienteCreado.cliente_id,
+      resultado.data.atributos_json,
+    );
+    if (resAtributos.ok) {
+      atributosResumen = {
+        marcas: resAtributos.marcasInsertadas,
+        categorias: resAtributos.categoriasInsertadas,
+      };
+    }
+  }
+
+  // Paso 7: Registrar diff unificado en auditoria_diffs
   registrarDiff({
     clienteId: clienteCreado.cliente_id,
     usuarioId: solicitante.usuario_id,
@@ -265,6 +284,7 @@ export async function crearCliente(
       modulos: resultado.data.modulos || [],
       dueno_email: resultado.data.email ?? null,
       dueno_nombre: resultado.data.nombre_dueno ?? null,
+      atributos_iniciales: atributosResumen,
     }),
   });
 
