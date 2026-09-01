@@ -10,6 +10,8 @@ import { obtenerClientePorId } from "@/repositories/clientes";
 import { NOMBRE_MODULO_NODEXA } from "@/services/admin/tipos";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
+import { ImportadorExcelAdmin } from "./ImportadorExcelAdmin";
+
 export const metadata: Metadata = {
   title: "Detalle de comercio — Panel NODEXA",
 };
@@ -162,8 +164,11 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
             </ul>
           )}
         </section>
+
+        <ImportadorExcelAdmin clienteId={clienteId} />
       </div>
     </div>
   );
 }
+
 
