@@ -200,9 +200,8 @@ export function Paso1DatosGenerales({
           onCrearNuevo={async (nom) => {
             const res = await crearCategoria(nom);
             if (res.exito && res.categoria) {
-              const nuevaCategoria = { categoria_id: res.categoria.categoria_id, nombre: res.categoria.nombre };
-              agregarCategoria(nuevaCategoria);
-              return { exito: true, item: { id: nuevaCategoria.categoria_id, nombre: nuevaCategoria.nombre } };
+              agregarCategoria(res.categoria);
+              return { exito: true, item: { id: res.categoria.categoria_id, nombre: res.categoria.nombre } };
             }
             return { exito: false, error: res.error };
           }}
@@ -217,9 +216,8 @@ export function Paso1DatosGenerales({
           onCrearNuevo={async (nom) => {
             const res = await crearMarca(nom);
             if (res.exito && res.marca) {
-              const nuevaMarca = { marca_id: res.marca.marca_id, nombre: res.marca.nombre };
-              agregarMarca(nuevaMarca);
-              return { exito: true, item: { id: nuevaMarca.marca_id, nombre: nuevaMarca.nombre } };
+              agregarMarca(res.marca);
+              return { exito: true, item: { id: res.marca.marca_id, nombre: res.marca.nombre } };
             }
             return { exito: false, error: res.error };
           }}
