@@ -50,6 +50,9 @@ test.describe.serial("Alta de producto", () => {
     await page.getByPlaceholder("Escribí para buscar...").fill("Almacén");
     await page.keyboard.press("Enter");
 
+    // Esperar a que la categoría se haya seleccionado (especialmente si se tuvo que crear en el backend)
+    await expect(page.getByRole("button", { name: "Almacén" })).toBeVisible();
+
     await page.getByLabel("Precio base ($)").fill("1500");
     await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
     await page.getByRole("button", { name: "Siguiente: Matriz de Stock" }).click();
@@ -114,6 +117,8 @@ test.describe.serial("Alta de producto", () => {
       await page.getByText("Seleccionar categoría...").click();
       await page.getByPlaceholder("Escribí para buscar...").fill("Almacén");
       await page.keyboard.press("Enter");
+
+      await expect(page.getByRole("button", { name: "Almacén" })).toBeVisible();
 
       await page.getByLabel("Precio base ($)").fill("100");
       await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
