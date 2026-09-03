@@ -11,6 +11,7 @@ interface Paso4ResumenProps {
   alCargarOtro: () => void;
   alFinalizar: () => void;
   estaEnviando: boolean;
+  errorServidor?: string | null;
 }
 
 export function Paso4Resumen({
@@ -23,6 +24,7 @@ export function Paso4Resumen({
   alCargarOtro,
   alFinalizar,
   estaEnviando,
+  errorServidor,
 }: Paso4ResumenProps) {
   return (
     <div className="flex w-full flex-col gap-6 rounded-lg bg-[#111615] border border-[#222A27] p-6">
@@ -87,6 +89,12 @@ export function Paso4Resumen({
               )}
             </ul>
           </div>
+        </div>
+      )}
+
+      {errorServidor && (
+        <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-500 border border-red-500/20">
+          Error al guardar: {errorServidor}
         </div>
       )}
 

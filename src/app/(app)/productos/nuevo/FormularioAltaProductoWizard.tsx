@@ -26,19 +26,12 @@ interface Dimension {
   valores: string[];
 }
 
-interface VarianteMatriz {
+export interface VarianteMatriz {
   combinacion: Record<string, string>;
   sku: string;
   stock: number;
   precio: number;
 }
-
-const esquemaPaso1 = z.object({
-  sku: z.string().trim().min(1, "El SKU es obligatorio."),
-  nombre: z.string().trim().min(1, "El nombre es obligatorio."),
-  categoria: z.string().trim().min(1, "La categoría es obligatoria."),
-  precio: z.number().min(0, "El precio no puede ser negativo."),
-});
 
 export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAltaProductoWizardProps) {
   const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1);
@@ -343,6 +336,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
           alCargarOtro={() => manejarGuardadoFinal(true)}
           alFinalizar={() => manejarGuardadoFinal(false)}
           estaEnviando={estaEnviando}
+          errorServidor={errorServidor}
         />
       )}
 

@@ -122,9 +122,13 @@ export function SelectorRelacionalInline({
                 if (e.key === "Enter") {
                   e.preventDefault();
                   if (itemsFiltrados.length > 0) {
-                    onSeleccionar(itemsFiltrados[0].id, itemsFiltrados[0].nombre);
-                    setAbierto(false);
-                    triggerRef.current?.focus();
+                    const primer = itemsFiltrados[0];
+                    if (primer) {
+                      onSeleccionar(primer.id, primer.nombre);
+                      setAbierto(false);
+                      setBusqueda("");
+                      triggerRef.current?.focus();
+                    }
                   } else if (busqueda.trim() && !existeCoincidenciaExacta) {
                     manejarCrearNuevo();
                   }
