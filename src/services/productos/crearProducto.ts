@@ -111,7 +111,6 @@ export async function crearProducto(
   const marcaId = marcaIdStr !== "" ? marcaIdStr : null;
 
   const precio = parseFloat(formData.get("precio")?.toString() || "0");
-  const variantesStr = formData.get("variantes")?.toString() || "";
 
   if (!sku || !nombre || precio < 0) {
     return {

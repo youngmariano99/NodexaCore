@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Check, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 interface VarianteMatriz {
   combinacion: Record<string, string>;
