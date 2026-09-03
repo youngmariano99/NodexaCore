@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HelpCircle } from "lucide-react";
-import { z } from "zod";
+import Link from "next/link";
 
 import { crearProducto } from "@/services/productos/crearProducto";
 import { ModalBloqueoSku } from "@/components/productos/ModalBloqueoSku";
@@ -11,6 +11,10 @@ import { generarMatrizCombinaciones } from "@/lib/dominio/productos/generarMatri
 import { Paso1DatosGenerales } from "./Paso1DatosGenerales";
 import { Paso2Dimensiones } from "./Paso2Dimensiones";
 import { Paso3MatrizStock } from "./Paso3MatrizStock";
+import { Paso4Resumen } from "./Paso4Resumen";
+
+import { obtenerCategorias, type Categoria } from "@/services/categorias/obtenerCategorias";
+import { obtenerMarcas, type Marca } from "@/services/marcas/obtenerMarcas";
 
 interface FormularioAltaProductoWizardProps {
   catalogoWebActivo: boolean;
@@ -37,17 +41,36 @@ const esquemaPaso1 = z.object({
 });
 
 export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAltaProductoWizardProps) {
-  const [paso, setPaso] = useState<1 | 2 | 3>(1);
+  const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1);
   const [guiasActivas, setGuiasActivas] = useState(true);
 
   // Paso 1: Datos Generales
   const [sku, setSku] = useState("");
   const [nombre, setNombre] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [categoriaId, setCategoriaId] = useState<string | null>(null);
+  const [marcaId, setMarcaId] = useState<string | null>(null);
   const [precio, setPrecio] = useState<number>(0);
-  const [imagen, setImagen] = useState<File | null>(null);
+  const [imagen, setImagen] = useState<File | Blob | null>(null);
   const [imagenPrevisualizacion, setImagenPrevisualizacion] = useState<string | null>(null);
   const [erroresPaso1, setErroresPaso1] = useState<Record<string, string>>({});
+
+  // Datos maestros
+  const [categoriasLista, setCategoriasLista] = useState<Categoria[]>([]);
+  const [marcasLista, setMarcasLista] = useState<Marca[]>([]);
+
+  useEffect(() => {
+    let montado = true;
+    async function cargarMaestros() {
+      const [cats, marcs] = await Promise.all([obtenerCategorias(), obtenerMarcas()]);
+      if (montado) {
+        setCategoriasLista(cats);
+        setMarcasLista(marcs);
+      }
+    }
+    cargarMaestros();
+    return () => { montado = false; };
+  }, []);
 
   // Paso 2: Dimensiones de Variantes
   const [dimensiones, setDimensiones] = useState<Dimension[]>([]);
@@ -62,13 +85,9 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
   const [modalBloqueoAbierto, setModalBloqueoAbierto] = useState(false);
   const [exito, setExito] = useState(false);
 
-  const manejarImagen = (evento: React.ChangeEvent<HTMLInputElement>) => {
-    const archivo = evento.target.files?.[0];
-    if (archivo) {
-      setImagen(archivo);
-      const url = URL.createObjectURL(archivo);
-      setImagenPrevisualizacion(url);
-    }
+  const manejarImagenRecortada = (blob: Blob, url: string) => {
+    setImagen(blob);
+    setImagenPrevisualizacion(url);
   };
 
   const limpiarImagen = () => {
@@ -77,21 +96,14 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
   };
 
   const validarPaso1 = (): boolean => {
-    const validacion = esquemaPaso1.safeParse({
-      sku,
-      nombre,
-      categoria,
-      precio,
-    });
+    const errs: Record<string, string> = {};
+    if (!sku.trim()) errs.sku = "Obligatorio";
+    if (!nombre.trim()) errs.nombre = "Obligatorio";
+    if (!categoria.trim()) errs.categoria = "Obligatorio";
+    if (precio < 0) errs.precio = "Debe ser positivo";
 
-    if (!validacion.success) {
-      const mapeoErrores: Record<string, string> = {};
-      validacion.error.issues.forEach((issue) => {
-        if (issue.path[0]) {
-          mapeoErrores[issue.path[0].toString()] = issue.message;
-        }
-      });
-      setErroresPaso1(mapeoErrores);
+    if (Object.keys(errs).length > 0) {
+      setErroresPaso1(errs);
       return false;
     }
 
@@ -114,7 +126,11 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
     setPaso(3);
   };
 
-  const manejarGuardadoFinal = async () => {
+  const irAlPaso4 = () => {
+    setPaso(4);
+  };
+
+  const manejarGuardadoFinal = async (cargarOtro: boolean = false) => {
     setEstaEnviando(true);
     setErrorServidor(null);
 
@@ -123,9 +139,11 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
       formData.set("sku", sku);
       formData.set("nombre", nombre);
       formData.set("categoria", categoria);
+      if (categoriaId) formData.set("categoria_id", categoriaId);
+      if (marcaId) formData.set("marca_id", marcaId);
       formData.set("precio", precio.toString());
       if (imagen) {
-        formData.set("imagen", imagen);
+        formData.set("imagen", imagen, "foto.jpg");
       }
 
       if (dimensiones.length > 0) {
@@ -136,7 +154,19 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
       const resultado = await crearProducto({ error: null, exito: false }, formData);
 
       if (resultado.exito) {
-        setExito(true);
+        if (cargarOtro) {
+          // Resetear form para cargar otro
+          setSku("");
+          setNombre("");
+          setPrecio(0);
+          limpiarImagen();
+          setDimensiones([]);
+          setMatrizVariantes([]);
+          setPaso(1);
+          window.scrollTo(0, 0);
+        } else {
+          setExito(true);
+        }
       } else {
         if (resultado.error === "NX-PRD-001") {
           setModalBloqueoAbierto(true);
@@ -150,6 +180,46 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
       setEstaEnviando(false);
     }
   };
+
+  if (exito) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-6 rounded-lg bg-[#0D1110] border border-[#222A27] p-10 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#16D39A]/20">
+          <HelpCircle className="h-8 w-8 text-[#16D39A] opacity-0 absolute" />
+          <svg className="h-8 w-8 text-[#16D39A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-bold text-slate-50">¡Producto guardado exitosamente!</h2>
+          <p className="text-slate-400">Tu producto ya forma parte de tu catálogo.</p>
+        </div>
+        <div className="flex gap-4 mt-4">
+          <button
+            onClick={() => {
+              setExito(false);
+              setSku("");
+              setNombre("");
+              setPrecio(0);
+              limpiarImagen();
+              setDimensiones([]);
+              setMatrizVariantes([]);
+              setPaso(1);
+            }}
+            className="rounded-md border border-[#222A27] bg-[#111615] px-6 py-2 text-sm font-semibold text-slate-300 hover:bg-white/5"
+          >
+            Cargar otro producto
+          </button>
+          <Link
+            href="/productos"
+            className="rounded-md bg-[#16D39A] px-6 py-2 text-sm font-semibold text-[#090B0B] hover:bg-[#16D39A]/90"
+          >
+            Volver al Listado
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -215,14 +285,20 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
           setNombre={setNombre}
           categoria={categoria}
           setCategoria={setCategoria}
+          categoriaId={categoriaId}
+          setCategoriaId={setCategoriaId}
+          marcaId={marcaId}
+          setMarcaId={setMarcaId}
           precio={precio}
           setPrecio={setPrecio}
           catalogoWebActivo={catalogoWebActivo}
           imagenPrevisualizacion={imagenPrevisualizacion}
-          manejarImagen={manejarImagen}
+          manejarImagenRecortada={manejarImagenRecortada}
           limpiarImagen={limpiarImagen}
           errores={erroresPaso1}
           guiasActivas={guiasActivas}
+          categoriasLista={categoriasLista}
+          marcasLista={marcasLista}
           alSiguiente={() => {
             if (validarPaso1()) setPaso(2);
           }}
@@ -249,12 +325,24 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
         <Paso3MatrizStock
           matrizVariantes={matrizVariantes}
           setMatrizVariantes={setMatrizVariantes}
-          errorServidor={errorServidor}
-          exito={exito}
+          alAtras={() => setPaso(2)}
+          alFinalizar={irAlPaso4}
           estaEnviando={estaEnviando}
           guiasActivas={guiasActivas}
-          alAtras={() => setPaso(2)}
-          guardar={manejarGuardadoFinal}
+        />
+      )}
+
+      {paso === 4 && (
+        <Paso4Resumen
+          sku={sku}
+          nombre={nombre}
+          categoria={categoria}
+          precio={precio}
+          imagenPrevisualizacion={imagenPrevisualizacion}
+          matrizVariantes={matrizVariantes}
+          alCargarOtro={() => manejarGuardadoFinal(true)}
+          alFinalizar={() => manejarGuardadoFinal(false)}
+          estaEnviando={estaEnviando}
         />
       )}
 

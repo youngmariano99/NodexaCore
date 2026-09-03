@@ -31,6 +31,8 @@ export interface DatosNuevoProducto {
   nombre: string;
   precio: number;
   categoria: string;
+  categoriaId?: string | null;
+  marcaId?: string | null;
   imagenUrl?: string | null;
   productoPadreId?: string | null;
 }
@@ -42,6 +44,8 @@ export interface FilaProducto {
   nombre: string;
   precio: number;
   categoria: string | null;
+  categoria_id?: string | null;
+  marca_id?: string | null;
   imagen_url?: string | null;
   producto_padre_id?: string | null;
 }
@@ -140,10 +144,12 @@ export async function insertarProducto(
       nombre: datos.nombre,
       precio: datos.precio,
       categoria: datos.categoria,
+      categoria_id: datos.categoriaId || null,
+      marca_id: datos.marcaId || null,
       imagen_url: datos.imagenUrl,
       producto_padre_id: datos.productoPadreId,
     })
-    .select("producto_id, cliente_id, sku, nombre, precio, categoria, imagen_url, producto_padre_id")
+    .select("producto_id, cliente_id, sku, nombre, precio, categoria, categoria_id, marca_id, imagen_url, producto_padre_id")
     .single<FilaProducto>();
 
   if (error || !data) {

@@ -139,6 +139,10 @@ describe("insertarProducto", () => {
       nombre: "Yerba Mate 1kg",
       precio: 3500,
       categoria: "Almacén",
+      categoria_id: null,
+      marca_id: null,
+      imagen_url: undefined,
+      producto_padre_id: undefined,
     });
   });
 
