@@ -45,13 +45,18 @@ test.describe.serial("Alta de producto", () => {
 
     await page.getByLabel("SKU").fill(skuUnico);
     await page.getByLabel("Nombre").fill("Producto de prueba E2E");
-    await page.getByLabel("Categoría").fill("Almacén");
-    await page.getByLabel("Precio").fill("1500");
+    
+    await page.getByText("Seleccionar categoría...").click();
+    await page.getByPlaceholder("Escribí para buscar...").fill("Almacén");
+    await page.keyboard.press("Enter");
+
+    await page.getByLabel("Precio base ($)").fill("1500");
     await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
     await page.getByRole("button", { name: "Siguiente: Matriz de Stock" }).click();
-    await page.getByRole("button", { name: "Guardar producto" }).click();
+    await page.getByRole("button", { name: "Siguiente: Resumen" }).click();
+    await page.getByRole("button", { name: "Guardar y finalizar" }).click();
 
-    await expect(page.getByText("Producto cargado con éxito.")).toBeVisible();
+    await expect(page.getByText("¡Producto guardado exitosamente!")).toBeVisible();
 
     const servicio = crearClienteServicioLocal();
     const { data } = await servicio
@@ -105,11 +110,16 @@ test.describe.serial("Alta de producto", () => {
 
       await page.getByLabel("SKU").fill(`E2E-BLOQUEO-${randomUUID().slice(0, 8)}`);
       await page.getByLabel("Nombre").fill("Producto que no debería entrar");
-      await page.getByLabel("Categoría").fill("Almacén");
-      await page.getByLabel("Precio").fill("100");
+      
+      await page.getByText("Seleccionar categoría...").click();
+      await page.getByPlaceholder("Escribí para buscar...").fill("Almacén");
+      await page.keyboard.press("Enter");
+
+      await page.getByLabel("Precio base ($)").fill("100");
       await page.getByRole("button", { name: "Siguiente: Dimensiones" }).click();
       await page.getByRole("button", { name: "Siguiente: Matriz de Stock" }).click();
-      await page.getByRole("button", { name: "Guardar producto" }).click();
+      await page.getByRole("button", { name: "Siguiente: Resumen" }).click();
+      await page.getByRole("button", { name: "Guardar y finalizar" }).click();
 
       const modal = page.getByRole("dialog", { name: "Llegaste al límite de tu catálogo" });
       await expect(modal).toBeVisible();
