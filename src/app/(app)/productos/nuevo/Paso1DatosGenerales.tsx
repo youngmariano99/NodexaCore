@@ -32,6 +32,8 @@ interface Paso1DatosGeneralesProps {
   alSiguiente: () => void;
   categoriasLista: Categoria[];
   marcasLista: Marca[];
+  agregarCategoria: (c: Categoria) => void;
+  agregarMarca: (m: Marca) => void;
 }
 
 export function Paso1DatosGenerales({
@@ -56,6 +58,8 @@ export function Paso1DatosGenerales({
   alSiguiente,
   categoriasLista,
   marcasLista,
+  agregarCategoria,
+  agregarMarca,
 }: Paso1DatosGeneralesProps) {
   const [imagenSinRecortar, setImagenSinRecortar] = useState<string | null>(null);
   
@@ -196,7 +200,9 @@ export function Paso1DatosGenerales({
           onCrearNuevo={async (nom) => {
             const res = await crearCategoria(nom);
             if (res.exito && res.categoria) {
-              return { exito: true, item: { id: res.categoria.categoria_id, nombre: res.categoria.nombre } };
+              const nuevaCategoria = { categoria_id: res.categoria.categoria_id, nombre: res.categoria.nombre };
+              agregarCategoria(nuevaCategoria);
+              return { exito: true, item: { id: nuevaCategoria.categoria_id, nombre: nuevaCategoria.nombre } };
             }
             return { exito: false, error: res.error };
           }}
@@ -211,7 +217,9 @@ export function Paso1DatosGenerales({
           onCrearNuevo={async (nom) => {
             const res = await crearMarca(nom);
             if (res.exito && res.marca) {
-              return { exito: true, item: { id: res.marca.marca_id, nombre: res.marca.nombre } };
+              const nuevaMarca = { marca_id: res.marca.marca_id, nombre: res.marca.nombre };
+              agregarMarca(nuevaMarca);
+              return { exito: true, item: { id: nuevaMarca.marca_id, nombre: nuevaMarca.nombre } };
             }
             return { exito: false, error: res.error };
           }}

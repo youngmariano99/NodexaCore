@@ -292,6 +292,8 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
           guiasActivas={guiasActivas}
           categoriasLista={categoriasLista}
           marcasLista={marcasLista}
+          agregarCategoria={(c) => setCategoriasLista((prev) => [...prev, c])}
+          agregarMarca={(m) => setMarcasLista((prev) => [...prev, m])}
           alSiguiente={() => {
             if (validarPaso1()) setPaso(2);
           }}
