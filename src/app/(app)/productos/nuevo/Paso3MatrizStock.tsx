@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Check, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 interface VarianteMatriz {
   combinacion: Record<string, string>;
@@ -13,23 +12,19 @@ interface VarianteMatriz {
 interface Paso3MatrizStockProps {
   matrizVariantes: VarianteMatriz[];
   setMatrizVariantes: (v: VarianteMatriz[]) => void;
-  errorServidor: string | null;
-  exito: boolean;
   estaEnviando: boolean;
-  guiasActivas: boolean;
   alAtras: () => void;
-  guardar: () => void;
+  alFinalizar: () => void;
+  guiasActivas?: boolean;
 }
 
 export function Paso3MatrizStock({
   matrizVariantes,
   setMatrizVariantes,
-  errorServidor,
-  exito,
   estaEnviando,
-  guiasActivas,
   alAtras,
-  guardar,
+  alFinalizar,
+  guiasActivas = true,
 }: Paso3MatrizStockProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -115,41 +110,23 @@ export function Paso3MatrizStock({
         </table>
       </div>
 
-      {errorServidor && <div className="text-sm text-red-500">Error: {errorServidor}</div>}
-
-      {exito && (
-        <div className="flex items-center gap-2 text-sm text-[#16D39A]">
-          <Check className="h-5 w-5" />
-          <span>Producto cargado con éxito.</span>
-        </div>
-      )}
-
       <div className="flex justify-between mt-4">
         <button
           onClick={alAtras}
-          disabled={estaEnviando || exito}
+          disabled={estaEnviando}
           className="flex min-h-11 items-center gap-2 rounded-md border border-[#222A27] bg-[#111615] px-5 text-sm font-semibold text-slate-300"
         >
           <ChevronLeftIcon className="h-4 w-4" />
           Atrás
         </button>
 
-        {exito ? (
-          <Link
-            href="/productos"
-            className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-5 text-sm font-semibold text-[#090B0B]"
-          >
-            Volver al Listado
-          </Link>
-        ) : (
-          <button
-            onClick={guardar}
-            disabled={estaEnviando}
-            className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-5 text-sm font-semibold text-[#090B0B] hover:bg-[#16D39A]/90 disabled:opacity-50"
-          >
-            {estaEnviando ? "Guardando..." : "Guardar Producto"}
-          </button>
-        )}
+        <button
+          onClick={alFinalizar}
+          disabled={estaEnviando}
+          className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-5 text-sm font-semibold text-[#090B0B] hover:bg-[#16D39A]/90 disabled:opacity-50"
+        >
+          Siguiente: Resumen
+        </button>
       </div>
     </div>
   );

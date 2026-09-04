@@ -168,22 +168,22 @@ BEGIN
   -- ------------------------------------------------------------
   -- 7. CLIENTES FINALES (Padrón de Compradores a Cta Cte)
   -- ------------------------------------------------------------
-  INSERT INTO clientes_finales (cliente_final_id, cliente_id, nombre, telefono, limite_credito, saldo_deudor, estado) VALUES
-    ('c0f00000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Juan Pérez (Fiado)', '+5492920112233', 50000, 15000, 'activo'),
-    ('c0f00000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'María García', '+5492920445566', 30000, 0, 'activo'),
-    ('c0f00000-0000-4000-8000-000000000003', 'a1111111-1111-4111-8111-111111111111', 'Vecino Jorge', '+5492920778899', 20000, 18500, 'activo'),
-    ('c0f00000-0000-4000-8000-000000000004', 'c3333333-3333-4333-8333-333333333333', 'Restó Plaza', '+5492920990011', 150000, 89000, 'activo');
-
-  -- Padrón masivo de clientes fiados para Bazar Casa Sur
-  INSERT INTO clientes_finales (cliente_id, nombre, telefono, limite_credito, saldo_deudor, estado)
-  SELECT
-    'c3333333-3333-4333-8333-333333333333',
-    'Cliente Fiado C' || n,
-    '+5492923000' || LPAD(n::text, 3, '0'),
-    ROUND((20000 + random() * 80000)::numeric, 0),
-    ROUND((500 + random() * 15000)::numeric, 2),
-    'activo'
-  FROM generate_series(1, 10) n;
+  INSERT INTO clientes_finales (cliente_final_id, cliente_id, nombre, telefono, limite_credito, saldo_deudor, cuit_cuil, email, estado) VALUES
+    -- Bazar Casa Sur (c3333333-3333-4333-8333-333333333333)
+    ('c0f00000-0000-4000-8000-000000000011', 'c3333333-3333-4333-8333-333333333333', 'Restó Plaza Mayor', '+5492923000001', 120000, 0, '30712345678', 'compras@restoplaza.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000012', 'c3333333-3333-4333-8333-333333333333', 'Panadería La Espiga', '+5492923000002', 80000, 0, '27289012345', 'laespiga@panaderia.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000013', 'c3333333-3333-4333-8333-333333333333', 'Carlos Benítez (Chef)', '+5492923000003', 50000, 0, '20334455667', 'carlosb@gmail.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000014', 'c3333333-3333-4333-8333-333333333333', 'Lucía Fernández', '+5492923000004', 35000, 0, '27361122334', 'lucia.f@hotmail.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000015', 'c3333333-3333-4333-8333-333333333333', 'Hotel Boutique Los Pinos', '+5492923000005', 200000, 0, '30698877661', 'administracion@lospinos.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000016', 'c3333333-3333-4333-8333-333333333333', 'Estudio Contable Silva', '+5492923000006', 45000, 0, '20295544332', 'silva.estudio@gmail.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000017', 'c3333333-3333-4333-8333-333333333333', 'Colegio Belgrano', '+5492923000007', 90000, 0, '30554433229', 'cantina@colegiobelgrano.edu.ar', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000018', 'c3333333-3333-4333-8333-333333333333', 'Marina Rossi (Catering)', '+5492923000008', 60000, 0, '27312233445', 'rossi.catering@yahoo.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000019', 'c3333333-3333-4333-8333-333333333333', 'Taller Mecánico Dani', '+5492923000009', 25000, 0, '20245566778', 'dani.taller@gmail.com', 'suspendido'),
+    ('c0f00000-0000-4000-8000-000000000020', 'c3333333-3333-4333-8333-333333333333', 'Bar La Estación', '+5492923000010', 70000, 0, '30708899001', 'compras@barlaestacion.com', 'activo'),
+    -- Demo Store & Almacén Don Pedro
+    ('c0f00000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000000', 'Juan Pérez (Fiado)', '+5492920112233', 50000, 0, '20301122334', 'juanperez@demo.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000000', 'María García', '+5492920445566', 30000, 0, '27324455667', 'mariagarcia@demo.com', 'activo'),
+    ('c0f00000-0000-4000-8000-000000000003', 'a1111111-1111-4111-8111-111111111111', 'Vecino Jorge', '+5492920778899', 40000, 0, '20287788991', 'jorge@almacen.com', 'activo');
 
   -- ------------------------------------------------------------
   -- 8. CUENTAS CORRIENTES INICIALES
@@ -196,9 +196,9 @@ BEGIN
   FROM clientes_finales cf;
 
   -- ------------------------------------------------------------
-  -- 9. VENTAS, MOVIMIENTOS CC E IMPUTACIONES
+  -- 9. VENTAS GENERALES POS
   -- ------------------------------------------------------------
-  FOR v_i IN 1..150 LOOP
+  FOR v_i IN 1..100 LOOP
     IF v_i % 4 = 0 THEN
       v_cliente_id := 'a0000000-0000-4000-8000-000000000000';
       v_usuario_id := 'd0000000-0000-4000-8000-000000000010'::uuid;
@@ -213,14 +213,9 @@ BEGIN
       v_usuario_id := 'd0000000-0000-4000-8000-000000000006'::uuid;
     END IF;
 
-    v_cliente_final_id := NULL;
-    IF v_i % 5 = 0 AND v_cliente_id = 'a0000000-0000-4000-8000-000000000000' THEN
-      v_cliente_final_id := 'c0f00000-0000-4000-8000-000000000001';
-    END IF;
-
     v_venta_id := gen_random_uuid();
-    INSERT INTO ventas (venta_id, cliente_id, usuario_id, cliente_final_id, total, estado, idempotency_key)
-    VALUES (v_venta_id, v_cliente_id, v_usuario_id, v_cliente_final_id, 0, 'confirmada', 'seed-vta-' || v_i);
+    INSERT INTO ventas (venta_id, cliente_id, usuario_id, cliente_final_id, total, estado, idempotency_key, creado_en)
+    VALUES (v_venta_id, v_cliente_id, v_usuario_id, NULL, 0, 'confirmada', 'seed-vta-pos-' || v_i, NOW() - (interval '1 day' * (v_i % 28)));
 
     v_total := 0;
     FOR v_producto IN
@@ -245,39 +240,109 @@ BEGIN
     END LOOP;
 
     UPDATE ventas SET total = v_total WHERE venta_id = v_venta_id;
-
-    -- Registrar movimiento de cargo si fue a fiado
-    IF v_cliente_final_id IS NOT NULL THEN
-      v_mov_debito_id := gen_random_uuid();
-      INSERT INTO movimientos_cuenta_corriente (
-        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
-        estado_imputacion, comprobante_tipo, numero_comprobante, usuario_id
-      ) VALUES (
-        v_mov_debito_id, v_cliente_id, v_cliente_final_id, 'cargo', v_total, v_total,
-        'pendiente', 'factura', 'FAC-' || LPAD(v_i::text, 6, '0'), v_usuario_id
-      );
-    END IF;
   END LOOP;
 
-  -- Simular un pago parcial con imputación contable
-  v_mov_debito_id := (SELECT movimiento_cc_id FROM movimientos_cuenta_corriente WHERE tipo = 'cargo' LIMIT 1);
-  IF v_mov_debito_id IS NOT NULL THEN
-    v_mov_credito_id := gen_random_uuid();
-    INSERT INTO movimientos_cuenta_corriente (
-      movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
-      estado_imputacion, comprobante_tipo, numero_comprobante, metodo_pago, usuario_id
-    ) VALUES (
-      v_mov_credito_id, 'a0000000-0000-4000-8000-000000000000', 'c0f00000-0000-4000-8000-000000000001',
-      'pago', 5000, 0, 'total', 'recibo_cobro', 'REC-000001', 'transferencia', 'd0000000-0000-4000-8000-000000000010'
-    );
+  -- ------------------------------------------------------------
+  -- 9.1 MOVIMIENTOS COMPLETOS DE CUENTA CORRIENTE (FIADOS Y COBRANZAS)
+  -- ------------------------------------------------------------
+  DECLARE
+    v_cf RECORD;
+    v_num_cargo int := 100;
+    v_num_recibo int := 100;
+    v_monto_c1 numeric(12,2);
+    v_monto_c2 numeric(12,2);
+    v_monto_c3 numeric(12,2);
+    v_monto_p1 numeric(12,2);
+    v_monto_p2 numeric(12,2);
+    v_mov_c1_id uuid;
+    v_mov_c2_id uuid;
+    v_mov_c3_id uuid;
+    v_mov_p1_id uuid;
+    v_mov_p2_id uuid;
+    v_total_comprado numeric(12,2);
+    v_total_cobrado numeric(12,2);
+  BEGIN
+    FOR v_cf IN SELECT cliente_final_id, cliente_id, limite_credito FROM clientes_finales LOOP
+      v_usuario_id := CASE v_cf.cliente_id
+        WHEN 'a0000000-0000-4000-8000-000000000000' THEN 'd0000000-0000-4000-8000-000000000010'::uuid
+        WHEN 'a1111111-1111-4111-8111-111111111111' THEN 'd0000000-0000-4000-8000-000000000002'::uuid
+        ELSE 'd0000000-0000-4000-8000-000000000006'::uuid
+      END;
 
-    INSERT INTO imputaciones_comprobantes (cliente_id, movimiento_credito_id, movimiento_debito_id, monto_imputado)
-    VALUES ('a0000000-0000-4000-8000-000000000000', v_mov_credito_id, v_mov_debito_id, 5000);
+      -- Definir montos de compra realistas según límite
+      v_monto_c1 := ROUND((v_cf.limite_credito * 0.35)::numeric, 2);
+      v_monto_c2 := ROUND((v_cf.limite_credito * 0.25)::numeric, 2);
+      v_monto_c3 := ROUND((v_cf.limite_credito * 0.20)::numeric, 2);
 
-    UPDATE movimientos_cuenta_corriente
-    SET monto_pendiente = GREATEST(monto_pendiente - 5000, 0), estado_imputacion = 'parcial'
-    WHERE movimiento_cc_id = v_mov_debito_id;
-  END IF;
+      -- Pagos realizados
+      v_monto_p1 := ROUND((v_monto_c1)::numeric, 2); -- Salda compra 1
+      v_monto_p2 := ROUND((v_monto_c2 * 0.5)::numeric, 2); -- Salda parcialmente compra 2
+
+      v_num_cargo := v_num_cargo + 1;
+      v_mov_c1_id := gen_random_uuid();
+      INSERT INTO movimientos_cuenta_corriente (
+        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
+        estado_imputacion, comprobante_tipo, numero_comprobante, usuario_id, creado_en
+      ) VALUES (
+        v_mov_c1_id, v_cf.cliente_id, v_cf.cliente_final_id, 'cargo', v_monto_c1, 0,
+        'total', 'factura', 'FAC-' || LPAD(v_num_cargo::text, 6, '0'), v_usuario_id, NOW() - interval '35 days'
+      );
+
+      v_num_recibo := v_num_recibo + 1;
+      v_mov_p1_id := gen_random_uuid();
+      INSERT INTO movimientos_cuenta_corriente (
+        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
+        estado_imputacion, comprobante_tipo, numero_comprobante, metodo_pago, usuario_id, creado_en
+      ) VALUES (
+        v_mov_p1_id, v_cf.cliente_id, v_cf.cliente_final_id, 'pago', v_monto_p1, 0,
+        'total', 'recibo_cobro', 'REC-' || LPAD(v_num_recibo::text, 6, '0'), 'transferencia', v_usuario_id, NOW() - interval '25 days'
+      );
+
+      INSERT INTO imputaciones_comprobantes (cliente_id, movimiento_credito_id, movimiento_debito_id, monto_imputado, creado_en)
+      VALUES (v_cf.cliente_id, v_mov_p1_id, v_mov_c1_id, v_monto_p1, NOW() - interval '25 days');
+
+      v_num_cargo := v_num_cargo + 1;
+      v_mov_c2_id := gen_random_uuid();
+      INSERT INTO movimientos_cuenta_corriente (
+        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
+        estado_imputacion, comprobante_tipo, numero_comprobante, usuario_id, creado_en
+      ) VALUES (
+        v_mov_c2_id, v_cf.cliente_id, v_cf.cliente_final_id, 'cargo', v_monto_c2, (v_monto_c2 - v_monto_p2),
+        'parcial', 'factura', 'FAC-' || LPAD(v_num_cargo::text, 6, '0'), v_usuario_id, NOW() - interval '18 days'
+      );
+
+      v_num_recibo := v_num_recibo + 1;
+      v_mov_p2_id := gen_random_uuid();
+      INSERT INTO movimientos_cuenta_corriente (
+        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
+        estado_imputacion, comprobante_tipo, numero_comprobante, metodo_pago, usuario_id, creado_en
+      ) VALUES (
+        v_mov_p2_id, v_cf.cliente_id, v_cf.cliente_final_id, 'pago', v_monto_p2, 0,
+        'total', 'recibo_cobro', 'REC-' || LPAD(v_num_recibo::text, 6, '0'), 'efectivo', v_usuario_id, NOW() - interval '8 days'
+      );
+
+      INSERT INTO imputaciones_comprobantes (cliente_id, movimiento_credito_id, movimiento_debito_id, monto_imputado, creado_en)
+      VALUES (v_cf.cliente_id, v_mov_p2_id, v_mov_c2_id, v_monto_p2, NOW() - interval '8 days');
+
+      v_num_cargo := v_num_cargo + 1;
+      v_mov_c3_id := gen_random_uuid();
+      INSERT INTO movimientos_cuenta_corriente (
+        movimiento_cc_id, cliente_id, cliente_final_id, tipo, monto, monto_pendiente,
+        estado_imputacion, comprobante_tipo, numero_comprobante, usuario_id, creado_en
+      ) VALUES (
+        v_mov_c3_id, v_cf.cliente_id, v_cf.cliente_final_id, 'cargo', v_monto_c3, v_monto_c3,
+        'pendiente', 'factura', 'FAC-' || LPAD(v_num_cargo::text, 6, '0'), v_usuario_id, NOW() - interval '2 days'
+      );
+
+      -- Sincronizar saldo deudor exacto en el cliente final
+      v_total_comprado := v_monto_c1 + v_monto_c2 + v_monto_c3;
+      v_total_cobrado := v_monto_p1 + v_monto_p2;
+
+      UPDATE clientes_finales
+      SET saldo_deudor = (v_total_comprado - v_total_cobrado)
+      WHERE cliente_final_id = v_cf.cliente_final_id;
+    END LOOP;
+  END;
 
   -- ------------------------------------------------------------
   -- 10. PEDIDOS WEB (TABLERO KANBAN DE COMANDAS Y DELIVERYS)

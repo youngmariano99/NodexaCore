@@ -146,6 +146,8 @@ describe("crearProducto", () => {
       nombre: "Yerba Mate 1kg",
       precio: 3500,
       categoria: "Almacén",
+      categoriaId: null,
+      marcaId: null,
       imagenUrl: null,
     });
     expect(registrarDiff).toHaveBeenCalledWith(

@@ -102,6 +102,24 @@ export async function crearProducto(
     return { error: "NX-PRD-001", exito: false };
   }
 
+  const sku = formData.get("sku")?.toString() || "";
+  const nombre = formData.get("nombre")?.toString() || "";
+  const categoria = formData.get("categoria")?.toString() || "";
+  const categoriaIdStr = formData.get("categoria_id")?.toString() || "";
+  const marcaIdStr = formData.get("marca_id")?.toString() || "";
+  const categoriaId = categoriaIdStr !== "" ? categoriaIdStr : null;
+  const marcaId = marcaIdStr !== "" ? marcaIdStr : null;
+
+  const precio = parseFloat(formData.get("precio")?.toString() || "0");
+
+  if (!sku || !nombre || precio < 0) {
+    return {
+      exito: false,
+      error: "Faltan campos obligatorios.",
+    };
+  }
+
+  // Subida de imagen
   let imagenUrl: string | null = null;
   if (resultado.data.imagen) {
     const bytes = await resultado.data.imagen.arrayBuffer();
@@ -115,10 +133,12 @@ export async function crearProducto(
 
   const productoCreado = await insertarProducto(supabase, {
     clienteId,
-    sku: resultado.data.sku,
-    nombre: resultado.data.nombre,
-    precio: resultado.data.precio,
-    categoria: resultado.data.categoria,
+    sku,
+    nombre,
+    precio,
+    categoria,
+    categoriaId,
+    marcaId,
     imagenUrl,
   });
 
@@ -139,14 +159,16 @@ export async function crearProducto(
 
       for (const v of variantes) {
         const sufijoNombre = Object.values(v.combinacion).join(" / ");
-        const nombreVariante = sufijoNombre ? `${resultado.data.nombre} - ${sufijoNombre}` : resultado.data.nombre;
+        const nombreVariante = sufijoNombre ? `${nombre} - ${sufijoNombre}` : nombre;
 
         const varianteCreada = await insertarProducto(supabase, {
           clienteId,
           sku: v.sku,
           nombre: nombreVariante,
           precio: v.precio,
-          categoria: resultado.data.categoria,
+          categoria: categoria,
+          categoriaId,
+          marcaId,
           imagenUrl,
           productoPadreId: productoCreado.data.producto_id,
         });
