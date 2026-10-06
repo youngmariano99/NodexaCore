@@ -1,7 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
-import { Trash2, AlertCircle } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { BuscadorInsumos } from "./BuscadorInsumos";
 
 export interface InsumoReceta {
@@ -52,13 +51,13 @@ export function Paso2RecetaInsumos({
     <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-semibold text-[#F3F5F4]">Paso 2: Receta / Insumos</h2>
-        <p className="text-sm text-[#A6AEAA]">Definí los componentes y el rendimiento para calcular tus costos.</p>
+        <p className="text-sm text-[#A6AEAA]">DefinÃ­ los componentes y el rendimiento para calcular tus costos.</p>
       </div>
 
       <div className="flex flex-col gap-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[#F3F5F4]">
-            ¿Para cuántas unidades rinde esta receta?
+            Â¿Para cuÃ¡ntas unidades rinde esta receta?
           </label>
           <input
             type="number"
@@ -119,7 +118,7 @@ export function Paso2RecetaInsumos({
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-[#222A27] p-8 text-center text-[#A6AEAA]">
-            Aún no agregaste insumos a la receta. Podés omitir este paso si solo querés vender el producto directo.
+            AÃºn no agregaste insumos a la receta. PodÃ©s omitir este paso si solo querÃ©s vender el producto directo.
           </div>
         )}
       </div>
@@ -131,7 +130,7 @@ export function Paso2RecetaInsumos({
           disabled={estaEnviando}
           className="flex min-h-11 items-center justify-center rounded-md border border-[#222A27] px-5 text-sm font-semibold text-[#F3F5F4] hover:bg-[#222A27] transition-colors"
         >
-          Atrás
+          AtrÃ¡s
         </button>
         <div className="flex gap-2">
           <button
@@ -155,3 +154,4 @@ export function Paso2RecetaInsumos({
     </div>
   );
 }
+
