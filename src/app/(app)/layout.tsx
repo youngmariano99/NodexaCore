@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single<FilaUsuarioSolicitante>();
 
   if (!solicitante || !solicitante.cliente_id || (solicitante.rol !== "comerciante" && solicitante.rol !== "empleado")) {
-    redirect(\?error=NX-SYS-003);
+    redirect(`${RUTA_POR_ROL[solicitante?.rol ?? "admin_nodexa"]}?error=NX-SYS-003`);
   }
 
   // Obtener los datos del comercio
