@@ -12,12 +12,15 @@ import { Paso1DatosGenerales } from "./Paso1DatosGenerales";
 import { Paso2Dimensiones } from "./Paso2Dimensiones";
 import { Paso3MatrizStock } from "./Paso3MatrizStock";
 import { Paso4Resumen } from "./Paso4Resumen";
+import { Paso2RecetaInsumos, type InsumoReceta } from "./Paso2RecetaInsumos";
+import { Paso3CostosMargen } from "./Paso3CostosMargen";
 
 import { obtenerCategorias, type Categoria } from "@/services/categorias/obtenerCategorias";
 import { obtenerMarcas, type Marca } from "@/services/marcas/obtenerMarcas";
 
 interface FormularioAltaProductoWizardProps {
   catalogoWebActivo: boolean;
+  gastronomiaActivo?: boolean;
 }
 
 interface Dimension {
@@ -33,7 +36,7 @@ export interface VarianteMatriz {
   precio: number;
 }
 
-export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAltaProductoWizardProps) {
+export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaActivo }: FormularioAltaProductoWizardProps) {
   const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1);
   const [guiasActivas, setGuiasActivas] = useState(true);
 
@@ -70,6 +73,11 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
   const [nuevaDimensionNombre, setNuevaDimensionNombre] = useState("");
   const [nuevoValorInputs, setNuevoValorInputs] = useState<Record<string, string>>({});
   const [errorPaso2, setErrorPaso2] = useState<string | null>(null);
+
+  // Datos Gastronomía
+  const [insumos, setInsumos] = useState<InsumoReceta[]>([]);
+  const [rendimiento, setRendimiento] = useState(1);
+  const [margenMeta, setMargenMeta] = useState(30);
 
   // Paso 3: Matriz de variantes y stock
   const [matrizVariantes, setMatrizVariantes] = useState<VarianteMatriz[]>([]);
@@ -300,7 +308,20 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
         />
       )}
 
-      {paso === 2 && (
+      {paso === 2 && gastronomiaActivo && (
+          <Paso2RecetaInsumos
+            insumos={insumos}
+            setInsumos={setInsumos}
+            rendimiento={rendimiento}
+            setRendimiento={setRendimiento}
+            alAtras={() => setPaso(1)}
+            alSiguiente={() => setPaso(3)}
+            alFinalizar={() => manejarGuardadoFinal(false)}
+            estaEnviando={estaEnviando}
+          />
+        )}
+
+        {paso === 2 && !gastronomiaActivo && (
         <Paso2Dimensiones
           dimensiones={dimensiones}
           setDimensiones={setDimensiones}
@@ -316,7 +337,21 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo }: FormularioAl
         />
       )}
 
-      {paso === 3 && (
+      {paso === 3 && gastronomiaActivo && (
+          <Paso3CostosMargen
+            insumos={insumos}
+            rendimiento={rendimiento}
+            precioVentaActual={precio}
+            margenMeta={margenMeta}
+            setMargenMeta={setMargenMeta}
+            setPrecio={setPrecio}
+            alAtras={() => setPaso(2)}
+            alFinalizar={() => manejarGuardadoFinal(false)}
+            estaEnviando={estaEnviando}
+          />
+        )}
+
+        {paso === 3 && !gastronomiaActivo && (
         <Paso3MatrizStock
           matrizVariantes={matrizVariantes}
           setMatrizVariantes={setMatrizVariantes}

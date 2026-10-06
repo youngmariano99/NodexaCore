@@ -19,6 +19,7 @@ export default async function NuevoProductoPage() {
   } = await supabase.auth.getUser();
 
   let catalogoWebActivo = false;
+  let gastronomiaActivo = false;
 
   if (usuarioAutenticado) {
     const { data: solicitante } = await supabase
@@ -38,6 +39,8 @@ export default async function NuevoProductoPage() {
         .maybeSingle();
 
       catalogoWebActivo = !!modulo?.activo;
+      const { data: moduloGastro } = await supabase.from('tenant_modules').select('activo').eq('cliente_id', solicitante.cliente_id).eq('modulo', 'produccion_gastronomica').eq('activo', true).maybeSingle();
+      gastronomiaActivo = !!moduloGastro?.activo;
     }
   }
 
@@ -49,7 +52,7 @@ export default async function NuevoProductoPage() {
           <p className="text-sm text-slate-400">Cargá un producto nuevo a tu catálogo de forma guiada.</p>
         </header>
 
-        <FormularioAltaProductoWizard catalogoWebActivo={catalogoWebActivo} />
+        <FormularioAltaProductoWizard catalogoWebActivo={catalogoWebActivo} gastronomiaActivo={gastronomiaActivo} />
       </div>
     </div>
   );

@@ -34,6 +34,7 @@ interface Paso1DatosGeneralesProps {
   marcasLista: Marca[];
   agregarCategoria: (c: Categoria) => void;
   agregarMarca: (m: Marca) => void;
+  gastronomiaActivo?: boolean;
 }
 
 export function Paso1DatosGenerales({
@@ -60,6 +61,7 @@ export function Paso1DatosGenerales({
   marcasLista,
   agregarCategoria,
   agregarMarca,
+  gastronomiaActivo,
 }: Paso1DatosGeneralesProps) {
   const [imagenSinRecortar, setImagenSinRecortar] = useState<string | null>(null);
   
@@ -264,7 +266,7 @@ export function Paso1DatosGenerales({
           onClick={alSiguiente}
           className="flex min-h-11 items-center gap-2 rounded-md bg-[#16D39A] px-5 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
         >
-          Siguiente: Dimensiones
+          {gastronomiaActivo ? "Siguiente: Receta" : "Siguiente: Dimensiones"}
           <ChevronRightIcon className="h-4 w-4" />
         </button>
       </div>
