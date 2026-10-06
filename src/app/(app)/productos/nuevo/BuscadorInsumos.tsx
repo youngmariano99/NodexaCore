@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Search, Plus, Loader2 } from "lucide-react";
@@ -93,3 +93,4 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
     </div>
   );
 }
+
