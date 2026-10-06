@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 
-import { ErrorDeDominio, mapearError } from "@/lib/errores/mapearError";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
@@ -23,6 +22,10 @@ interface FilaUsuarioSolicitante {
   usuario_id: string;
   rol: RolUsuario;
   cliente_id: string | null;
+}
+
+interface ErrorPostgres {
+  code?: string;
 }
 
 /**
@@ -113,11 +116,15 @@ export async function registrarProduccionLote(
   });
 
   if (errorRpc) {
-    if (errorRpc.code === "NX004") {
+    const codigoPostgres = (errorRpc as ErrorPostgres | null)?.code;
+
+    if (codigoPostgres === "NX004") {
       return { error: "NX-PRD-004", exito: false }; // Stock insuficiente
     }
-    const errorMapeado = mapearError(new ErrorDeDominio(errorRpc.message, errorRpc.code));
-    return { error: errorMapeado.codigo, exito: false };
+    if (codigoPostgres === "P0002") {
+      return { error: "NX-SYS-007", exito: false }; 
+    }
+    return { error: "NX-SYS-001", exito: false };
   }
 
   return { exito: true };
