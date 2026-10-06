@@ -16,6 +16,7 @@
     "db:verificar": "node --env-file=.env.local --import tsx scripts/verificar-conexion-supabase.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@sentry/nextjs": "^10.69.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.0",
@@ -29,6 +30,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-easy-crop": "^6.2.3",
+    "react-hook-form": "^7.89.0",
     "server-only": "^0.0.1",
     "zod": "^4.4.3"
   },

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Search, Plus, Loader2 } from "lucide-react";
@@ -24,10 +24,7 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
   const supabase = crearClienteSupabaseNavegador();
 
   useEffect(() => {
-    if (!termino || termino.length < 2) {
-      setResultados([]);
-      return;
-    }
+    if (!termino || termino.length < 2) return;
 
     const timer = setTimeout(async () => {
       setBuscando(true);
@@ -65,7 +62,7 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
           type="text"
           placeholder="Buscar insumo por nombre..."
           value={termino}
-          onChange={(e) => setTermino(e.target.value)}
+          onChange={(e) => { setTermino(e.target.value); if (e.target.value.length < 2) setResultados([]); }}
           className={`${CLASES_INPUT} pl-9`}
         />
         {buscando && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-[#16D39A]" />}
@@ -96,3 +93,4 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
     </div>
   );
 }
+
