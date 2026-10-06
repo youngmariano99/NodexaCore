@@ -1,0 +1,4 @@
+## 2026-10-05 Lógica Backend para Gastronomía y Declaración de Producción
+**Pedía:** Crear el Server Action registrarProduccionLote para procesar movimientos transaccionales de entradas y salidas.
+**Se hizo:** Además del Server Action, se creó la migración 20261005000000_modulo_gastronomia_y_rpc.sql con la estructura inicial de Gastronomía (recetas, costos) y una función RPC fn_registrar_produccion_batch.
+**Motivo:** En Supabase, para garantizar atomicidad y transaccionalidad estricta al insertar múltiples filas en una misma llamada sin comprometer el control de concurrencia de stock (condición WHERE stock_actual + v_delta >= 0), es mandatorio el uso de una función PL/pgSQL que procese el lote completo. La estructura de BD era necesaria para que el Backend pudiera compilar y consultar la base.
