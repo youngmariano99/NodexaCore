@@ -43,6 +43,7 @@ function crearBuilderListado(resultado: { data: unknown; error: unknown; count?:
   const builder = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
+    neq: vi.fn(() => builder),
     is: vi.fn(() => builder),
     order: vi.fn(() => builder),
     range: vi.fn(() => builder),
@@ -243,6 +244,7 @@ function crearBuilderBusqueda(resultado: { data: unknown; error: unknown }) {
   const builder = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
+    neq: vi.fn(() => builder),
     is: vi.fn(() => builder),
     or: vi.fn(() => builder),
     order: vi.fn(() => builder),
