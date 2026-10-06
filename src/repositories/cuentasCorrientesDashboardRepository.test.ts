@@ -1,10 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 import { obtenerDashboardCuentasCorrientes } from "./cuentasCorrientesDashboardRepository";
 
 const CLIENTE_ID = "a1111111-1111-4111-8111-111111111111";
 
 describe("cuentasCorrientesDashboardRepository", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-30T10:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("calcula correctamente la situación de caja, semáforo de riesgo y top deudores", async () => {
     const supabaseMock = {
       from: vi.fn((tabla: string) => {
