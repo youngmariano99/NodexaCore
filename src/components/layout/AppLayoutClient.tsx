@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -37,6 +38,7 @@ interface AppLayoutClientProps {
     devoluciones: boolean;
     bot_whatsapp: boolean;
   };
+  modalidadCatalogo?: string;
 }
 
 export function AppLayoutClient({
@@ -45,9 +47,11 @@ export function AppLayoutClient({
   email,
   nombreComercio,
   modulosActivos,
+  modalidadCatalogo,
 }: AppLayoutClientProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -129,7 +133,7 @@ export function AppLayoutClient({
       mostrar: modulosActivos.devoluciones,
     },
     {
-      titulo: "Catálogo Web",
+      titulo: modalidadCatalogo === "delivery_comandas" ? "Comandas" : modalidadCatalogo === "landing_page" ? "Landing" : "Cat�logo Web",
       href: "/catalogo-web",
       icon: Globe,
       mostrar: modulosActivos.catalogo_web && rol !== "empleado",
@@ -186,6 +190,7 @@ export function AppLayoutClient({
   };
 
   const handleCerrarSesion = () => {
+    queryClient.clear();
     startTransition(async () => {
       await cerrarSesion();
     });
@@ -336,7 +341,7 @@ export function AppLayoutClient({
                   )}
                   {modulosActivos.catalogo_web && (
                     <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
-                      Web
+                      {modalidadCatalogo === "delivery_comandas" ? "Comandas" : modalidadCatalogo === "landing_page" ? "Landing" : "Web"}
                     </span>
                   )}
                 </div>
