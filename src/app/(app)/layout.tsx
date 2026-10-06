@@ -43,7 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single();
 
   const nombreComercio = cliente?.nombre_comercio || "Mi Comercio";
-  const modalidadCatalogo = (cliente?.configuracion_plantilla as any)?.modalidad_catalogo || "vidriera";
+  const modalidadCatalogo = (cliente?.configuracion_plantilla as Record<string, string>)?.modalidad_catalogo || "vidriera";
 
   // Obtener los mï¿½dulos activos del comercio
   const { data: modulos } = await supabase
