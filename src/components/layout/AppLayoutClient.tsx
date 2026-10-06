@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -50,6 +51,7 @@ export function AppLayoutClient({
 }: AppLayoutClientProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -188,6 +190,7 @@ export function AppLayoutClient({
   };
 
   const handleCerrarSesion = () => {
+    queryClient.clear();
     startTransition(async () => {
       await cerrarSesion();
     });

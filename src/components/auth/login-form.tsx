@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useActionState } from "react";
 import { MensajeError } from "@/components/errores/MensajeError";
 import { iniciarSesion } from "@/services/autenticacion/iniciarSesion";
 import { ESTADO_LOGIN_INICIAL } from "@/services/autenticacion/tipos";
@@ -14,14 +13,6 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ codigoErrorInicial }: LoginFormProps) {
-  const queryClient = useQueryClient();
-
-  // Limpiamos el caché de TanStack Query cada vez que se entra al login
-  // Esto evita que queden datos de un usuario anterior cacheados si hubo un logout server-side
-  useEffect(() => {
-    queryClient.clear();
-  }, [queryClient]);
-
   const [estado, accionFormulario, estaEnviando] = useActionState(iniciarSesion, ESTADO_LOGIN_INICIAL);
   const codigoError = estado.error ?? codigoErrorInicial ?? null;
   const hayError = Boolean(codigoError);
