@@ -14,14 +14,14 @@ NODEXA opera como un **Socio Tecnológico** ágil, abarcando desde comercios de 
 
 Para equilibrar la eficiencia operativa con la capacidad de captar clientes complejos sin comprometer los costos de infraestructura, NODEXA se divide en dos grandes divisiones:
 
-### División A: NODEXA Starter (SaaS Modular Controlado)
+### División A: Persona A: Starter (Comerciante Desbordado)
 
 Enfocado en comercios minoristas y pequeños negocios.
 
 * **Infraestructura Centralizada:** Infraestructura compartida (Supabase + Vercel + Cloudinary) con despliegues globales rápidos mediante un identificador (`cliente_id`) y políticas estables de aislamiento de datos (RLS).
 * **Modelo Base + Marketplace:** Un núcleo innegociable de control interno (stock y ventas) al cual se le encienden módulos adicionales según la necesidad operativa.
 
-### División B: NODEXA Custom (Desarrollo a Medida & Enterprise)
+### División B: Persona B: Custom (Gerente PyME Consolidada)
 
 Enfocado en PyMEs con procesos complejos de logística, producción o flujos de trabajo específicos que no encajan en los módulos estándar.
 

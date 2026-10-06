@@ -12,9 +12,9 @@ Este documento define los **Procedimientos Operativos Estándar (SOP)** para la 
     *   **Setup Core Estándar ($20.000 ARS):** El cliente debe entregar su inventario en la plantilla Excel limpia y estructurada provista por NODEXA.
     *   **Setup Core Asistido / Done-For-You ($30.000 ARS):** Si el cliente entrega datos desestructurados o listas en texto, el equipo de NODEXA asume la depuración y carga inicial (tope máximo de **500 SKUs**; cargas mayores se presupuestan por separado).
     *   **Setup Catálogo Web ($150.000 ARS / Bonificado a $75.000 ARS):** Si aplica al descuento del 50% por *Social Proof*, registrar en el calendario operativo una alerta a los **30 días** para solicitar la reseña pública (escrita o video).
-2.  **Configuración en Base de Datos Central (Día 1):**
+2.  **Configuración en Base de Datos Central - Aislamiento y Deploy (Día 1):**
     *   Ingresar al panel administrativo de Supabase y crear el registro en `clientes`, generando un `cliente_id` único.
-    *   Asignar el estado inicial (`estado_pago = true`) y activar las banderas en `tenant_modules` según lo contratado.
+    *   Activar los módulos contratados en `tenant_modules` mediante políticas de seguridad por filas (RLS) para garantizar el aislamiento. Asignar el estado inicial (`estado_pago = true`).
 3.  **Auditoría de Límite de SKUs e Importación:**
     *   Verificar el conteo total de ítems a importar.
     *   Si el inventario tiene **hasta 1.000 SKUs**, se asigna al abono Core base ($20.000 ARS/mes).
