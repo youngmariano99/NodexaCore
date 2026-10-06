@@ -13,8 +13,8 @@ export interface BadgeEstadoCosteoProps {
 }
 
 /**
- * Componente visual (semaforización) para el listado de productos de gastronomía.
- * Alerta cuando los insumos de la receta están encarecidos y sugiere un nuevo precio,
+ * Componente visual (semaforizacin) para el listado de productos de gastronoma.
+ * Alerta cuando los insumos de la receta estn encarecidos y sugiere un nuevo precio,
  * o cuando falta definir la receta.
  */
 export function BadgeEstadoCosteo({
@@ -45,7 +45,7 @@ export function BadgeEstadoCosteo({
     return (
       <div className="flex items-center gap-1.5 px-2.5 py-1 text-sm font-medium rounded-md bg-green-50 text-green-700 border border-green-200 w-fit">
         <CheckCircle2 className="w-4 h-4" />
-        <span>Costeo al día</span>
+        <span>Costeo al da</span>
       </div>
     );
   }
@@ -60,7 +60,7 @@ export function BadgeEstadoCosteo({
         <span>Insumos encarecidos</span>
       </div>
       <p className="text-xs text-yellow-700/90 leading-relaxed">
-        El costo de producción aumentó. Te sugerimos ajustar el precio para mantener tu margen meta del {margenMetaSugerido}%.
+        El costo de produccin aument. Te sugerimos ajustar el precio para mantener tu margen meta del {margenMetaSugerido}%.
       </p>
 
       <div className="flex items-center justify-between mt-1 pt-2 border-t border-yellow-200/50">

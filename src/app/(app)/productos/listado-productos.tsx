@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Trash2, Pencil, Loader2, Plus } from "lucide-react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
+import { BadgeEstadoCosteo } from "@/components/dominio/gastronomia/BadgeEstadoCosteo";
 import { useProductosPaginados } from "@/hooks/useProductosPaginados";
 import { eliminarProducto } from "@/services/productos/eliminarProducto";
 import { ESTADO_ELIMINAR_PRODUCTO_INICIAL } from "@/services/productos/tipos";
@@ -22,6 +23,8 @@ interface Producto {
   precio: number;
   stock_actual: number;
   publicado: boolean;
+  tipo_producto?: "estandar" | "fabricado" | "insumo";
+  recetas?: { estado_costeo: "actualizado" | "desactualizado" }[] | { estado_costeo: "actualizado" | "desactualizado" } | null;
 }
 
 export function ListadoProductos() {
@@ -80,7 +83,7 @@ export function ListadoProductos() {
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-semibold text-[#F3F5F4]">Productos</h1>
             <p className="text-sm text-[#A6AEAA]">
-              {total} producto{total === 1 ? "" : "s"} activo{total === 1 ? "" : "s"} en tu catálogo.
+              {total} producto{total === 1 ? "" : "s"} activo{total === 1 ? "" : "s"} en tu catÃ¡logo.
             </p>
           </div>
           <Link
@@ -94,9 +97,9 @@ export function ListadoProductos() {
 
         {productos.length === 0 ? (
           <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-[#222A27] bg-[#111615] px-6 py-12 text-center">
-            <p className="text-base text-[#F3F5F4]">Todavía no cargaste ningún producto.</p>
+            <p className="text-base text-[#F3F5F4]">TodavÃ­a no cargaste ningÃºn producto.</p>
             <p className="text-sm text-[#A6AEAA]">
-              Los productos que des de alta van a aparecer acá, ej. Yerba mate 1kg.
+              Los productos que des de alta van a aparecer acÃ¡, ej. Yerba mate 1kg.
             </p>
             <Link
               href="/productos/nuevo"
@@ -113,7 +116,7 @@ export function ListadoProductos() {
                 <tr className="border-b border-[#222A27] text-[#A6AEAA]">
                   <th className="px-4 py-3 font-medium">SKU</th>
                   <th className="px-4 py-3 font-medium">Producto</th>
-                  <th className="px-4 py-3 font-medium">Categoría</th>
+                  <th className="px-4 py-3 font-medium">CategorÃ­a</th>
                   <th className="px-4 py-3 font-medium">Precio</th>
                   <th className="px-4 py-3 font-medium">Stock</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
@@ -127,8 +130,24 @@ export function ListadoProductos() {
                     className="border-b border-[#222A27] last:border-b-0 hover:bg-[#151A18]"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-[#A6AEAA]">{producto.sku}</td>
-                    <td className="px-4 py-3 font-medium text-[#F3F5F4]">{producto.nombre}</td>
-                    <td className="px-4 py-3 text-[#A6AEAA]">{producto.categoria ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-[#F3F5F4] mb-1">{producto.nombre}</div>
+                      <BadgeEstadoCosteo
+                        esFabricado={producto.tipo_producto === "fabricado"}
+                        estadoCosteo={
+                          Array.isArray(producto.recetas) 
+                            ? (producto.recetas[0]?.estado_costeo as "actualizado" | "desactualizado" | undefined) ?? null
+                            : ((producto.recetas as Record<string, string>)?.estado_costeo as "actualizado" | "desactualizado" | undefined) ?? null
+                        }
+                        costoTotalCalculado={0}
+                        margenMetaSugerido={30}
+                        onRecalcularSugerencia={(nuevoPrecio) => {
+                          // TODO: Conectar a API real para actualizar precio
+                          alert("Sugerencia de $"+nuevoPrecio+" pendiente de conexiÃ³n");
+                        }}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-[#A6AEAA]">{producto.categoria ?? "â€”"}</td>
                     <td className="px-4 py-3 font-mono text-[#F3F5F4]">{FORMATO_PRECIO.format(producto.precio)}</td>
                     <td className="px-4 py-3 font-mono text-[#F3F5F4]">{producto.stock_actual}</td>
                     <td className="px-4 py-3">
@@ -174,7 +193,7 @@ export function ListadoProductos() {
         {totalPaginas > 1 ? (
           <nav
             className="flex items-center justify-between text-sm text-[#A6AEAA]"
-            aria-label="Paginación de productos"
+            aria-label="PaginaciÃ³n de productos"
           >
             <Link
               href={`/productos?page=${Math.max(1, paginaActual - 1)}`}
@@ -183,11 +202,11 @@ export function ListadoProductos() {
                 paginaActual <= 1 ? "pointer-events-none opacity-40" : "hover:border-[#16D39A] hover:text-[#F3F5F4]"
               }`}
             >
-              ← Anterior
+              â† Anterior
             </Link>
             <span className="font-mono">
-              Página {paginaActual} de {totalPaginas}
-              {isPlaceholderData ? " · actualizando..." : ""}
+              PÃ¡gina {paginaActual} de {totalPaginas}
+              {isPlaceholderData ? " Â· actualizando..." : ""}
             </span>
             <Link
               href={`/productos?page=${Math.min(totalPaginas, paginaActual + 1)}`}
@@ -198,13 +217,13 @@ export function ListadoProductos() {
                   : "hover:border-[#16D39A] hover:text-[#F3F5F4]"
               }`}
             >
-              Siguiente →
+              Siguiente â†’
             </Link>
           </nav>
         ) : null}
       </div>
 
-      {/* Modal de Confirmación de Borrado Lógico */}
+      {/* Modal de ConfirmaciÃ³n de Borrado LÃ³gico */}
       {productoAEliminar && (
         <div
           role="dialog"
@@ -221,7 +240,7 @@ export function ListadoProductos() {
             </div>
 
             <p className="text-sm text-[#A6AEAA]">
-              Dar de baja <strong className="text-[#F3F5F4]">{productoAEliminar.nombre}</strong> lo va a ocultar de tu catálogo y de la vidriera pública. Esta acción no se puede deshacer.
+              Dar de baja <strong className="text-[#F3F5F4]">{productoAEliminar.nombre}</strong> lo va a ocultar de tu catÃ¡logo y de la vidriera pÃºblica. Esta acciÃ³n no se puede deshacer.
             </p>
 
             {errorDelete && (
@@ -265,3 +284,4 @@ export function ListadoProductos() {
     </div>
   );
 }
+

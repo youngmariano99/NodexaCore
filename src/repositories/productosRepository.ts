@@ -16,6 +16,8 @@ export interface FilaProductoListado {
   stock_actual: number;
   publicado: boolean;
   imagen_url?: string | null;
+  tipo_producto?: "estandar" | "fabricado" | "insumo";
+  recetas?: { estado_costeo: "actualizado" | "desactualizado" }[] | { estado_costeo: "actualizado" | "desactualizado" } | null;
 }
 
 export interface ResultadoProductosPaginados {
@@ -59,10 +61,10 @@ function esUniqueViolation(error: unknown): boolean {
 }
 
 /**
- * Conteo de SKUs activos de un tenant (docs/SCHEMA.md §5, índice
- * `idx_productos_cliente_activos`: "soporte al conteo de límite de SKU").
- * Solo cuenta filas no eliminadas lógicamente, sin traer las filas en sí
- * (`head: true`) — nunca un SELECT * sin LIMIT (CLAUDE.md §4 "escalabilidad").
+ * Conteo de SKUs activos de un tenant (docs/SCHEMA.md Â§5, Ã­ndice
+ * `idx_productos_cliente_activos`: "soporte al conteo de lÃ­mite de SKU").
+ * Solo cuenta filas no eliminadas lÃ³gicamente, sin traer las filas en sÃ­
+ * (`head: true`) â€” nunca un SELECT * sin LIMIT (CLAUDE.md Â§4 "escalabilidad").
  */
 export async function contarProductosActivos(
   supabase: SupabaseClient,
@@ -88,13 +90,13 @@ export interface UsoSku {
 }
 
 /**
- * Uso de SKU frente al límite contratado (docs/SITEMAP.md "Widget de
+ * Uso de SKU frente al lÃ­mite contratado (docs/SITEMAP.md "Widget de
  * consumo en /configuracion/facturacion", Paso 1). Combina
- * `contarProductosActivos` (ya existente, estación de `crearProducto`) con
- * `clientes.limite_sku` y `calcularPorcentajeUsoSku` (ya existente, estación
- * del aviso de 90%, `/dashboard`) en una sola función — mismo cálculo que ya
- * usa `/dashboard`, consolidado acá bajo el nombre que pide el checklist de
- * esta actividad en vez de duplicar la consulta combinada en cada página que
+ * `contarProductosActivos` (ya existente, estaciÃ³n de `crearProducto`) con
+ * `clientes.limite_sku` y `calcularPorcentajeUsoSku` (ya existente, estaciÃ³n
+ * del aviso de 90%, `/dashboard`) en una sola funciÃ³n â€” mismo cÃ¡lculo que ya
+ * usa `/dashboard`, consolidado acÃ¡ bajo el nombre que pide el checklist de
+ * esta actividad en vez de duplicar la consulta combinada en cada pÃ¡gina que
  * lo necesite.
  */
 export async function obtenerPorcentajeUsoSku(
@@ -125,12 +127,12 @@ export async function obtenerPorcentajeUsoSku(
 }
 
 /**
- * Alta manual de producto (docs/ROLES.md §2, fila "productos — alta/edición/
- * baja": `C` para comerciante y empleado). Corre con el cliente de sesión:
+ * Alta manual de producto (docs/ROLES.md Â§2, fila "productos â€” alta/ediciÃ³n/
+ * baja": `C` para comerciante y empleado). Corre con el cliente de sesiÃ³n:
  * `productos_insert_tenant` (WITH CHECK cliente_id = auth_cliente_id()) no
  * distingue rol para el INSERT, a diferencia del UPDATE. El `cliente_id` se
- * fija explícito acá (nunca confiado del DTO del cliente) como defensa en
- * profundidad adicional a la política RLS.
+ * fija explÃ­cito acÃ¡ (nunca confiado del DTO del cliente) como defensa en
+ * profundidad adicional a la polÃ­tica RLS.
  */
 export async function insertarProducto(
   supabase: SupabaseClient,
@@ -175,20 +177,20 @@ export interface FilaProductoInsertadoLote {
 }
 
 /**
- * Inserción en lote de la importación de catálogo por Excel
- * (docs/BACKLOG.md "Route Handler de importación de catálogo por Excel",
- * Paso 3: "Ejecutar inserts en lote"). Usa el mismo patrón que
- * `activarModulosIniciales` (estación de onboarding): `upsert(...,
+ * InserciÃ³n en lote de la importaciÃ³n de catÃ¡logo por Excel
+ * (docs/BACKLOG.md "Route Handler de importaciÃ³n de catÃ¡logo por Excel",
+ * Paso 3: "Ejecutar inserts en lote"). Usa el mismo patrÃ³n que
+ * `activarModulosIniciales` (estaciÃ³n de onboarding): `upsert(...,
  * { onConflict: 'cliente_id,sku', ignoreDuplicates: true })` en vez de un
- * `insert` simple envuelto en try/catch de `23505`. Esto genera un único
+ * `insert` simple envuelto en try/catch de `23505`. Esto genera un Ãºnico
  * `INSERT ... ON CONFLICT (cliente_id, sku) DO NOTHING RETURNING ...`
- * atómico: si una fila del lote ya existe en el tenant, Postgres la omite
+ * atÃ³mico: si una fila del lote ya existe en el tenant, Postgres la omite
  * sin abortar el resto de la sentencia (a diferencia de un `INSERT`
- * multi-fila común, que revierte el lote completo ante cualquier violación
- * de UNIQUE). `RETURNING` con `DO NOTHING` únicamente devuelve las filas que
+ * multi-fila comÃºn, que revierte el lote completo ante cualquier violaciÃ³n
+ * de UNIQUE). `RETURNING` con `DO NOTHING` Ãºnicamente devuelve las filas que
  * efectivamente se insertaron, lo que le permite al llamador (route handler
- * de importación) diferenciar por SKU qué filas del reporte fueron altas
- * reales y cuáles se rechazaron por ya existir en el catálogo del tenant.
+ * de importaciÃ³n) diferenciar por SKU quÃ© filas del reporte fueron altas
+ * reales y cuÃ¡les se rechazaron por ya existir en el catÃ¡logo del tenant.
  */
 export async function insertarProductosEnLote(
   supabase: SupabaseClient,
@@ -233,11 +235,11 @@ export interface FilaProductoBusqueda {
 
 /**
  * El filtro `.or()` de PostgREST usa `,`/`(`/`)` como caracteres de control
- * de su propia sintaxis (separador de condiciones y agrupación) — un
- * término de búsqueda que los contenga rompería el filtro compuesto en vez
- * de buscarse literalmente. Ningún SKU/nombre real de este dominio los
- * necesita, así que se descartan directamente en vez de intentar un
- * escapado con comillas (más frágil de mantener correcto). `%`/`_` son
+ * de su propia sintaxis (separador de condiciones y agrupaciÃ³n) â€” un
+ * tÃ©rmino de bÃºsqueda que los contenga romperÃ­a el filtro compuesto en vez
+ * de buscarse literalmente. NingÃºn SKU/nombre real de este dominio los
+ * necesita, asÃ­ que se descartan directamente en vez de intentar un
+ * escapado con comillas (mÃ¡s frÃ¡gil de mantener correcto). `%`/`_` son
  * wildcards de `LIKE`/`ILIKE`: se escapan para que, por ejemplo, buscar
  * "50%" no matchee cualquier cosa que empiece con "50".
  */
@@ -250,12 +252,12 @@ function escaparComodinesLike(valor: string): string {
 }
 
 /**
- * Búsqueda de productos por `sku` o `nombre` para el buscador del Mostrador
- * (docs/BACKLOG.md "Componente de búsqueda y carrito en Panel de Ventas").
+ * BÃºsqueda de productos por `sku` o `nombre` para el buscador del Mostrador
+ * (docs/BACKLOG.md "Componente de bÃºsqueda y carrito en Panel de Ventas").
  * Acotada con `.limit()` en vez de paginada: es un buscador tipo-adelante
- * (autocomplete) para armar el carrito, no un listado a recorrer — nunca un
- * `SELECT *` sin límite (CLAUDE.md §4 "escalabilidad"). Un término vacío
- * (o que queda vacío tras sanitizarse) retorna `[]` sin consultar la base.
+ * (autocomplete) para armar el carrito, no un listado a recorrer â€” nunca un
+ * `SELECT *` sin lÃ­mite (CLAUDE.md Â§4 "escalabilidad"). Un tÃ©rmino vacÃ­o
+ * (o que queda vacÃ­o tras sanitizarse) retorna `[]` sin consultar la base.
  */
 export async function buscarProductosParaVenta(
   supabase: SupabaseClient,
@@ -297,15 +299,15 @@ export interface FilaPrecioProducto {
 
 /**
  * Precios reales (autoritativos) de un lote de productos, scopeados al
- * tenant (docs/BACKLOG.md "Cálculo automático del total de la venta", Paso 3:
- * "validación final" en servidor). Usado por
+ * tenant (docs/BACKLOG.md "CÃ¡lculo automÃ¡tico del total de la venta", Paso 3:
+ * "validaciÃ³n final" en servidor). Usado por
  * `POST /api/ventas/previsualizar` para recalcular el total de una venta
- * SIN confiar en ningún `precioUnitario` que pueda llegar desde el cliente —
- * un usuario podría manipular el request y mandar precios distintos a los
- * reales; acá siempre se lee el `precio` vigente en `productos`. Un producto
- * eliminado lógicamente o de otro tenant simplemente no aparece en el
+ * SIN confiar en ningÃºn `precioUnitario` que pueda llegar desde el cliente â€”
+ * un usuario podrÃ­a manipular el request y mandar precios distintos a los
+ * reales; acÃ¡ siempre se lee el `precio` vigente en `productos`. Un producto
+ * eliminado lÃ³gicamente o de otro tenant simplemente no aparece en el
  * resultado, sin distinguir el motivo (mismo criterio de
- * `verificarPertenenciaTenant`, docs/ROLES.md §3.8).
+ * `verificarPertenenciaTenant`, docs/ROLES.md Â§3.8).
  */
 export async function obtenerPreciosProductosPorIds(
   supabase: SupabaseClient,
@@ -333,18 +335,18 @@ export async function obtenerPreciosProductosPorIds(
 
 /**
  * Listado paginado de productos activos de un tenant (docs/SITEMAP.md
- * "/productos → Listado paginado de productos (Core)"). Usa `.range()`
- * sobre un `count: "exact"` — nunca un `SELECT *` sin `LIMIT`
- * (CLAUDE.md §4 "escalabilidad") — y filtra siempre `eliminado_en IS NULL`:
- * un producto dado de baja lógica (`eliminarProducto.ts`) nunca aparece acá.
+ * "/productos â†’ Listado paginado de productos (Core)"). Usa `.range()`
+ * sobre un `count: "exact"` â€” nunca un `SELECT *` sin `LIMIT`
+ * (CLAUDE.md Â§4 "escalabilidad") â€” y filtra siempre `eliminado_en IS NULL`:
+ * un producto dado de baja lÃ³gica (`eliminarProducto.ts`) nunca aparece acÃ¡.
  *
  * El `order()` incluye `producto_id` como desempate: varias filas insertadas
  * en el mismo lote comparten literalmente el mismo `creado_en` (Postgres
- * evalúa `DEFAULT now()` una sola vez por sentencia en un INSERT masivo, no
+ * evalÃºa `DEFAULT now()` una sola vez por sentencia en un INSERT masivo, no
  * por fila), y ordenar solo por una columna con empates hace que Postgres no
- * garantice el mismo orden entre dos ejecuciones de `.range()` distintas —
- * verificado en vivo contra el seed volumétrico: sin el desempate, la misma
- * fila podía aparecer repetida en dos páginas consecutivas.
+ * garantice el mismo orden entre dos ejecuciones de `.range()` distintas â€”
+ * verificado en vivo contra el seed volumÃ©trico: sin el desempate, la misma
+ * fila podÃ­a aparecer repetida en dos pÃ¡ginas consecutivas.
  */
 export async function obtenerProductosPaginados(
   supabase: SupabaseClient,
@@ -359,7 +361,7 @@ export async function obtenerProductosPaginados(
 
   const { data, error, count } = await supabase
     .from("productos")
-    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado, imagen_url", { count: "exact" })
+    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado, imagen_url, tipo_producto, recetas(estado_costeo)", { count: "exact" })
     .eq("cliente_id", clienteId)
     .neq("tipo_producto", "insumo")
     .is("eliminado_en", null)
@@ -380,7 +382,7 @@ export async function obtenerProductosPaginados(
 
 /**
  * Listado paginado exclusivo para insumos (materias primas) de un comercio
- * para la gestión de cocina / módulo gastronómico.
+ * para la gestiÃ³n de cocina / mÃ³dulo gastronÃ³mico.
  */
 export async function obtenerInsumosPaginados(
   supabase: SupabaseClient,
@@ -418,14 +420,14 @@ const TAMANIO_PAGINA_EXPORTACION = 500;
 const LIMITE_ITERACIONES_EXPORTACION = 200; // tope defensivo: 200 * 500 = 100.000 productos
 
 /**
- * Trae el catálogo activo completo de un tenant paginando internamente
- * sobre `obtenerProductosPaginados` (docs/SITEMAP.md "/api/export → Route
- * Handler de exportación de productos", Paso 1). Nunca hace un
- * `SELECT` sin límite (CLAUDE.md §4): en vez de una sola consulta gigante
- * que podría hacer timeout con catálogos de miles de productos (Criterio de
- * Aceptación 4), acumula páginas de `TAMANIO_PAGINA_EXPORTACION` filas hasta
+ * Trae el catÃ¡logo activo completo de un tenant paginando internamente
+ * sobre `obtenerProductosPaginados` (docs/SITEMAP.md "/api/export â†’ Route
+ * Handler de exportaciÃ³n de productos", Paso 1). Nunca hace un
+ * `SELECT` sin lÃ­mite (CLAUDE.md Â§4): en vez de una sola consulta gigante
+ * que podrÃ­a hacer timeout con catÃ¡logos de miles de productos (Criterio de
+ * AceptaciÃ³n 4), acumula pÃ¡ginas de `TAMANIO_PAGINA_EXPORTACION` filas hasta
  * agotar el total real reportado por Postgres. El tope de iteraciones es
- * puramente defensivo (nunca debería alcanzarse con un tenant real) para
+ * puramente defensivo (nunca deberÃ­a alcanzarse con un tenant real) para
  * que un bug futuro en el criterio de corte no derive en un loop infinito.
  */
 export async function obtenerTodosLosProductosActivos(
@@ -477,17 +479,17 @@ export interface ResultadoProductosPublicosPaginados {
 }
 
 /**
- * Catálogo público de un comercio (docs/BACKLOG.md "Página estática con ISR
- * de vidriera pública", Paso 2). El filtro real de seguridad es la política
+ * CatÃ¡logo pÃºblico de un comercio (docs/BACKLOG.md "PÃ¡gina estÃ¡tica con ISR
+ * de vidriera pÃºblica", Paso 2). El filtro real de seguridad es la polÃ­tica
  * RLS `productos_lectura_publica` (`publicado = true AND eliminado_en IS
- * NULL`, docs/SCHEMA.md §18) — a diferencia de esa política, que no conoce
- * ningún tenant, esta consulta agrega `cliente_id` explícito: sin ese
- * filtro, la vidriera de un comercio mostraría los productos publicados de
- * TODOS los comercios, porque `productos_lectura_publica` está deliberadamente
- * scopeada solo por fila pública, no por tenant. `.eq('publicado', true)` y
- * `.is('eliminado_en', null)` se repiten acá como defensa en profundidad
- * explícita (mismo criterio que el resto del repo: nunca confiar
- * únicamente en RLS), aunque ya sean redundantes con la política.
+ * NULL`, docs/SCHEMA.md Â§18) â€” a diferencia de esa polÃ­tica, que no conoce
+ * ningÃºn tenant, esta consulta agrega `cliente_id` explÃ­cito: sin ese
+ * filtro, la vidriera de un comercio mostrarÃ­a los productos publicados de
+ * TODOS los comercios, porque `productos_lectura_publica` estÃ¡ deliberadamente
+ * scopeada solo por fila pÃºblica, no por tenant. `.eq('publicado', true)` y
+ * `.is('eliminado_en', null)` se repiten acÃ¡ como defensa en profundidad
+ * explÃ­cita (mismo criterio que el resto del repo: nunca confiar
+ * Ãºnicamente en RLS), aunque ya sean redundantes con la polÃ­tica.
  */
 export async function obtenerProductosPublicadosPaginados(
   supabase: SupabaseClient,
@@ -523,15 +525,15 @@ export async function obtenerProductosPublicadosPaginados(
 }
 
 /**
- * Ficha pública de un único producto (docs/BACKLOG.md "Componente de CTA
+ * Ficha pÃºblica de un Ãºnico producto (docs/BACKLOG.md "Componente de CTA
  * WhatsApp en ficha de producto", Paso 1). Mismo criterio de la vidriera:
- * `productos_lectura_publica` (RLS) no conoce el tenant, así que
- * `cliente_id` se filtra explícito acá para no traer un producto de otro
- * comercio si por error se pisara un `producto_id` ajeno en la URL —
- * `publicado = true` y `eliminado_en IS NULL` también explícitos, mismo
- * criterio de no confiar únicamente en RLS. No distingue "no existe" de
- * "no está publicado" de "es de otro tenant": los tres casos retornan
- * `NX-WEB-004` desde la page (vía `notFound()`), mismo criterio de no
+ * `productos_lectura_publica` (RLS) no conoce el tenant, asÃ­ que
+ * `cliente_id` se filtra explÃ­cito acÃ¡ para no traer un producto de otro
+ * comercio si por error se pisara un `producto_id` ajeno en la URL â€”
+ * `publicado = true` y `eliminado_en IS NULL` tambiÃ©n explÃ­citos, mismo
+ * criterio de no confiar Ãºnicamente en RLS. No distingue "no existe" de
+ * "no estÃ¡ publicado" de "es de otro tenant": los tres casos retornan
+ * `NX-WEB-004` desde la page (vÃ­a `notFound()`), mismo criterio de no
  * filtrar existencia de recursos que ya usa `verificarPertenenciaTenant`.
  */
 export async function obtenerProductoPublicoPorId(
@@ -554,3 +556,4 @@ export async function obtenerProductoPublicoPorId(
 
   return { ok: true, data };
 }
+
