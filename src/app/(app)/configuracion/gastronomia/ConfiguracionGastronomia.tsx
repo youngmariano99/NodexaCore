@@ -10,7 +10,7 @@ import { crearClienteSupabaseNavegador } from "@/lib/supabase/client";
 const esquemaCosto = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
   tipo_calculo: z.enum(["fijo", "porcentaje"]),
-  valor: z.number({ coerce: true }).min(0, "Debe ser mayor o igual a 0"),
+  valor: z.number().min(0, "Debe ser mayor o igual a 0"),
 });
 
 type FormCosto = z.infer<typeof esquemaCosto>;
@@ -159,7 +159,7 @@ export function ConfiguracionGastronomia() {
               type="number"
               step="0.01"
               placeholder="0.00"
-              {...register("valor")}
+              {...register("valor", { valueAsNumber: true })}
               className="flex h-10 w-full rounded-md border border-[#222A27] bg-[#151A18] px-3 py-2 text-sm text-[#F3F5F4] outline-none focus:border-[#16D39A]"
             />
             {errors.valor && <p className="mt-1 text-xs text-red-500">{errors.valor.message}</p>}
@@ -209,4 +209,6 @@ export function ConfiguracionGastronomia() {
     </div>
   );
 }
+
+
 

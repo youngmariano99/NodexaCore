@@ -297,9 +297,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           setMarcaId={setMarcaId}
           precio={precio}
           setPrecio={setPrecio}
-            costosIndirectosSeleccionados={costosIndirectosSeleccionados}
-            setCostosIndirectosSeleccionados={setCostosIndirectosSeleccionados}
-          catalogoWebActivo={catalogoWebActivo}
+            catalogoWebActivo={catalogoWebActivo}
           imagenPrevisualizacion={imagenPrevisualizacion}
           manejarImagenRecortada={manejarImagenRecortada}
           limpiarImagen={limpiarImagen}
@@ -390,6 +388,8 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
     </div>
   );
 }
+
+
 
 
 
