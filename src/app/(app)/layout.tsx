@@ -32,19 +32,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single<FilaUsuarioSolicitante>();
 
   if (!solicitante || !solicitante.cliente_id || (solicitante.rol !== "comerciante" && solicitante.rol !== "empleado")) {
-    redirect(`${RUTA_POR_ROL[solicitante?.rol ?? "admin_nodexa"]}?error=NX-SYS-003`);
+    redirect(\?error=NX-SYS-003);
   }
 
   // Obtener los datos del comercio
   const { data: cliente } = await supabase
     .from("clientes")
-    .select("nombre_comercio")
+    .select("nombre_comercio, configuracion_plantilla")
     .eq("cliente_id", solicitante.cliente_id)
     .single();
 
   const nombreComercio = cliente?.nombre_comercio || "Mi Comercio";
+  const modalidadCatalogo = (cliente?.configuracion_plantilla as any)?.modalidad_catalogo || "vidriera";
 
-  // Obtener los mÃ³dulos activos del comercio
+  // Obtener los módulos activos del comercio
   const { data: modulos } = await supabase
     .from("tenant_modules")
     .select("modulo, activo")
@@ -66,10 +67,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         email={solicitante.email}
         nombreComercio={nombreComercio}
         modulosActivos={modulosActivos}
+        modalidadCatalogo={modalidadCatalogo}
       >
         {children}
       </AppLayoutClient>
     </QueryProvider>
   );
 }
-
