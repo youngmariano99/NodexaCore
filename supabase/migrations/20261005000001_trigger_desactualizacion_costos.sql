@@ -5,7 +5,7 @@
 CREATE OR REPLACE FUNCTION fn_invalidar_costos_por_insumo()
 RETURNS trigger
 LANGUAGE plpgsql
-AS \$\$
+AS $$
 BEGIN
   -- Verificar si el precio cambió realmente
   IF NEW.precio IS DISTINCT FROM OLD.precio THEN
@@ -22,7 +22,7 @@ BEGIN
   
   RETURN NEW;
 END;
-\$\$;
+$$;
 
 CREATE TRIGGER trg_invalidar_costos_por_insumo_update
   AFTER UPDATE OF precio ON productos
