@@ -118,3 +118,27 @@ BEGIN
   END LOOP;
 END;
 $$;
+-- ============================================================
+-- configuracion_costos y receta_costos_indirectos
+-- ============================================================
+
+CREATE TABLE configuracion_costos (
+  cliente_id uuid PRIMARY KEY REFERENCES clientes(cliente_id),
+  margen_ganancia_meta numeric(5,2)
+);
+ALTER TABLE configuracion_costos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY configuracion_costos_tenant ON configuracion_costos FOR ALL USING (cliente_id = auth_cliente_id()) WITH CHECK (cliente_id = auth_cliente_id());
+
+CREATE TABLE receta_costos_indirectos (
+  receta_id uuid NOT NULL REFERENCES recetas(receta_id) ON DELETE CASCADE,
+  costo_indirecto_id uuid NOT NULL REFERENCES costos_indirectos(costo_indirecto_id),
+  PRIMARY KEY (receta_id, costo_indirecto_id)
+);
+-- Aplicar RLS indirectamente via la tabla recetas
+ALTER TABLE receta_costos_indirectos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY receta_costos_indirectos_tenant ON receta_costos_indirectos FOR ALL USING (
+  EXISTS (SELECT 1 FROM recetas r WHERE r.receta_id = receta_costos_indirectos.receta_id AND r.cliente_id = auth_cliente_id())
+) WITH CHECK (
+  EXISTS (SELECT 1 FROM recetas r WHERE r.receta_id = receta_costos_indirectos.receta_id AND r.cliente_id = auth_cliente_id())
+);
+

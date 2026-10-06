@@ -518,3 +518,12 @@ Detalle del Bill of Materials (BOM).
 Tabla pivot (receta_id, costo_indirecto_id).
 
 *Nota: Se agregó 	ipo_producto (ENUM: 'estandar', 'fabricado', 'insumo') a la tabla productos.*
+
+## Entidad: configuracion_costos
+
+| Campo | Tipo | Restricciones |
+| :--- | :--- | :--- |
+| cliente_id | uuid | PK, REFERENCES clientes(cliente_id) |
+| margen_ganancia_meta | 
+umeric(5,2) | NULL |
+

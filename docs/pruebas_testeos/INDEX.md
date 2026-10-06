@@ -1,8 +1,10 @@
-| N鷐ero | Nombre | Tag | Ticket |
+锘縷 N煤mero | Nombre | Tag | Ticket |
 |---|---|---|---|
-| 1 | Declaraci髇 Producci髇 Lote | Backend | L骻ica Backend para Gastronom韆 y Declaraci髇 de Producci髇 |
+| 1 | Declaraci贸n Producci贸n Lote | Backend | L贸gica Backend para Gastronom铆a y Declaraci贸n de Producci贸n |
 
 | 2 | Badge de Estado de Costeo | Frontend | Frontend: Wizard Progresivo de Carga y Panel de Costos |
-3. Wizard de Gastronom韆 | Frontend | Integraci髇 de Feature Flags en Wizard de Producto
-4. Trigger de Invalidaci髇 de Costos en Cascada | Backend | Modelado de Base de Datos para Recetas y Costos (3FN)
-5. Configuraci髇 de Gastronom韆 | Frontend | Frontend: Wizard Progresivo de Carga y Panel de Costos
+3. Wizard de Gastronom铆a | Frontend | Integraci贸n de Feature Flags en Wizard de Producto
+4. Trigger de Invalidaci贸n de Costos en Cascada | Backend | Modelado de Base de Datos para Recetas y Costos (3FN)
+5. Configuraci贸n de Gastronom铆a | Frontend | Frontend: Wizard Progresivo de Carga y Panel de Costos
+6. Migraci贸n SQL Estructura BOM y Costos | Backend | Modelado de Base de Datos para Recetas y Costos (3FN)
+
