@@ -44,8 +44,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const nombreComercio = cliente?.nombre_comercio || "Mi Comercio";
   const modalidadCatalogo = (cliente?.configuracion_plantilla as any)?.modalidad_catalogo || "vidriera";
+  const modalidadCatalogo = (cliente?.configuracion_plantilla as any)?.modalidad_catalogo || "vidriera";
 
-  // Obtener los módulos activos del comercio
+  // Obtener los mï¿½dulos activos del comercio
   const { data: modulos } = await supabase
     .from("tenant_modules")
     .select("modulo, activo")
@@ -67,6 +68,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         email={solicitante.email}
         nombreComercio={nombreComercio}
         modulosActivos={modulosActivos}
+        modalidadCatalogo={modalidadCatalogo}
         modalidadCatalogo={modalidadCatalogo}
       >
         {children}
