@@ -276,6 +276,7 @@ export async function buscarProductosParaVenta(
     .from("productos")
     .select("producto_id, sku, nombre, precio, stock_actual")
     .eq("cliente_id", clienteId)
+    .neq("tipo_producto", "insumo")
     .is("eliminado_en", null)
     .or(`sku.ilike.${patron},nombre.ilike.${patron}`)
     .order("nombre", { ascending: true })
@@ -360,6 +361,43 @@ export async function obtenerProductosPaginados(
     .from("productos")
     .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado, imagen_url", { count: "exact" })
     .eq("cliente_id", clienteId)
+    .neq("tipo_producto", "insumo")
+    .is("eliminado_en", null)
+    .order("creado_en", { ascending: false })
+    .order("producto_id", { ascending: true })
+    .range(desde, hasta)
+    .returns<FilaProductoListado[]>();
+
+  if (error || !data) {
+    return { ok: false, error: "NX-SYS-001" };
+  }
+
+  return {
+    ok: true,
+    data: { productos: data, total: count ?? 0, pagina: paginaSegura, porPagina: porPaginaSeguro },
+  };
+}
+
+/**
+ * Listado paginado exclusivo para insumos (materias primas) de un comercio
+ * para la gestión de cocina / módulo gastronómico.
+ */
+export async function obtenerInsumosPaginados(
+  supabase: SupabaseClient,
+  clienteId: string,
+  pagina: number,
+  porPagina: number = PRODUCTOS_POR_PAGINA,
+): Promise<ResultadoRepositorio<ResultadoProductosPaginados>> {
+  const paginaSegura = Number.isInteger(pagina) && pagina > 0 ? pagina : 1;
+  const porPaginaSeguro = Number.isInteger(porPagina) && porPagina > 0 ? porPagina : PRODUCTOS_POR_PAGINA;
+  const desde = (paginaSegura - 1) * porPaginaSeguro;
+  const hasta = desde + porPaginaSeguro - 1;
+
+  const { data, error, count } = await supabase
+    .from("productos")
+    .select("producto_id, sku, nombre, categoria, precio, stock_actual, publicado, imagen_url", { count: "exact" })
+    .eq("cliente_id", clienteId)
+    .eq("tipo_producto", "insumo")
     .is("eliminado_en", null)
     .order("creado_en", { ascending: false })
     .order("producto_id", { ascending: true })
@@ -467,6 +505,7 @@ export async function obtenerProductosPublicadosPaginados(
     .select("producto_id, sku, nombre, descripcion, categoria, precio, imagen_url", { count: "exact" })
     .eq("cliente_id", clienteId)
     .eq("publicado", true)
+    .neq("tipo_producto", "insumo")
     .is("eliminado_en", null)
     .order("creado_en", { ascending: false })
     .order("producto_id", { ascending: true })
