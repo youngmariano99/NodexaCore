@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { registrarDiff } from "@/lib/auditoria/registrarDiff";
@@ -9,7 +9,7 @@ const esquemaCrearInsumo = z.object({
   costo: z.number().min(0, "El costo no puede ser negativo."),
 });
 
-export async function crearInsumoInline(prevState: any, formData: FormData) {
+export async function crearInsumoInline(prevState: unknown, formData: FormData) {
   try {
     const rawData = {
       nombre: formData.get("nombre") as string,
@@ -18,7 +18,7 @@ export async function crearInsumoInline(prevState: any, formData: FormData) {
 
     const parsed = esquemaCrearInsumo.safeParse(rawData);
     if (!parsed.success) {
-      return { error: "Datos inválidos" };
+      return { error: "Datos invÃ¡lidos" };
     }
 
     const supabase = await crearClienteSupabaseServidor();
@@ -48,14 +48,7 @@ export async function crearInsumoInline(prevState: any, formData: FormData) {
 
     if (insert.error) throw insert.error;
 
-    await registrarDiff({
-      clienteId: solicitante.cliente_id,
-      entidad: "productos",
-      entidadId: nuevoId,
-      accion: "crear",
-      valoresNuevos: { sku: skuGenerado, nombre: parsed.data.nombre, precio: parsed.data.costo, tipo_producto: "insumo" },
-      descripcion: `Creó insumo inline: ${parsed.data.nombre}`,
-    });
+    await registrarDiff({ clienteId: solicitante.cliente_id, usuarioId: user.id, tablaAfectada: 'productos', registroId: nuevoId, campoModificado: 'tipo_producto', valorNuevo: 'insumo' });
 
     return { 
       exito: true, 
@@ -71,3 +64,5 @@ export async function crearInsumoInline(prevState: any, formData: FormData) {
     return { error: "Error interno del servidor" };
   }
 }
+
+

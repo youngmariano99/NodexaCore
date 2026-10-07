@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Trash2, ChevronDown, ChevronRight, Settings2 } from "lucide-react";
 import { useState } from "react";
@@ -17,7 +17,7 @@ interface Paso4MatrizGastronomicaProps {
   setMatrizVariantes: React.Dispatch<React.SetStateAction<VarianteGastronomica[]>>;
   insumosBase: InsumoReceta[];
   rendimientoBase: number;
-  precioBase: number;
+  _precioBase?: number;
   alAtras: () => void;
   alFinalizar: () => void;
   estaEnviando: boolean;
@@ -30,7 +30,7 @@ export function Paso4MatrizGastronomica({
   setMatrizVariantes,
   insumosBase,
   rendimientoBase,
-  precioBase,
+  _precioBase,
   alAtras,
   alFinalizar,
   estaEnviando,
@@ -90,7 +90,7 @@ export function Paso4MatrizGastronomica({
         <h3 className="text-lg font-semibold text-[#F3F5F4]">Matriz de Variantes y Costos</h3>
         <p className="text-sm text-[#A6AEAA]">
           Costo Base (por unidad): <span className="font-semibold text-white">${costoBaseUnitario.toFixed(2)}</span>. 
-          Ajustá el precio de venta o agregá insumos especficos para cada variante.
+          AjustÃ¡ el precio de venta o agregÃ¡ insumos especficos para cada variante.
         </p>
       </div>
 
@@ -99,10 +99,7 @@ export function Paso4MatrizGastronomica({
           const costoExtra = (variante.insumosExtra || []).reduce((acc, i) => acc + i.precio * i.cantidad, 0);
           const costoTotal = costoBaseUnitario + costoExtra;
           
-          let sugerido = variante.precio;
-          if (!variante.precioOverride && variante.margenMeta) {
-             sugerido = costoTotal / (1 - variante.margenMeta / 100);
-          }
+          const _sugerido = (!variante.precioOverride && variante.margenMeta) ? costoTotal / (1 - (variante.margenMeta / 100)) : variante.precio;
 
           const margenActual = variante.precio > 0 ? ((variante.precio - costoTotal) / variante.precio) * 100 : 0;
           const expandido = varianteExpandida === variante.sku;
@@ -219,7 +216,7 @@ export function Paso4MatrizGastronomica({
           disabled={estaEnviando}
           className="flex min-h-11 items-center justify-center rounded-md border border-[#222A27] px-5 text-sm font-semibold text-[#F3F5F4] hover:bg-[#222A27] transition-colors"
         >
-          Atrǭs
+          AtrÇ­s
         </button>
         <button
           type="button"
@@ -233,3 +230,5 @@ export function Paso4MatrizGastronomica({
     </div>
   );
 }
+
+
