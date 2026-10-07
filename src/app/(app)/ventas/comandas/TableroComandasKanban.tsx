@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { MessageCircle, Clock, CheckCircle, Truck, ChefHat, XCircle, ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -53,7 +53,7 @@ const COLUMNAS: ColumnasConfig[] = [
   },
   {
     id: "en_preparacion",
-    titulo: "En Preparación",
+    titulo: "En PreparaciÃ³n",
     icono: ChefHat,
     badgeBg: "bg-blue-500/10",
     badgeColor: "text-blue-400 border-blue-500/30",
@@ -111,7 +111,7 @@ export function TableroComandasKanban({
   };
 
   /**
-   * Cambia el estado de un pedido y ejecuta la actualización reactiva en BD
+   * Cambia el estado de un pedido y ejecuta la actualizaciÃ³n reactiva en BD
    */
   const cambiarEstado = useCallback(
     async (pedidoId: string, nuevoEstado: EstadoPedidoKanban) => {
@@ -132,8 +132,8 @@ export function TableroComandasKanban({
   );
 
   /**
-   * Genera y abre el enlace de WhatsApp con el mensaje preconfigurado según el estado del pedido
-   * Criterio de Aceptación: Abre una ventana flotante de WhatsApp con el mensaje formateado hacia el teléfono del cliente.
+   * Genera y abre el enlace de WhatsApp con el mensaje preconfigurado segÃºn el estado del pedido
+   * Criterio de AceptaciÃ³n: Abre una ventana flotante de WhatsApp con el mensaje formateado hacia el telÃ©fono del cliente.
    */
   const abrirWhatsAppNotificacion = (pedido: PedidoKanban, estadoObjetivo?: EstadoPedidoKanban) => {
     const estadoMensaje = estadoObjetivo ?? pedido.estado;
@@ -142,19 +142,19 @@ export function TableroComandasKanban({
     let mensajeText = "";
     switch (estadoMensaje) {
       case "en_preparacion":
-        mensajeText = `¡Hola ${pedido.datosCliente.nombre}! 👋 Tu pedido en ${nombreComercio} ya está en preparación 👨‍🍳. ¡Te avisaremos cuando esté listo!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸ‘‹ Tu pedido en ${nombreComercio} ya estÃ¡ en preparaciÃ³n ðŸ‘¨â€ðŸ³. Â¡Te avisaremos cuando estÃ© listo!`;
         break;
       case "despachado":
-        mensajeText = `¡Hola ${pedido.datosCliente.nombre}! 🚚 Tu pedido en ${nombreComercio} va en camino a tu domicilio (${pedido.datosCliente.direccion ?? "Retiro"}).`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸšš Tu pedido en ${nombreComercio} va en camino a tu domicilio (${pedido.datosCliente.direccion ?? "Retiro"}).`;
         break;
       case "completado":
-        mensajeText = `¡Hola ${pedido.datosCliente.nombre}! ⭐ Tu pedido en ${nombreComercio} ha sido entregado con éxito. ¡Muchas gracias por tu compra!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! â­ Tu pedido en ${nombreComercio} ha sido entregado con Ã©xito. Â¡Muchas gracias por tu compra!`;
         break;
       case "cancelado":
         mensajeText = `Hola ${pedido.datosCliente.nombre}. Te informamos que tu pedido en ${nombreComercio} ha sido cancelado. Ante cualquier duda consultanos por este medio.`;
         break;
       default:
-        mensajeText = `¡Hola ${pedido.datosCliente.nombre}! Te escribimos desde ${nombreComercio} por tu pedido de ${formatearPrecio(pedido.total)}.`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! Te escribimos desde ${nombreComercio} por tu pedido de ${formatearPrecio(pedido.total)}.`;
         break;
     }
 
@@ -178,12 +178,12 @@ export function TableroComandasKanban({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-slate-950 p-6 text-slate-100 min-h-[calc(100vh-4rem)]">
-      <header className="flex flex-col gap-1 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-1 flex-col gap-6 bg-[#090B0B] p-6 text-[#F3F5F4] min-h-[calc(100vh-4rem)]">
+      <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-50">Tablero Kanban de Comandas & Pedidos</h1>
-          <p className="text-xs text-slate-400">
-            Gestión en tiempo real de pedidos web con notificación rápida por WhatsApp.
+          <h1 className="text-2xl font-bold text-[#F3F5F4]">Tablero Kanban de Comandas & Pedidos</h1>
+          <p className="text-xs text-[#9AA4A0]">
+            GestiÃ³n en tiempo real de pedidos web con notificaciÃ³n rÃ¡pida por WhatsApp.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export function TableroComandasKanban({
       <MensajeError codigo={codigoError} />
 
       {/* Tablero Kanban organizado por columnas de estado */}
-      <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5 overflow-x-auto pb-4">
+      <div className="flex flex-1 gap-4 overflow-x-auto pb-4 snap-x">
         {COLUMNAS.map((columna) => {
           const IconoColumna = columna.icono;
           const pedidosColumna = pedidos.filter((p) => p.estado === columna.id);
@@ -207,13 +207,13 @@ export function TableroComandasKanban({
               key={columna.id}
               onDragOver={manejarDragOver}
               onDrop={() => manejarDrop(columna.id)}
-              className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 min-w-[280px]"
+              className="flex flex-col gap-3 rounded-2xl border border-[#222A27] bg-[#111614] p-4 w-80 min-w-[320px] shrink-0 snap-center"
             >
               {/* Header de la Columna */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[#222A27] pb-3">
                 <div className="flex items-center gap-2">
                   <IconoColumna className="h-4 w-4 text-[#16D39A]" />
-                  <h2 className="text-sm font-bold text-slate-100">{columna.titulo}</h2>
+                  <h2 className="text-sm font-bold text-[#F3F5F4]">{columna.titulo}</h2>
                 </div>
                 <span
                   className={`rounded-full border px-2 py-0.5 text-xs font-bold ${columna.badgeBg} ${columna.badgeColor}`}
@@ -225,7 +225,7 @@ export function TableroComandasKanban({
               {/* Contenedor de Tarjetas de Pedidos */}
               <div className="flex flex-1 flex-col gap-3 min-h-[400px]">
                 {pedidosColumna.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-slate-800 p-6 text-center text-xs text-slate-500">
+                  <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-[#222A27] p-6 text-center text-xs text-[#F3F5F4]0">
                     Sin pedidos en este estado
                   </div>
                 ) : (
@@ -234,38 +234,38 @@ export function TableroComandasKanban({
                       key={pedido.pedidoId}
                       draggable
                       onDragStart={() => manejarDragStart(pedido.pedidoId)}
-                      className="flex cursor-grab flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950 p-4 text-slate-100 shadow-md transition-all hover:border-[#16D39A]/50 active:cursor-grabbing"
+                      className="flex cursor-grab flex-col gap-3 rounded-xl border border-[#222A27] bg-[#0D1110] p-4 text-[#F3F5F4] shadow-md transition-all hover:border-[#16D39A]/50 active:cursor-grabbing"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-[#16D39A]">
                           #{pedido.pedidoId.substring(0, 8)}
                         </span>
-                        <span className="text-2xs text-slate-400">
-                          {pedido.opcionEntrega === "envio" ? "🚚 Envío" : "🏪 Retiro"}
+                        <span className="text-2xs text-[#9AA4A0]">
+                          {pedido.opcionEntrega === "envio" ? "ðŸšš EnvÃ­o" : "ðŸª Retiro"}
                         </span>
                       </div>
 
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-semibold text-slate-50">
+                        <span className="text-sm font-semibold text-[#F3F5F4]">
                           {pedido.datosCliente.nombre}
                         </span>
-                        <span className="text-xs text-slate-400">
-                          📞 {pedido.datosCliente.telefono}
+                        <span className="text-xs text-[#9AA4A0]">
+                          ðŸ“ž {pedido.datosCliente.telefono}
                         </span>
                         {pedido.datosCliente.direccion && (
-                          <span className="text-xs text-slate-400 truncate">
-                            📍 {pedido.datosCliente.direccion}
+                          <span className="text-xs text-[#9AA4A0] truncate">
+                            ðŸ“ {pedido.datosCliente.direccion}
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-col gap-1 border-t border-b border-slate-900 py-2">
+                      <div className="flex flex-col gap-1 border-t border-b border-[#222A27] py-2">
                         {pedido.items.map((item) => (
-                          <div key={item.itemId} className="flex justify-between text-xs text-slate-300">
+                          <div key={item.itemId} className="flex justify-between text-xs text-[#9AA4A0]">
                             <span>
                               {item.nombre} x{item.cantidad}
                             </span>
-                            <span className="font-medium text-slate-400">
+                            <span className="font-medium text-[#9AA4A0]">
                               {formatearPrecio(item.precioUnitario * item.cantidad)}
                             </span>
                           </div>
@@ -273,18 +273,18 @@ export function TableroComandasKanban({
                       </div>
 
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400 uppercase text-2xs font-semibold">
+                        <span className="text-[#9AA4A0] uppercase text-2xs font-semibold">
                           {pedido.metodoPago}
                         </span>
-                        <span className="text-sm font-bold text-slate-50">
+                        <span className="text-sm font-bold text-[#F3F5F4]">
                           {formatearPrecio(pedido.total)}
                         </span>
                       </div>
 
                       {/* Selector de Repartidor Asignado */}
                       {pedido.opcionEntrega === "envio" && (
-                        <div className="flex flex-col gap-1 border-t border-slate-900 pt-2">
-                          <label className="text-2xs font-semibold text-slate-400 uppercase">
+                        <div className="flex flex-col gap-1 border-t border-[#222A27] pt-2">
+                          <label className="text-2xs font-semibold text-[#9AA4A0] uppercase">
                             Repartidor Asignado:
                           </label>
                           <select
@@ -302,19 +302,19 @@ export function TableroComandasKanban({
                                 await onAsignarRepartidor(pedido.pedidoId, nuevoRepartidorId);
                               }
                             }}
-                            className="rounded-lg border border-slate-800 bg-slate-900 px-2 py-1 text-xs text-slate-200 focus:border-[#16D39A] focus:outline-none"
+                            className="rounded-lg border border-[#222A27] bg-[#0D1110] px-2 py-1 text-xs text-[#F3F5F4] focus:border-[#16D39A] focus:outline-none"
                           >
                             <option value="">Sin asignar</option>
                             {repartidores.map((r) => (
                               <option key={r.repartidorId} value={r.repartidorId}>
-                                🛵 {r.nombre}
+                                ðŸ›µ {r.nombre}
                               </option>
                             ))}
                           </select>
                         </div>
                       )}
 
-                      {/* Acciones Rápidas: Botones de Transición y WhatsApp */}
+                      {/* Acciones RÃ¡pidas: Botones de TransiciÃ³n y WhatsApp */}
                       <div className="flex items-center justify-between pt-1 gap-2">
                         <button
                           type="button"
@@ -333,7 +333,7 @@ export function TableroComandasKanban({
                               cambiarEstado(pedido.pedidoId, "en_preparacion");
                               abrirWhatsAppNotificacion(pedido, "en_preparacion");
                             }}
-                            className="flex min-h-9 items-center gap-1 rounded-lg bg-[#16D39A] px-3 text-xs font-bold text-slate-950 hover:bg-[#16D39A]/90 transition-colors"
+                            className="flex min-h-9 items-center gap-1 rounded-lg bg-[#16D39A] px-3 text-xs font-bold text-[#090B0B] hover:bg-[#16D39A]/90 transition-colors"
                           >
                             <span>Preparar</span>
                             <ArrowRight className="h-3 w-3" />
@@ -347,7 +347,7 @@ export function TableroComandasKanban({
                               cambiarEstado(pedido.pedidoId, "despachado");
                               abrirWhatsAppNotificacion(pedido, "despachado");
                             }}
-                            className="flex min-h-9 items-center gap-1 rounded-lg bg-[#16D39A] px-3 text-xs font-bold text-slate-950 hover:bg-[#16D39A]/90 transition-colors"
+                            className="flex min-h-9 items-center gap-1 rounded-lg bg-[#16D39A] px-3 text-xs font-bold text-[#090B0B] hover:bg-[#16D39A]/90 transition-colors"
                           >
                             <span>Despachar</span>
                             <ArrowRight className="h-3 w-3" />
@@ -365,3 +365,5 @@ export function TableroComandasKanban({
     </div>
   );
 }
+
+
