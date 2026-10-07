@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AppLayoutClient } from "@/components/layout/AppLayoutClient";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
@@ -45,7 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const nombreComercio = cliente?.nombre_comercio || "Mi Comercio";
   const modalidadCatalogo = (cliente?.configuracion_plantilla as Record<string, string>)?.modalidad_catalogo || "vidriera";
 
-  // Obtener los mï¿½dulos activos del comercio
+  // Obtener los mÃ¯Â¿Â½dulos activos del comercio
   const { data: modulos } = await supabase
     .from("tenant_modules")
     .select("modulo, activo")
@@ -58,6 +58,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     fiados: modulos?.some((m) => m.modulo === "fiados") ?? false,
     devoluciones: modulos?.some((m) => m.modulo === "devoluciones") ?? false,
     bot_whatsapp: modulos?.some((m) => m.modulo === "bot_whatsapp") ?? false,
+      produccion_gastronomica: modulos?.some((m) => m.modulo === "produccion_gastronomica") ?? false,
   };
 
   return (
@@ -74,4 +75,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     </QueryProvider>
   );
 }
+
 
