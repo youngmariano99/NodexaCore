@@ -1,16 +1,18 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
 import { FormularioAltaProductoWizard } from "@/app/(app)/productos/nuevo/FormularioAltaProductoWizard";
 import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Nuevo producto — Nodexa Core",
+  title: "Nuevo producto â€” Nodexa Core",
 };
 
 /**
  * Alta manual de producto con wizard multi-paso.
- * Recupera si el comercio tiene activo el módulo `catalogo_web` para activar la subida de fotos.
+ * Recupera si el comercio tiene activo el mÃ³dulo `catalogo_web` para activar la subida de fotos.
  */
+export const dynamic = "force-dynamic";
+
 export default async function NuevoProductoPage() {
   const supabase = await crearClienteSupabaseServidor();
 
@@ -41,6 +43,7 @@ export default async function NuevoProductoPage() {
       catalogoWebActivo = !!modulo?.activo;
       const { data: moduloGastro } = await supabase.from('tenant_modules').select('activo').eq('cliente_id', solicitante.cliente_id).eq('modulo', 'produccion_gastronomica').eq('activo', true).maybeSingle();
       gastronomiaActivo = !!moduloGastro?.activo;
+      console.log('DEBUG: gastronomiaActivo en page.tsx:', gastronomiaActivo);
     }
   }
 
@@ -49,7 +52,7 @@ export default async function NuevoProductoPage() {
       <div className="flex w-full max-w-2xl flex-col gap-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-[#F3F5F4]">Nuevo producto</h1>
-          <p className="text-sm text-slate-400">Cargá un producto nuevo a tu catálogo de forma guiada.</p>
+          <p className="text-sm text-slate-400">CargÃ¡ un producto nuevo a tu catÃ¡logo de forma guiada.</p>
         </header>
 
         <FormularioAltaProductoWizard catalogoWebActivo={catalogoWebActivo} gastronomiaActivo={gastronomiaActivo} />
@@ -57,3 +60,5 @@ export default async function NuevoProductoPage() {
     </div>
   );
 }
+
+
