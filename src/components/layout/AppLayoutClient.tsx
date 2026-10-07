@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   LayoutDashboard,
+  Utensils,
   ShoppingCart,
   Package,
   Layers,
@@ -368,5 +369,8 @@ export function AppLayoutClient({
     </ToastProvider>
   );
 }
+
+
+
 
 
