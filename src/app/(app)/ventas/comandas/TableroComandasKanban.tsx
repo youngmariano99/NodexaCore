@@ -28,7 +28,7 @@ export interface PedidoKanban {
   estado: EstadoPedidoKanban;
   repartidorId?: string | null;
   subtotal: number;
-  costoEnvio: number;
+  costoEnvío: number;
   montoAjuste: number;
   total: number;
   creadoEn: string;
@@ -53,7 +53,7 @@ const COLUMNAS: ColumnasConfig[] = [
   },
   {
     id: "en_preparacion",
-    titulo: "En PreparaciÃ³n",
+    titulo: "En Preparación",
     icono: ChefHat,
     badgeBg: "bg-blue-500/10",
     badgeColor: "text-blue-400 border-blue-500/30",
@@ -107,11 +107,11 @@ export function TableroComandasKanban({
   const [codigoError, setCodigoError] = useState<string | null>(null);
 
   const formatearPrecio = (monto: number) => {
-    return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(monto);
+    return new Intl.NumberFormat("es-AR", { style: "currency", curren🛵 "ARS" }).format(monto);
   };
 
   /**
-   * Cambia el estado de un pedido y ejecuta la actualizaciÃ³n reactiva en BD
+   * Cambia el estado de un pedido y ejecuta la actualización reactiva en BD
    */
   const cambiarEstado = useCallback(
     async (pedidoId: string, nuevoEstado: EstadoPedidoKanban) => {
@@ -132,8 +132,8 @@ export function TableroComandasKanban({
   );
 
   /**
-   * Genera y abre el enlace de WhatsApp con el mensaje preconfigurado segÃºn el estado del pedido
-   * Criterio de AceptaciÃ³n: Abre una ventana flotante de WhatsApp con el mensaje formateado hacia el telÃ©fono del cliente.
+   * Genera y abre el enlace de WhatsApp con el mensaje preconfigurado según el estado del pedido
+   * Criterio de Aceptación: Abre una ventana flotante de WhatsApp con el mensaje formateado hacia el teléfono del cliente.
    */
   const abrirWhatsAppNotificacion = (pedido: PedidoKanban, estadoObjetivo?: EstadoPedidoKanban) => {
     const estadoMensaje = estadoObjetivo ?? pedido.estado;
@@ -142,16 +142,16 @@ export function TableroComandasKanban({
     let mensajeText = "";
     switch (estadoMensaje) {
       case "en_preparacion":
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸ‘‹ Tu pedido en ${nombreComercio} ya estÃ¡ en preparaciÃ³n ðŸ‘¨â€ðŸ³. Â¡Te avisaremos cuando estÃ© listo!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸ‘‹ Tu pedido en ${nombreComercio}🛵 está en preparación ðŸ‘¨â€ðŸ³. Â¡Te avisaremos cuando esté listo!`;
         break;
       case "despachado":
         mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸšš Tu pedido en ${nombreComercio} va en camino a tu domicilio (${pedido.datosCliente.direccion ?? "Retiro"}).`;
         break;
       case "completado":
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! â­ Tu pedido en ${nombreComercio} ha sido entregado con Ã©xito. Â¡Muchas gracias por tu compra!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! â­ Tu pedido en ${nombreComercio} ha sido entregado con éxito. Â¡Muchas gracias por tu compra!`;
         break;
       case "cancelado":
-        mensajeText = `Hola ${pedido.datosCliente.nombre}. Te informamos que tu pedido en ${nombreComercio} ha sido cancelado. Ante cualquier duda consultanos por este medio.`;
+        mensajeText = ¡Hola ${pedido.datosCliente.nombre}. Te informamos que tu pedido en ${nombreComercio} ha sido cancelado. Ante cualquier duda consultanos por este medio.`;
         break;
       default:
         mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! Te escribimos desde ${nombreComercio} por tu pedido de ${formatearPrecio(pedido.total)}.`;
@@ -183,7 +183,7 @@ export function TableroComandasKanban({
         <div>
           <h1 className="text-2xl font-bold text-[#F3F5F4]">Tablero Kanban de Comandas & Pedidos</h1>
           <p className="text-xs text-[#9AA4A0]">
-            GestiÃ³n en tiempo real de pedidos web con notificaciÃ³n rÃ¡pida por WhatsApp.
+            Gestión en tiempo real de pedidos web con notificación rápida por WhatsApp.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export function TableroComandasKanban({
                           #{pedido.pedidoId.substring(0, 8)}
                         </span>
                         <span className="text-2xs text-[#9AA4A0]">
-                          {pedido.opcionEntrega === "envio" ? "ðŸšš EnvÃ­o" : "ðŸª Retiro"}
+                          {pedido.opcionEntrega === "envio" ? "ðŸšš Envío" : "ðŸª Retiro"}
                         </span>
                       </div>
 
@@ -314,7 +314,7 @@ export function TableroComandasKanban({
                         </div>
                       )}
 
-                      {/* Acciones RÃ¡pidas: Botones de TransiciÃ³n y WhatsApp */}
+                      {/* Acciones Rápidas: Botones de Transición y WhatsApp */}
                       <div className="flex items-center justify-between pt-1 gap-2">
                         <button
                           type="button"
@@ -365,5 +365,8 @@ export function TableroComandasKanban({
     </div>
   );
 }
+
+
+
 
 

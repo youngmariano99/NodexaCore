@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { MensajeError } from "@/components/errores/MensajeError";
@@ -6,15 +6,15 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import type { RolUsuario } from "@/services/autenticacion/tipos";
 
 import { FormularioConfiguracion } from "./FormularioConfiguracion";
-import { FormularioMetodosPago } from "./FormularioMetodosPago";
+import { FormularioMétodosPago } from "./FormularioMétodosPago";
 import {
   type ReglaMetodoPago,
-  METODOS_PAGO_POR_DEFECTO,
-  normalizarReglasMetodosPago,
+  Métodos_PAGO_POR_DEFECTO,
+  normalizarReglasMétodosPago,
 } from "@/lib/dominio/ventas/calcularTotalVenta";
 
 export const metadata: Metadata = {
-  title: "Configuración del Comercio — Nodexa Core",
+  title: "ConfiguraciÃ³n del Comercio â€” Nodexa Core",
 };
 
 export const dynamic = "force-dynamic";
@@ -71,29 +71,29 @@ export default async function ConfiguracionPage() {
     );
   }
 
-  // Consulta opcional de métodos de pago (resiliente si la migración de la columna está pendiente)
-  let metodosIniciales: ReglaMetodoPago[] = METODOS_PAGO_POR_DEFECTO;
+  // Consulta opcional de mÃ©todos de pago (resiliente si la migraciÃ³n de la columna estÃ¡ pendiente)
+  let MétodosIniciales: ReglaMetodoPago[] = Métodos_PAGO_POR_DEFECTO;
   try {
-    const { data: metodosData } = await supabase
+    const { data: MétodosData } = await supabase
       .from("clientes")
-      .select("configuracion_metodos_pago")
+      .select("configuracion_Métodos_pago")
       .eq("cliente_id", solicitante.cliente_id)
-      .maybeSingle<{ configuracion_metodos_pago: unknown }>();
+      .maybeSingle<{ configuracion_Métodos_pago: unknown }>();
 
-    if (metodosData?.configuracion_metodos_pago) {
-      metodosIniciales = normalizarReglasMetodosPago(metodosData.configuracion_metodos_pago);
+    if (MétodosData?.configuracion_Métodos_pago) {
+      MétodosIniciales = normalizarReglasMétodosPago(MétodosData.configuracion_Métodos_pago);
     }
   } catch {
-    // Si la columna aún no está creada en la BD remota, usa null/defaults
+    // Si la columna aÃºn no estÃ¡ creada en la BD remota, usa null/defaults
   }
 
   return (
     <div className="flex flex-1 flex-col bg-[#090B0B] px-6 py-10 text-slate-50">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
         <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
-          <h1 className="text-2xl font-semibold text-slate-50 font-sans">Configuración del Comercio</h1>
+          <h1 className="text-2xl font-semibold text-slate-50 font-sans">ConfiguraciÃ³n del Comercio</h1>
           <p className="text-sm text-slate-400">
-            Mantené actualizados los datos comerciales de tu tienda y sus políticas de cobro y promociones.
+            MantenÃ© actualizados los datos comerciales de tu tienda y sus polÃ­ticas de cobro y promociones.
           </p>
         </header>
 
@@ -103,10 +103,11 @@ export default async function ConfiguracionPage() {
           logoInicial={cliente.logo_url}
         />
 
-        <FormularioMetodosPago
-          metodosIniciales={metodosIniciales}
+        <FormularioMétodosPago
+          MétodosIniciales={MétodosIniciales}
         />
       </div>
     </div>
   );
 }
+
