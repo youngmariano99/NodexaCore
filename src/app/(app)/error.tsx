@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
@@ -12,19 +12,20 @@ interface ErrorBoundaryProps {
 }
 
 /**
- * Error Boundary de Next.js para el grupo (app) — comerciante/empleado
+ * Error Boundary de Next.js para el grupo (app) â€” comerciante/empleado
  * (dashboard, mostrador, productos, ventas, etc.), independiente del
- * boundary de (admin): un error acá nunca tira abajo el panel de
- * Administrador NODEXA ni viceversa (cada `error.tsx` de App Router aísla su
- * propio segmento). En producción, Next.js ya reemplaza el mensaje real de
- * una excepción lanzada en Server Components/Actions por uno genérico con
- * `digest` (nunca llega acá una traza de SQL ni nombres de columna); por eso
+ * boundary de (admin): un error acÃ¡ nunca tira abajo el panel de
+ * Administrador NODEXA ni viceversa (cada `error.tsx` de App Router aÃ­sla su
+ * propio segmento). En producciÃ³n, Next.js ya reemplaza el mensaje real de
+ * una excepciÃ³n lanzada en Server Components/Actions por uno genÃ©rico con
+ * `digest` (nunca llega acÃ¡ una traza de SQL ni nombres de columna); por eso
  * nunca se renderiza `error.message` en la UI, siempre el mensaje
- * normalizado NX-SYS-001 (docs/ERRORS.md) vía `MensajeError`, nunca un
+ * normalizado NX-SYS-001 (docs/ERRORS.md) vÃ­a `MensajeError`, nunca un
  * alert nativo del navegador.
  */
 export default function ErrorBoundaryApp({ error, reset }: ErrorBoundaryProps) {
   useEffect(() => {
+    if (error.message.includes('was not found on the server') || error.message.includes('UnrecognizedActionError')) { window.location.reload(); return; }
     Sentry.captureException(error);
   }, [error]);
 
@@ -49,3 +50,4 @@ export default function ErrorBoundaryApp({ error, reset }: ErrorBoundaryProps) {
     </div>
   );
 }
+
