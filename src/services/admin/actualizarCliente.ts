@@ -11,12 +11,13 @@ const CODIGO_UNIQUE_VIOLATION_POSTGRES = "23505";
 
 const esquemaActualizarCliente = z.object({
   nombre_comercio: z.string().trim().min(1, "El nombre del comercio es obligatorio."),
-  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Slug invÃ¡lido."),
-  telefono_whatsapp: zTelefonoObligatorio("El telÃ©fono de WhatsApp es obligatorio."),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Slug inválido."),
+  telefono_whatsapp: zTelefonoObligatorio("El teléfono de WhatsApp es obligatorio."),
   limite_sku: z.coerce.number().int().positive(),
   packs_sku_contratados: z.coerce.number().int().nonnegative(),
   cuota_mensual_ia: z.coerce.number().int().nonnegative(),
   dominio_personalizado: z.string().trim().optional().transform(v => v === "" ? null : v),
+  modalidad_catalogo: z.enum(['vidriera', 'pedidos_whatsapp', 'comandas_realtime']).optional(),
   estado_pago: z.boolean(),
 });
 
@@ -42,7 +43,7 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
     return { error: "NX-SYS-003" };
   }
 
-  // 2. ValidaciÃ³n Zod
+  // 2. ValidaciÃƒÂ³n Zod
   const rawData = {
     nombre_comercio: formData.get("nombre_comercio"),
     slug: formData.get("slug"),
@@ -52,6 +53,7 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
     cuota_mensual_ia: formData.get("cuota_mensual_ia"),
     dominio_personalizado: formData.get("dominio_personalizado"),
     estado_pago: formData.get("estado_pago") === "true" || formData.get("estado_pago") === "on",
+    modalidad_catalogo: formData.get("modalidad_catalogo") || undefined,
   };
 
   const resultado = esquemaActualizarCliente.safeParse(rawData);
@@ -73,7 +75,7 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
   }
 
   // 4. Update
-  const { error: updateError } = await supabase
+    const { error: updateError } = await supabase
     .from("clientes")
     .update({
       nombre_comercio: payload.nombre_comercio,
@@ -84,6 +86,10 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
       cuota_mensual_ia: payload.cuota_mensual_ia,
       dominio_personalizado: payload.dominio_personalizado || null,
       estado_pago: payload.estado_pago,
+      configuracion_plantilla: {
+        ...estadoViejo.configuracion_plantilla,
+        modalidad_catalogo: payload.modalidad_catalogo || "vidriera",
+      },
     })
     .eq("cliente_id", clienteId);
 
@@ -95,7 +101,7 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
     return { error: "NX-SYS-001" };
   }
 
-  // 5. Auditoría
+  // 5. AuditorÃ­a
   for (const [key, newValue] of Object.entries(payload)) {
     const oldValue = estadoViejo[key as keyof typeof estadoViejo];
     if (oldValue !== newValue) {
@@ -116,4 +122,5 @@ export async function actualizarCliente(clienteId: string, _estadoPrevio: Estado
   
   return { ok: true };
 }
+
 

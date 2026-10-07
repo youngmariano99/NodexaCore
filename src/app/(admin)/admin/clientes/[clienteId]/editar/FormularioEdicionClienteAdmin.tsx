@@ -21,6 +21,7 @@ interface FormularioEdicionClienteAdminProps {
     cuota_mensual_ia: number;
     dominio_personalizado: string | null;
     estado_pago: boolean;
+    configuracion_plantilla?: { modalidad_catalogo?: string } | null;
   };
 }
 
@@ -143,6 +144,22 @@ export function FormularioEdicionClienteAdmin({ clienteId, clienteActual }: Form
             required
             className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
           />
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <label htmlFor="modalidad_catalogo" className="text-sm font-medium text-[#F3F5F4]">
+            Modalidad de Catálogo
+          </label>
+          <select
+            id="modalidad_catalogo"
+            name="modalidad_catalogo"
+            defaultValue={clienteActual.configuracion_plantilla?.modalidad_catalogo || "vidriera"}
+            className={`${CLASES_CAMPO_BASE} border-[#222A27]`}
+          >
+            <option value="vidriera">Solo Vidriera</option>
+            <option value="pedidos_whatsapp">Pedidos por WhatsApp</option>
+            <option value="comandas_realtime">Comandas Realtime</option>
+          </select>
         </div>
         
         <div className="flex items-center gap-3 pt-8">

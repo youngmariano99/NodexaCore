@@ -31,11 +31,12 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
   };
 
   const DESCRIPCION_MODULOS: Record<ModuloNodexa, string> = {
-    catalogo_web: "Publicá tu catálogo en línea con vidriera interactiva y autogestionada para tus clientes.",
-    carga_ia: "Cargá productos de forma ultra rápida escaneando etiquetas con inteligencia artificial.",
-    fiados: "Controlá las cuentas corrientes de tus clientes fiados, saldos deudores y pagos recibidos.",
-    devoluciones: "Gestioná devoluciones de ventas y emití notas de crédito correspondientes de forma organizada.",
+    catalogo_web: "PublicÃ¡ tu catÃ¡logo en lÃ­nea con vidriera interactiva y autogestionada para tus clientes.",
+    carga_ia: "CargÃ¡ productos de forma ultra rÃ¡pida escaneando etiquetas con inteligencia artificial.",
+    fiados: "ControlÃ¡ las cuentas corrientes de tus clientes fiados, saldos deudores y pagos recibidos.",
+    devoluciones: "GestionÃ¡ devoluciones de ventas y emitÃ­ notas de crÃ©dito correspondientes de forma organizada.",
     bot_whatsapp: "Automatizá consultas de stock y pedidos de tus clientes a través de un Bot de WhatsApp integrado.",
+    produccion_gastronomica: "Gestión de recetas, insumos, lotes de producción y mermas para locales gastronómicos.",
   };
 
   const modulosOrdenados = Object.keys(NOMBRE_MODULO_NODEXA) as ModuloNodexa[];
@@ -89,11 +90,11 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
               <div className="mt-6 flex flex-col pt-4 border-t border-[#222A27]/60">
                 {contratado ? (
                   <p className="text-xs text-slate-500 text-center">
-                    Módulo contratado y listo para usar en tu comercio.
+                    MÃ³dulo contratado y listo para usar en tu comercio.
                   </p>
                 ) : solicitado ? (
                   <p className="text-xs text-blue-400 text-center font-medium">
-                    ✓ Solicitud registrada. Un asesor activará tu acceso a la brevedad.
+                    âœ“ Solicitud registrada. Un asesor activarÃ¡ tu acceso a la brevedad.
                   </p>
                 ) : (
                   <button
@@ -105,7 +106,7 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
                     {isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      "Solicitar Activación"
+                      "Solicitar ActivaciÃ³n"
                     )}
                   </button>
                 )}
@@ -117,3 +118,4 @@ export function MarketplaceModulos({ modulosContratados }: MarketplaceModulosPro
     </div>
   );
 }
+

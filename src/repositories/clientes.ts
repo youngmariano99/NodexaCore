@@ -25,6 +25,7 @@ export interface FilaClienteDetalle extends FilaClienteListado {
   packs_sku_contratados: number;
   cuota_mensual_ia: number;
   dominio_personalizado: string | null;
+  configuracion_plantilla: { modalidad_catalogo?: string } | null;
 }
 
 interface ResultadoListadoClientes {
@@ -79,7 +80,7 @@ export async function obtenerClientePorId(
   const { data, error } = await supabase
     .from("clientes")
     .select(
-      "cliente_id, nombre_comercio, slug, estado_pago, limite_sku, packs_sku_contratados, cuota_mensual_ia, telefono_whatsapp, dominio_personalizado, creado_en, tenant_modules(modulo, activo)",
+      "cliente_id, nombre_comercio, slug, estado_pago, limite_sku, packs_sku_contratados, cuota_mensual_ia, telefono_whatsapp, dominio_personalizado, configuracion_plantilla, creado_en, tenant_modules(modulo, activo)",
     )
     .eq("cliente_id", clienteId)
     .is("eliminado_en", null)
