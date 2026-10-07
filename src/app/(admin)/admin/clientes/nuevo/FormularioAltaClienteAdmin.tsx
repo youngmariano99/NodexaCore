@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -28,8 +28,8 @@ type TabActivo = "cuenta" | "modulos" | "catalogo";
 
 const JSON_EJEMPLO = JSON.stringify(
   {
-    categorias: ["Almacén", "Bebidas", "Limpieza", "Frescos"],
-    marcas: ["Coca Cola", "Arcor", "La Serenísima", "Quilmes"],
+    categorias: ["AlmacÃ©n", "Bebidas", "Limpieza", "Frescos"],
+    marcas: ["Coca Cola", "Arcor", "La SerenÃ­sima", "Quilmes"],
   },
   null,
   2
@@ -48,7 +48,7 @@ export function FormularioAltaClienteAdmin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Tab 2: Configuración y Módulos
+  // Tab 2: ConfiguraciÃ³n y MÃ³dulos
   const [modalidadCatalogo, setModalidadCatalogo] = useState<ModalidadCatalogo>("vidriera");
   const [cuotaMensualIa, setCuotaMensualIa] = useState("40");
   const [colorPrimario, setColorPrimario] = useState("");
@@ -59,9 +59,10 @@ export function FormularioAltaClienteAdmin() {
     fiados: false,
     devoluciones: false,
     bot_whatsapp: false,
+    produccion_gastronomica: false,
   });
 
-  // Tab 3: Catálogo Inicial (JSON)
+  // Tab 3: CatÃ¡logo Inicial (JSON)
   const [atributosJson, setAtributosJson] = useState("");
 
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
@@ -94,59 +95,59 @@ export function FormularioAltaClienteAdmin() {
     const regexSlug = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     if (!regexSlug.test(slug.trim().toLowerCase())) {
       setTabActivo("cuenta");
-      setErrorLocal("El slug solo puede tener minúsculas, números y guiones medios.");
+      setErrorLocal("El slug solo puede tener minÃºsculas, nÃºmeros y guiones medios.");
       return false;
     }
 
     if (!whatsapp.trim()) {
       setTabActivo("cuenta");
-      setErrorLocal("El teléfono de WhatsApp es obligatorio.");
+      setErrorLocal("El telÃ©fono de WhatsApp es obligatorio.");
       return false;
     }
 
     const cantSku = Number(limiteSku);
     if (Number.isNaN(cantSku) || !Number.isInteger(cantSku) || cantSku <= 0) {
       setTabActivo("cuenta");
-      setErrorLocal("El límite SKU debe ser un número entero positivo.");
+      setErrorLocal("El lÃ­mite SKU debe ser un nÃºmero entero positivo.");
       return false;
     }
 
-    // Validación condicional del usuario dueño: si se ingresa email, se exige nombre y contraseña
+    // ValidaciÃ³n condicional del usuario dueÃ±o: si se ingresa email, se exige nombre y contraseÃ±a
     if (email.trim()) {
       const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!regexEmail.test(email.trim())) {
         setTabActivo("cuenta");
-        setErrorLocal("Ingresá un email válido para el usuario dueño.");
+        setErrorLocal("IngresÃ¡ un email vÃ¡lido para el usuario dueÃ±o.");
         return false;
       }
 
       if (!nombreDueno.trim()) {
         setTabActivo("cuenta");
-        setErrorLocal("Si se incluye el email del usuario dueño, el nombre es obligatorio.");
+        setErrorLocal("Si se incluye el email del usuario dueÃ±o, el nombre es obligatorio.");
         return false;
       }
 
       if (!password || password.length < 6) {
         setTabActivo("cuenta");
-        setErrorLocal("La contraseña del usuario dueño debe tener al menos 6 caracteres.");
+        setErrorLocal("La contraseÃ±a del usuario dueÃ±o debe tener al menos 6 caracteres.");
         return false;
       }
     }
 
-    // Validación de cuota IA
+    // ValidaciÃ³n de cuota IA
     const cantIa = Number(cuotaMensualIa);
     if (Number.isNaN(cantIa) || !Number.isInteger(cantIa) || cantIa < 0) {
       setTabActivo("modulos");
-      setErrorLocal("La cuota mensual de IA debe ser un número entero mayor o igual a cero.");
+      setErrorLocal("La cuota mensual de IA debe ser un nÃºmero entero mayor o igual a cero.");
       return false;
     }
 
-    // Validación de sintaxis y estructura JSON de atributos iniciales
+    // ValidaciÃ³n de sintaxis y estructura JSON de atributos iniciales
     if (atributosJson.trim()) {
       const atributosValidados = parsearYValidarAtributosJson(atributosJson.trim());
       if (!atributosValidados) {
         setTabActivo("catalogo");
-        setErrorLocal("El JSON de atributos tiene un error de sintaxis o formato. Verificá que contenga arrays válidos de 'marcas' o 'categorias'.");
+        setErrorLocal("El JSON de atributos tiene un error de sintaxis o formato. VerificÃ¡ que contenga arrays vÃ¡lidos de 'marcas' o 'categorias'.");
         return false;
       }
     }
@@ -206,7 +207,7 @@ export function FormularioAltaClienteAdmin() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      {/* Navegación por pestañas (Tabs) */}
+      {/* NavegaciÃ³n por pestaÃ±as (Tabs) */}
       <div className="flex border-b border-[#222A27] gap-2 overflow-x-auto">
         <button
           type="button"
@@ -231,7 +232,7 @@ export function FormularioAltaClienteAdmin() {
           }`}
         >
           <Layers className="h-4 w-4" />
-          <span>2. Configuración</span>
+          <span>2. ConfiguraciÃ³n</span>
         </button>
 
         <button
@@ -244,7 +245,7 @@ export function FormularioAltaClienteAdmin() {
           }`}
         >
           <FileJson className="h-4 w-4" />
-          <span>3. Catálogo Inicial</span>
+          <span>3. CatÃ¡logo Inicial</span>
         </button>
       </div>
 
@@ -290,13 +291,13 @@ export function FormularioAltaClienteAdmin() {
                     className="min-h-11 rounded-md border border-[#222A27] bg-[#090B0B] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none font-mono transition-colors"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Minúsculas, números y guiones.
+                    MinÃºsculas, nÃºmeros y guiones.
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-slate-300">
-                    Teléfono de WhatsApp *
+                    TelÃ©fono de WhatsApp *
                   </label>
                   <input
                     type="text"
@@ -311,7 +312,7 @@ export function FormularioAltaClienteAdmin() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-slate-300">
-                  Límite de SKU Inicial
+                  LÃ­mite de SKU Inicial
                 </label>
                 <input
                   type="number"
@@ -330,21 +331,21 @@ export function FormularioAltaClienteAdmin() {
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                   <Shield className="h-4 w-4 text-[#16D39A]" />
-                  Usuario Administrador (Dueño)
+                  Usuario Administrador (DueÃ±o)
                 </h2>
                 <span className="text-[11px] text-slate-500 font-normal">Opcional al alta</span>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-slate-300">
-                  Nombre Completo del Dueño
+                  Nombre Completo del DueÃ±o
                 </label>
                 <input
                   type="text"
                   value={nombreDueno}
                   onChange={(e) => setNombreDueno(e.target.value)}
                   disabled={isPending}
-                  placeholder="Ej: Juan Pérez"
+                  placeholder="Ej: Juan PÃ©rez"
                   className="min-h-11 rounded-md border border-[#222A27] bg-[#090B0B] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none transition-colors"
                 />
               </div>
@@ -366,14 +367,14 @@ export function FormularioAltaClienteAdmin() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-slate-300">
-                    Contraseña Inicial
+                    ContraseÃ±a Inicial
                   </label>
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isPending}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="MÃ­nimo 6 caracteres"
                     className="min-h-11 rounded-md border border-[#222A27] bg-[#090B0B] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-[#16D39A] focus:outline-none transition-colors"
                   />
                 </div>
@@ -386,21 +387,21 @@ export function FormularioAltaClienteAdmin() {
                 onClick={() => setTabActivo("modulos")}
                 className="flex min-h-11 items-center gap-2 rounded-md bg-[#111615] border border-[#222A27] px-5 text-sm font-semibold text-slate-200 hover:border-[#16D39A] hover:text-[#16D39A] transition-colors"
               >
-                <span>Siguiente: Configuración</span>
+                <span>Siguiente: ConfiguraciÃ³n</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* TAB 2: CONFIGURACIÓN Y MÓDULOS */}
+        {/* TAB 2: CONFIGURACIÃ“N Y MÃ“DULOS */}
         {tabActivo === "modulos" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-150">
-            {/* Modalidad del Catálogo Web */}
+            {/* Modalidad del CatÃ¡logo Web */}
             <div className="rounded-lg border border-[#222A27] bg-[#111615] p-5 flex flex-col gap-4">
               <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4 text-[#16D39A]" />
-                Modalidad del Catálogo Web
+                Modalidad del CatÃ¡logo Web
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -423,7 +424,7 @@ export function FormularioAltaClienteAdmin() {
                     <span className="text-sm font-semibold">Solo Vidriera</span>
                   </div>
                   <span className="text-xs text-slate-400 leading-snug">
-                    Catálogo público de solo lectura sin carrito.
+                    CatÃ¡logo pÃºblico de solo lectura sin carrito.
                   </span>
                 </label>
 
@@ -446,7 +447,7 @@ export function FormularioAltaClienteAdmin() {
                     <span className="text-sm font-semibold">Pedidos WhatsApp</span>
                   </div>
                   <span className="text-xs text-slate-400 leading-snug">
-                    Carrito ligero que envía el resumen por enlace wa.me.
+                    Carrito ligero que envÃ­a el resumen por enlace wa.me.
                   </span>
                 </label>
 
@@ -475,11 +476,11 @@ export function FormularioAltaClienteAdmin() {
               </div>
             </div>
 
-            {/* Parámetros de IA e Identidad */}
+            {/* ParÃ¡metros de IA e Identidad */}
             <div className="rounded-lg border border-[#222A27] bg-[#111615] p-5 flex flex-col gap-4">
               <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#16D39A]" />
-                Parámetros de IA e Identidad Visual
+                ParÃ¡metros de IA e Identidad Visual
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -529,11 +530,11 @@ export function FormularioAltaClienteAdmin() {
               </div>
             </div>
 
-            {/* Módulos Activos */}
+            {/* MÃ³dulos Activos */}
             <div className="rounded-lg border border-[#222A27] bg-[#111615] p-5 flex flex-col gap-4">
               <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Layers className="h-4 w-4 text-[#16D39A]" />
-                Módulos Activos Iniciales
+                MÃ³dulos Activos Iniciales
               </h2>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -570,21 +571,21 @@ export function FormularioAltaClienteAdmin() {
                 onClick={() => setTabActivo("catalogo")}
                 className="flex min-h-11 items-center gap-2 rounded-md bg-[#111615] border border-[#222A27] px-5 text-sm font-semibold text-slate-200 hover:border-[#16D39A] hover:text-[#16D39A] transition-colors"
               >
-                <span>Siguiente: Catálogo Inicial</span>
+                <span>Siguiente: CatÃ¡logo Inicial</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* TAB 3: CATÁLOGO INICIAL (JSON) */}
+        {/* TAB 3: CATÃLOGO INICIAL (JSON) */}
         {tabActivo === "catalogo" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-150">
             <div className="rounded-lg border border-[#222A27] bg-[#111615] p-5 flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                   <FileJson className="h-4 w-4 text-[#16D39A]" />
-                  Sembrado Inicial de Atributos (Marcas y Categorías)
+                  Sembrado Inicial de Atributos (Marcas y CategorÃ­as)
                 </h2>
                 <button
                   type="button"
@@ -596,7 +597,7 @@ export function FormularioAltaClienteAdmin() {
               </div>
 
               <p className="text-xs text-slate-400 leading-relaxed">
-                Podés pegar un bloque JSON con las categorías y marcas iniciales (ej. extraídas con IA desde un PDF o lista de precios). Se insertarán automáticamente en la base de datos asociadas a este nuevo comercio.
+                PodÃ©s pegar un bloque JSON con las categorÃ­as y marcas iniciales (ej. extraÃ­das con IA desde un PDF o lista de precios). Se insertarÃ¡n automÃ¡ticamente en la base de datos asociadas a este nuevo comercio.
               </p>
 
               <div className="flex flex-col gap-1.5">
@@ -608,7 +609,7 @@ export function FormularioAltaClienteAdmin() {
                   value={atributosJson}
                   onChange={(e) => setAtributosJson(e.target.value)}
                   disabled={isPending}
-                  placeholder={`{\n  "categorias": ["Almacén", "Bebidas", "Limpieza"],\n  "marcas": ["Coca Cola", "Arcor"]\n}`}
+                  placeholder={`{\n  "categorias": ["AlmacÃ©n", "Bebidas", "Limpieza"],\n  "marcas": ["Coca Cola", "Arcor"]\n}`}
                   className="rounded-md border border-[#222A27] bg-[#090B0B] p-3 text-xs font-mono text-slate-100 placeholder-slate-600 focus:border-[#16D39A] focus:outline-none transition-colors leading-relaxed"
                 />
               </div>
@@ -621,7 +622,7 @@ export function FormularioAltaClienteAdmin() {
                 className="flex min-h-11 items-center gap-2 rounded-md bg-[#111615] border border-[#222A27] px-4 text-sm font-semibold text-slate-300 hover:text-slate-100 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Volver a Configuración</span>
+                <span>Volver a ConfiguraciÃ³n</span>
               </button>
 
               <button
@@ -642,6 +643,7 @@ export function FormularioAltaClienteAdmin() {
     </div>
   );
 }
+
 
 
 
