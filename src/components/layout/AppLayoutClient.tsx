@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -36,6 +36,7 @@ interface AppLayoutClientProps {
     carga_ia: boolean;
     fiados: boolean;
     devoluciones: boolean;
+      produccion_gastronomica: boolean;
     bot_whatsapp: boolean;
   };
   modalidadCatalogo?: string;
@@ -55,9 +56,9 @@ export function AppLayoutClient({
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Validación de acceso por módulos y rol (Gate del Frontend)
+  // ValidaciÃ³n de acceso por mÃ³dulos y rol (Gate del Frontend)
   useEffect(() => {
-    // 1. Validaciones de módulos
+    // 1. Validaciones de mÃ³dulos
     if (pathname.startsWith("/clientes") && !modulosActivos.fiados) {
       router.replace("/dashboard?error=NX-FIA-001");
       return;
@@ -79,7 +80,7 @@ export function AppLayoutClient({
       return;
     }
 
-    // 2. Validaciones de rol (Empleado no puede entrar a administración/configuración)
+    // 2. Validaciones de rol (Empleado no puede entrar a administraciÃ³n/configuraciÃ³n)
     if (rol === "empleado") {
       const rutasProhibidas = ["/catalogo-web", "/whatsapp-bot", "/configuracion"];
       if (rutasProhibidas.some((ruta) => pathname.startsWith(ruta))) {
@@ -88,7 +89,7 @@ export function AppLayoutClient({
     }
   }, [pathname, modulosActivos, rol, router]);
 
-  // Estructura de links de navegación
+  // Estructura de links de navegaciÃ³n
   const itemsNavegacion = [
     {
       titulo: "Resumen",
@@ -129,12 +130,18 @@ export function AppLayoutClient({
     {
       titulo: "Devoluciones",
       href: "/devoluciones",
-      icon: RefreshCcw,
-      mostrar: modulosActivos.devoluciones,
-    },
+        icon: RefreshCcw,
+        mostrar: modulosActivos.devoluciones,
+      },
+      {
+        titulo: "Gastronomía",
+        href: "/configuracion/gastronomia",
+        icon: Utensils,
+        mostrar: modulosActivos.produccion_gastronomica,
+      },
     {
-      titulo: modalidadCatalogo === "delivery_comandas" ? "Comandas" : modalidadCatalogo === "landing_page" ? "Landing" : "Cat�logo Web",
-      href: "/catalogo-web",
+      titulo: modalidadCatalogo === "comandas_realtime" ? "Comandas" : modalidadCatalogo === "pedidos_whatsapp" ? "Landing" : "Catï¿½logo Web",
+      href: modalidadCatalogo === "comandas_realtime" ? "/ventas/comandas" : "/catalogo-web",
       icon: Globe,
       mostrar: modulosActivos.catalogo_web && rol !== "empleado",
     },
@@ -148,7 +155,7 @@ export function AppLayoutClient({
 
   const itemsSistema = [
     {
-      titulo: "Configuración",
+      titulo: "ConfiguraciÃ³n",
       href: "/configuracion",
       icon: Settings,
       mostrar: rol !== "empleado",
@@ -225,13 +232,13 @@ export function AppLayoutClient({
         </div>
       </div>
 
-      {/* Navegación de Módulos */}
+      {/* NavegaciÃ³n de MÃ³dulos */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-7">
         <div className="space-y-1.5">
           <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">
-            Módulos
+            MÃ³dulos
           </span>
-          <nav className="space-y-1" aria-label="Menú principal">
+          <nav className="space-y-1" aria-label="MenÃº principal">
             {itemsNavegacion.map(renderLink)}
           </nav>
         </div>
@@ -240,7 +247,7 @@ export function AppLayoutClient({
           <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">
             Sistema
           </span>
-          <nav className="space-y-1" aria-label="Menú de sistema">
+          <nav className="space-y-1" aria-label="MenÃº de sistema">
             {itemsSistema.map(renderLink)}
           </nav>
         </div>
@@ -268,7 +275,7 @@ export function AppLayoutClient({
           className="flex items-center gap-3 px-4 rounded-md text-[#EF4444] hover:bg-[#EF4444]/10 transition-all duration-150 min-h-[44px] w-full text-left font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444] disabled:opacity-50"
         >
           <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="text-sm">Cerrar sesión</span>
+          <span className="text-sm">Cerrar sesiÃ³n</span>
         </button>
       </div>
     </div>
@@ -290,7 +297,7 @@ export function AppLayoutClient({
                 <button
                   onClick={() => setMenuMovilAbierto(false)}
                   className="flex items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
-                  aria-label="Cerrar menú"
+                  aria-label="Cerrar menÃº"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -311,7 +318,7 @@ export function AppLayoutClient({
               <button
                 onClick={() => setMenuMovilAbierto(true)}
                 className="flex md:hidden items-center justify-center h-11 w-11 rounded-md bg-[#111615] border border-[#222A27] text-[#A6AEAA] hover:text-[#F3F5F4] outline-none focus-visible:ring-2 focus-visible:ring-[#16D39A]"
-                aria-label="Abrir menú"
+                aria-label="Abrir menÃº"
               >
                 <Menu className="h-5 w-5" />
               </button>
@@ -341,7 +348,7 @@ export function AppLayoutClient({
                   )}
                   {modulosActivos.catalogo_web && (
                     <span className="text-[10px] bg-[#16D39A]/10 border border-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded">
-                      {modalidadCatalogo === "delivery_comandas" ? "Comandas" : modalidadCatalogo === "landing_page" ? "Landing" : "Web"}
+                      {modalidadCatalogo === "comandas_realtime" ? "Comandas" : modalidadCatalogo === "pedidos_whatsapp" ? "Landing" : "Web"}
                     </span>
                   )}
                 </div>
@@ -361,3 +368,5 @@ export function AppLayoutClient({
     </ToastProvider>
   );
 }
+
+
