@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { HelpCircle } from "lucide-react";
@@ -12,8 +12,8 @@ import { Paso1DatosGenerales } from "./Paso1DatosGenerales";
 import { Paso2Dimensiones } from "./Paso2Dimensiones";
 import { Paso3MatrizStock } from "./Paso3MatrizStock";
 import { Paso4Resumen } from "./Paso4Resumen";
-import { Paso2RecetaInsumos, type InsumoReceta } from "./Paso2RecetaInsumos";
-import { Paso3CostosMargen } from "./Paso3CostosMargen";
+import { Paso3RecetaBase, type InsumoReceta } from "./Paso3RecetaBase";
+import { Paso4MatrizGastronomica } from "./Paso4MatrizGastronomica";
 
 import { obtenerCategorias, type Categoria } from "@/services/categorias/obtenerCategorias";
 import { obtenerMarcas, type Marca } from "@/services/marcas/obtenerMarcas";
@@ -34,6 +34,9 @@ export interface VarianteMatriz {
   sku: string;
   stock: number;
   precio: number;
+  insumosExtra?: InsumoReceta[];
+  margenMeta?: number;
+  precioOverride?: boolean;
 }
 
 export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaActivo }: FormularioAltaProductoWizardProps) {
@@ -74,15 +77,9 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
   const [nuevoValorInputs, setNuevoValorInputs] = useState<Record<string, string>>({});
   const [errorPaso2, setErrorPaso2] = useState<string | null>(null);
 
-  // Datos GastronomÃ­a
+  // Datos Gastronomía
   const [insumos, setInsumos] = useState<InsumoReceta[]>([]);
   const [rendimiento, setRendimiento] = useState(1);
-  const [margenMeta, setMargenMeta] = useState(30);
-  useEffect(() => {
-    const margenGuardado = localStorage.getItem('nodexa_margen_meta');
-    if (margenGuardado) setTimeout(() => setMargenMeta(Number(margenGuardado)), 0);
-  }, []);
-  const [costosIndirectosSeleccionados, setCostosIndirectosSeleccionados] = useState<string[]>([]);
 
   // Paso 3: Matriz de variantes y stock
   const [matrizVariantes, setMatrizVariantes] = useState<VarianteMatriz[]>([]);
@@ -121,14 +118,14 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
     if (dimensiones.length > 0) {
       const dimensionesIncompletas = dimensiones.some((d) => d.valores.length === 0);
       if (dimensionesIncompletas) {
-        setErrorPaso2("CargÃ¡ al menos una opciÃ³n para cada dimensiÃ³n agregada.");
+        setErrorPaso2("Cargá al menos una opción para cada dimensión agregada.");
         return;
       }
     }
 
     setErrorPaso2(null);
     const nuevaMatriz = generarMatrizCombinaciones(dimensiones, sku, precio, 10);
-    setMatrizVariantes(nuevaMatriz);
+    setMatrizVariantes(nuevaMatriz as VarianteMatriz[]);
     setPaso(3);
   };
 
@@ -156,6 +153,11 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
         formData.set("dimensiones", JSON.stringify(dimensiones));
         formData.set("variantes", JSON.stringify(matrizVariantes));
       }
+      
+      if (gastronomiaActivo) {
+        formData.set("insumosBase", JSON.stringify(insumos));
+        formData.set("rendimientoBase", rendimiento.toString());
+      }
 
       const resultado = await crearProducto({ error: null, exito: false }, formData);
 
@@ -168,6 +170,8 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           limpiarImagen();
           setDimensiones([]);
           setMatrizVariantes([]);
+          setInsumos([]);
+          setRendimiento(1);
           setPaso(1);
           window.scrollTo(0, 0);
         } else {
@@ -197,8 +201,8 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           </svg>
         </div>
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold text-slate-50">Â¡Producto guardado exitosamente!</h2>
-          <p className="text-slate-400">Tu producto ya forma parte de tu catÃ¡logo.</p>
+          <h2 className="text-2xl font-bold text-slate-50">¡Producto guardado exitosamente!</h2>
+          <p className="text-slate-400">Tu producto ya forma parte de tu catálogo.</p>
         </div>
         <div className="flex gap-4 mt-4">
           <button
@@ -210,6 +214,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
               limpiarImagen();
               setDimensiones([]);
               setMatrizVariantes([]);
+              setInsumos([]);
               setPaso(1);
             }}
             className="rounded-md border border-[#222A27] bg-[#111615] px-6 py-2 text-sm font-semibold text-slate-300 hover:bg-white/5"
@@ -232,7 +237,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
       <div className="flex flex-row justify-between items-center bg-[#0D1110] border border-[#222A27] px-4 py-3 rounded-md">
         <div className="flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-[#16D39A]" />
-          <span className="text-sm font-medium text-slate-300">GuÃ­as y Consejos</span>
+          <span className="text-sm font-medium text-slate-300">Guías y Consejos</span>
         </div>
         <button
           onClick={() => setGuiasActivas(!guiasActivas)}
@@ -279,8 +284,23 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           >
             3
           </span>
-          <span className="text-xs font-semibold text-slate-300">Matriz de Stock</span>
+          <span className="text-xs font-semibold text-slate-300">{gastronomiaActivo ? "Receta Base" : "Matriz de Stock"}</span>
         </div>
+        {gastronomiaActivo || paso === 4 ? (
+          <>
+            <div className="h-px flex-1 bg-[#222A27] mx-4" />
+            <div className="flex items-center gap-2">
+              <span
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                  paso >= 4 ? "bg-[#16D39A] text-[#090B0B]" : "bg-slate-800 text-slate-400"
+                }`}
+              >
+                4
+              </span>
+              <span className="text-xs font-semibold text-slate-300">{gastronomiaActivo ? "Matriz Gastronómica" : "Resumen"}</span>
+            </div>
+          </>
+        ) : null}
       </div>
 
       {paso === 1 && (
@@ -297,7 +317,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           setMarcaId={setMarcaId}
           precio={precio}
           setPrecio={setPrecio}
-            catalogoWebActivo={catalogoWebActivo}
+          catalogoWebActivo={catalogoWebActivo}
           imagenPrevisualizacion={imagenPrevisualizacion}
           manejarImagenRecortada={manejarImagenRecortada}
           limpiarImagen={limpiarImagen}
@@ -313,20 +333,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
         />
       )}
 
-      {paso === 2 && gastronomiaActivo && (
-          <Paso2RecetaInsumos
-            insumos={insumos}
-            setInsumos={setInsumos}
-            rendimiento={rendimiento}
-            setRendimiento={setRendimiento}
-            alAtras={() => setPaso(1)}
-            alSiguiente={() => setPaso(3)}
-            alFinalizar={() => manejarGuardadoFinal(false)}
-            estaEnviando={estaEnviando}
-          />
-        )}
-
-        {paso === 2 && !gastronomiaActivo && (
+      {paso === 2 && (
         <Paso2Dimensiones
           dimensiones={dimensiones}
           setDimensiones={setDimensiones}
@@ -343,22 +350,19 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
       )}
 
       {paso === 3 && gastronomiaActivo && (
-          <Paso3CostosMargen
-            insumos={insumos}
-            rendimiento={rendimiento}
-            precioVentaActual={precio}
-            margenMeta={margenMeta}
-            setMargenMeta={setMargenMeta}
-            setPrecio={setPrecio}
-            costosIndirectosSeleccionados={costosIndirectosSeleccionados}
-            setCostosIndirectosSeleccionados={setCostosIndirectosSeleccionados}
-            alAtras={() => setPaso(2)}
-            alFinalizar={() => manejarGuardadoFinal(false)}
-            estaEnviando={estaEnviando}
-          />
-        )}
+        <Paso3RecetaBase
+          insumos={insumos}
+          setInsumos={setInsumos}
+          rendimiento={rendimiento}
+          setRendimiento={setRendimiento}
+          alAtras={() => setPaso(2)}
+          alSiguiente={() => setPaso(4)}
+          alFinalizar={() => manejarGuardadoFinal(false)}
+          estaEnviando={estaEnviando}
+        />
+      )}
 
-        {paso === 3 && !gastronomiaActivo && (
+      {paso === 3 && !gastronomiaActivo && (
         <Paso3MatrizStock
           matrizVariantes={matrizVariantes}
           setMatrizVariantes={setMatrizVariantes}
@@ -369,7 +373,20 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
         />
       )}
 
-      {paso === 4 && (
+      {paso === 4 && gastronomiaActivo && (
+        <Paso4MatrizGastronomica
+          matrizVariantes={matrizVariantes}
+          setMatrizVariantes={setMatrizVariantes}
+          insumosBase={insumos}
+          rendimientoBase={rendimiento}
+          precioBase={precio}
+          alAtras={() => setPaso(3)}
+          alFinalizar={() => manejarGuardadoFinal(false)}
+          estaEnviando={estaEnviando}
+        />
+      )}
+
+      {paso === 4 && !gastronomiaActivo && (
         <Paso4Resumen
           sku={sku}
           nombre={nombre}
@@ -388,9 +405,3 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
     </div>
   );
 }
-
-
-
-
-
-
