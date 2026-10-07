@@ -88,7 +88,15 @@ export default async function DetalleComercioPage({ params }: DetalleComercioPag
         </Link>
 
         <header className="flex flex-col gap-1 border-b border-[#222A27] pb-4">
-          <h1 className="text-2xl font-semibold text-slate-50">{cliente.nombre_comercio}</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold text-slate-50">{cliente.nombre_comercio}</h1>
+            <Link
+              href={`/admin/clientes/${clienteId}/editar`}
+              className="inline-flex min-h-11 items-center rounded-md bg-[#16D39A] px-3.5 text-xs font-semibold text-slate-950 hover:bg-[#14be8b] transition-colors"
+            >
+              Editar Configuración
+            </Link>
+          </div>
           <p className="font-mono text-sm text-slate-400">{cliente.slug}</p>
         </header>
 
