@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Loader2 } from "lucide-react";
 import { crearClienteSupabaseNavegador } from "@/lib/supabase/client";
 import { crearInsumoInline } from "@/services/productos/crearInsumoInline";
+import { ModalInsumoPreElaborado } from "./ModalInsumoPreElaborado";
 
 interface Insumo {
   producto_id: string;
@@ -13,17 +14,18 @@ interface Insumo {
 }
 
 interface BuscadorInsumosProps {
+  soloSimples?: boolean;
   onSeleccionar: (insumo: Insumo) => void;
 }
 
 const CLASES_INPUT = "flex h-11 w-full rounded-md border border-[#222A27] bg-[#090B0B] px-3 py-2 text-sm text-[#F3F5F4] outline-none transition-colors placeholder:text-[#A6AEAA] focus:border-[#16D39A] focus:ring-1 focus:ring-[#16D39A] disabled:cursor-not-allowed disabled:opacity-50";
 
-export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
+export function BuscadorInsumos({ onSeleccionar, soloSimples }: BuscadorInsumosProps) {
   const [termino, setTermino] = useState("");
   const [resultados, setResultados] = useState<Insumo[]>([]);
   const [buscando, setBuscando] = useState(false);
   
-  const [mostrandoCrear, setMostrandoCrear] = useState(false);
+  const [mostrandoCrear, setMostrandoCrear] = useState<"simple" | "compuesto" | false>(false);
   const [precioNuevo, setPrecioNuevo] = useState<string>("");
   const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState<string | null>(null);
@@ -32,7 +34,6 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
 
   useEffect(() => {
     if (!termino || termino.length < 2) {
-      // Removing setResultados from here avoids the warning
       return;
     }
 
@@ -113,6 +114,19 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
         {buscando && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-[#16D39A]" />}
       </div>
       
+      {mostrandoCrear === "compuesto" && (
+        <ModalInsumoPreElaborado 
+          nombreBase={termino} 
+          onCerrar={() => setMostrandoCrear(false)}
+          onGuardado={(ins) => {
+            onSeleccionar(ins);
+            setTermino("");
+            setResultados([]);
+            setMostrandoCrear(false);
+          }}
+        />
+      )}
+      
       {mostrarDropdown && (
         <div className="absolute top-full left-0 right-0 z-10 mt-1 max-h-80 overflow-y-auto rounded-md border border-[#222A27] bg-[#090B0B] shadow-lg flex flex-col">
           {resultados.map((insumo) => (
@@ -142,15 +156,27 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
           )}
 
           {!mostrandoCrear ? (
-            <button
-              type="button"
-              onClick={() => setMostrandoCrear(true)}
-              className="flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-[#16D39A] hover:bg-[#151A18] transition-colors bg-[#0D1110] sticky bottom-0"
-            >
-              <Plus className="h-4 w-4" />
-              Crear &quot;{termino}&quot;
-            </button>
-          ) : (
+            <div className="flex flex-col border-t border-[#222A27] bg-[#0D1110] sticky bottom-0">
+              <button
+                type="button"
+                onClick={() => setMostrandoCrear("simple")}
+                className="flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-[#16D39A] hover:bg-[#151A18] transition-colors border-b border-[#222A27]"
+              >
+                <Plus className="h-4 w-4" />
+                Crear &quot;{termino}&quot; (Simple)
+              </button>
+              {!soloSimples && (
+                <button
+                  type="button"
+                  onClick={() => setMostrandoCrear("compuesto")}
+                  className="flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-[#A6AEAA] hover:text-[#16D39A] hover:bg-[#151A18] transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Crear &quot;{termino}&quot; (Pre-Elaborado)
+                </button>
+              )}
+            </div>
+          ) : mostrandoCrear === "simple" ? (
             <div className="p-4 bg-[#0D1110] flex flex-col gap-3 sticky bottom-0 border-t border-[#222A27]">
               <div className="text-sm font-medium text-[#F3F5F4]">
                 Nuevo Insumo: <span className="text-[#16D39A]">{termino}</span>
@@ -191,7 +217,7 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
