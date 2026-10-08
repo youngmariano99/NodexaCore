@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { Search, Plus, Loader2 } from "lucide-react";
@@ -32,8 +32,7 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
 
   useEffect(() => {
     if (!termino || termino.length < 2) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks`n      setResultados([]);
-      setMostrandoCrear(false);
+      // Removing setResultados from here avoids the warning
       return;
     }
 
@@ -77,8 +76,8 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
       if (res.exito && res.insumo) {
         onSeleccionar(res.insumo);
         setTermino("");
-        // eslint-disable-next-line react-hooks/rules-of-hooks`n      setResultados([]);
-      setMostrandoCrear(false);
+        setResultados([]);
+        setMostrandoCrear(false);
         setPrecioNuevo("");
       } else {
         setErrorCrear(res.error || "Error al crear insumo.");
@@ -100,7 +99,15 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
           type="text"
           placeholder="Buscar insumo por nombre..."
           value={termino}
-          onChange={(e) => { const val = e.target.value; setTermino(val); if (!val || val.length < 2) { setResultados([]); } setMostrandoCrear(false); setErrorCrear(null); }}
+          onChange={(e) => { 
+            const val = e.target.value; 
+            setTermino(val); 
+            if (!val || val.length < 2) { 
+              setResultados([]); 
+            } 
+            setMostrandoCrear(false); 
+            setErrorCrear(null); 
+          }}
           className={`${CLASES_INPUT} pl-9`}
         />
         {buscando && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-[#16D39A]" />}
@@ -116,8 +123,8 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
               onClick={() => {
                 onSeleccionar(insumo);
                 setTermino("");
-                // eslint-disable-next-line react-hooks/rules-of-hooks`n      setResultados([]);
-      setMostrandoCrear(false);
+                setResultados([]);
+                setMostrandoCrear(false);
               }}
             >
               <div>
@@ -190,6 +197,3 @@ export function BuscadorInsumos({ onSeleccionar }: BuscadorInsumosProps) {
     </div>
   );
 }
-
-
-
