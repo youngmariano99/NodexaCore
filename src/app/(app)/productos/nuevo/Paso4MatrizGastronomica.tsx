@@ -37,7 +37,8 @@ export function Paso4MatrizGastronomica({
 }: Paso4MatrizGastronomicaProps) {
   const [varianteExpandida, setVarianteExpandida] = useState<string | null>(null);
 
-  const costoBaseReceta = insumosBase.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+    const costoBaseReceta = insumosBase.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+  const esLote = rendimientoBase > 1;
   const costoBaseUnitario = rendimientoBase > 0 ? costoBaseReceta / rendimientoBase : 0;
 
   const toggleExpandir = (sku: string) => {
@@ -89,19 +90,20 @@ export function Paso4MatrizGastronomica({
       <div className="flex flex-col gap-2">
         <h3 className="text-lg font-semibold text-[#F3F5F4]">Matriz de Variantes y Costos</h3>
         <p className="text-sm text-[#A6AEAA]">
-          Costo Base (por unidad): <span className="font-semibold text-white">${costoBaseUnitario.toFixed(2)}</span>. 
+          Costo Base {esLote ? `(por lote de ${rendimientoBase}u)` : "(por unidad)"}: <span className="font-semibold text-white">${costoBaseUnitario.toFixed(2)}</span>. 
           AjustÃ¡ el precio de venta o agregÃ¡ insumos especficos para cada variante.
         </p>
       </div>
 
       <div className="flex flex-col gap-4">
         {matrizVariantes.map((variante) => {
-          const costoExtra = (variante.insumosExtra || []).reduce((acc, i) => acc + i.precio * i.cantidad, 0);
-          const costoTotal = costoBaseUnitario + costoExtra;
+                    const costoExtra = (variante.insumosExtra || []).reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+          const costoTotalLote = costoBaseReceta + costoExtra;
+          const costoUnitario = rendimientoBase > 0 ? costoTotalLote / rendimientoBase : costoTotalLote;
           
-          const _sugerido = (!variante.precioOverride && variante.margenMeta) ? costoTotal / (1 - (variante.margenMeta / 100)) : variante.precio;
+          const _sugerido = (!variante.precioOverride && variante.margenMeta) ? costoUnitario / (1 - (variante.margenMeta / 100)) : variante.precio;
 
-          const margenActual = variante.precio > 0 ? ((variante.precio - costoTotal) / variante.precio) * 100 : 0;
+          const margenActual = variante.precio > 0 ? ((variante.precio - costoUnitario) / variante.precio) * 100 : 0;
           const expandido = varianteExpandida === variante.sku;
 
           return (
@@ -119,7 +121,7 @@ export function Paso4MatrizGastronomica({
                          <span className="text-xs bg-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded-full">+ Insumos extra</span>
                       )}
                     </div>
-                    <div className="text-xs text-[#A6AEAA]">SKU: {variante.sku} | Costo Total: ${costoTotal.toFixed(2)}</div>
+                    <div className="text-xs text-[#A6AEAA]">SKU: {variante.sku} | Costo Final Unitario: ${costoUnitario.toFixed(2)}</div>
                   </div>
                 </div>
 
@@ -152,7 +154,7 @@ export function Paso4MatrizGastronomica({
                   <div>
                     <h4 className="text-sm font-medium text-[#F3F5F4] mb-3 flex items-center gap-2">
                       <Settings2 className="h-4 w-4 text-[#16D39A]" />
-                      Insumos Especficos para {Object.values(variante.combinacion).join(" / ")}
+                      Insumos Específicos para {Object.values(variante.combinacion).join(" / ")} {esLote ? `(Cantidades para ${rendimientoBase}u)` : "(Para 1 unidad)"}
                     </h4>
                     
                     <div className="mb-4">
@@ -230,5 +232,8 @@ export function Paso4MatrizGastronomica({
     </div>
   );
 }
+
+
+
 
 
