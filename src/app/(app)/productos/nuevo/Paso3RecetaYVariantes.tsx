@@ -300,7 +300,7 @@ export function Paso3RecetaYVariantes({
                     <div className="p-4 border-t border-[#222A27] bg-[#111615] flex flex-col gap-4">
                       <h4 className="text-sm font-medium text-[#F3F5F4] mb-1 flex items-center gap-2">
                         <Settings2 className="h-4 w-4 text-[#16D39A]" />
-                        Insumos Específicos para "{Object.values(variante.combinacion).join(" / ")}"
+                        Insumos Específicos para &quot;{Object.values(variante.combinacion).join(" / ")}&quot;
                       </h4>
                       
                       <div className="mb-2">
