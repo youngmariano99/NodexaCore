@@ -39,10 +39,21 @@ export default async function PersonalizarCatalogoWebPage() {
     notFound();
   }
 
+  const configJSONB = cliente.configuracion_plantilla as {
+    bannerUrl?: string | null;
+    mensajeHero?: string;
+    mostrarPrecios?: boolean;
+    aceptando_pedidos?: boolean;
+  };
+
   const configuracionInicial = {
     plantillaActiva: cliente.plantilla_activa ?? "basica",
     colorPrimario: cliente.color_primario ?? "#16D39A",
     logoUrl: cliente.logo_url ?? null,
+    bannerUrl: configJSONB?.bannerUrl ?? null,
+    mensajeHero: configJSONB?.mensajeHero ?? "",
+    mostrarPrecios: configJSONB?.mostrarPrecios ?? true,
+    aceptandoPedidos: configJSONB?.aceptando_pedidos ?? true,
   };
 
   return (
