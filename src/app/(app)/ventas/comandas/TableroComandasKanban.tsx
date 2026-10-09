@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { MessageCircle, Clock, CheckCircle, Truck, ChefHat, XCircle, ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -136,31 +136,37 @@ export function TableroComandasKanban({
    * Criterio de AceptaciÃ³n: Abre una ventana flotante de WhatsApp con el mensaje formateado hacia el telÃ©fono del cliente.
    */
   const abrirWhatsAppNotificacion = (pedido: PedidoKanban, estadoObjetivo?: EstadoPedidoKanban) => {
+    const nroPedido = pedido.pedidoId.substring(0, 8);
     const estadoMensaje = estadoObjetivo ?? pedido.estado;
     const telefonoLimpio = pedido.datosCliente.telefono.replace(/\D/g, "");
 
     let mensajeText = "";
     switch (estadoMensaje) {
       case "en_preparacion":
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸ‘‹ Tu pedido en ${nombreComercio} ya estÃ¡ en preparaciÃ³n ðŸ‘¨â€ðŸ³. Â¡Te avisaremos cuando estÃ© listo!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸ‘‹ Tu pedido #${nroPedido} en ${nombreComercio} ya estÃ¡ en preparaciÃ³n ðŸ‘¨â€ðŸ³. Â¡Te avisaremos cuando estÃ© listo!`;
         break;
       case "despachado":
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸšš Tu pedido en ${nombreComercio} va en camino a tu domicilio (${pedido.datosCliente.direccion ?? "Retiro"}).`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! ðŸšš Tu pedido #${nroPedido} en ${nombreComercio} va en camino a tu domicilio (${pedido.datosCliente.direccion ?? "Retiro"}).`;
         break;
       case "completado":
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! â­ Tu pedido en ${nombreComercio} ha sido entregado con Ã©xito. Â¡Muchas gracias por tu compra!`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! â­ Tu pedido #${nroPedido} en ${nombreComercio} ha sido entregado con Ã©xito. Â¡Muchas gracias por tu compra!`;
         break;
       case "cancelado":
-        mensajeText = `Hola ${pedido.datosCliente.nombre}. Te informamos que tu pedido en ${nombreComercio} ha sido cancelado. Ante cualquier duda consultanos por este medio.`;
+        mensajeText = `Hola ${pedido.datosCliente.nombre}. Te informamos que tu pedido #${nroPedido} en ${nombreComercio} ha sido cancelado. Ante cualquier duda consultanos por este medio.`;
         break;
       default:
-        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! Te escribimos desde ${nombreComercio} por tu pedido de ${formatearPrecio(pedido.total)}.`;
+        mensajeText = `Â¡Hola ${pedido.datosCliente.nombre}! Te escribimos desde ${nombreComercio} por tu pedido #${nroPedido} de ${formatearPrecio(pedido.total)}.`;
         break;
     }
 
     const url = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensajeText)}`;
     window.open(url, "_blank");
   };
+
+  const [notificacionPendiente, setNotificacionPendiente] = useState<{
+    pedido: PedidoKanban;
+    estado: EstadoPedidoKanban;
+  } | null>(null);
 
   // Handlers para Drag & Drop nativo HTML5
   const manejarDragStart = (pedidoId: string) => {
@@ -173,7 +179,17 @@ export function TableroComandasKanban({
 
   const manejarDrop = (columnaEstado: EstadoPedidoKanban) => {
     if (!pedidoArrastradoId) return;
-    cambiarEstado(pedidoArrastradoId, columnaEstado);
+    const pedido = pedidos.find(p => p.pedidoId === pedidoArrastradoId);
+    
+    if (pedido && pedido.estado !== columnaEstado) {
+      cambiarEstado(pedidoArrastradoId, columnaEstado);
+      // Tras actualizar el estado, mostramos el modal para preguntar si desea notificar por WhatsApp
+      setNotificacionPendiente({
+        pedido,
+        estado: columnaEstado,
+      });
+    }
+
     setPedidoArrastradoId(null);
   };
 
@@ -195,6 +211,36 @@ export function TableroComandasKanban({
       </header>
 
       <MensajeError codigo={codigoError} />
+
+      {/* Modal sutil de notificación flotante */}
+      {notificacionPendiente && (
+        <div className="fixed bottom-6 right-6 z-50 flex max-w-sm flex-col gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-2xl animate-in slide-in-from-bottom-4">
+          <div className="flex flex-col">
+            <span className="font-semibold text-white">Estado actualizado</span>
+            <span className="text-sm text-slate-300">
+              ¿Deseas notificar a <strong>{notificacionPendiente.pedido.datosCliente.nombre}</strong> (Pedido #{notificacionPendiente.pedido.pedidoId.substring(0, 8)}) sobre el cambio de estado?
+            </span>
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={() => setNotificacionPendiente(null)}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+            >
+              Ignorar
+            </button>
+            <button
+              onClick={() => {
+                abrirWhatsAppNotificacion(notificacionPendiente.pedido, notificacionPendiente.estado);
+                setNotificacionPendiente(null);
+              }}
+              className="flex items-center gap-2 rounded-lg bg-[#16D39A] px-3 py-2 text-sm font-bold text-slate-950 transition-colors hover:bg-[#16D39A]/90"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Notificar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tablero Kanban organizado por columnas de estado */}
       <div className="flex flex-1 gap-4 overflow-x-auto pb-4 snap-x">
