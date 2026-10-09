@@ -141,8 +141,14 @@ export function AppLayoutClient({
         mostrar: modulosActivos.produccion_gastronomica,
       },
     {
-      titulo: modalidadCatalogo === "comandas_realtime" ? "Comandas" : modalidadCatalogo === "pedidos_whatsapp" ? "Landing" : "Catï¿½logo Web",
-      href: modalidadCatalogo === "comandas_realtime" ? "/ventas/comandas" : "/catalogo-web",
+      titulo: "Comandas",
+      href: "/ventas/comandas",
+      icon: LayoutDashboard,
+      mostrar: modulosActivos.catalogo_web && modalidadCatalogo === "comandas_realtime",
+    },
+    {
+      titulo: "Catálogo Web",
+      href: "/catalogo-web",
       icon: Globe,
       mostrar: modulosActivos.catalogo_web && rol !== "empleado",
     },
