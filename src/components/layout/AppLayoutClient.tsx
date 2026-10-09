@@ -282,7 +282,7 @@ export function AppLayoutClient({
           className="flex items-center gap-3 px-4 rounded-md text-[#EF4444] hover:bg-[#EF4444]/10 transition-all duration-150 min-h-[44px] w-full text-left font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444] disabled:opacity-50"
         >
           <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="text-sm">Cerrar sesiÃ³n</span>
+          <span className="text-sm">Cerrar sesión</span>
         </button>
       </div>
     </div>
