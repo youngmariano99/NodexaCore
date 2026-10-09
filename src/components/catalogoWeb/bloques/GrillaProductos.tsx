@@ -108,7 +108,7 @@ export function GrillaProductos({
                   </p>
                 )}
 
-                {/* Si mostrar_precios es false, se oculta el botón de carrito según los criterios de aceptación */}
+                {/* Si mostrarPrecios es false, se oculta el botón de carrito según los criterios de aceptación (modo vidriera) */}
                 {mostrarPrecios && (
                   <div className="mt-auto pt-4">
                     <button
