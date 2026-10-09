@@ -39,10 +39,26 @@ const PlantillaFilomena = dynamic<PlantillaProps>(
   }
 );
 
+const PlantillaMinimalista = dynamic<PlantillaProps>(
+  () => import("./minimalista/PlantillaMinimalista"),
+  {
+    loading: () => <SkeletonCargaPlantilla />,
+  }
+);
+
+const PlantillaGourmet = dynamic<PlantillaProps>(
+  () => import("./gourmet/PlantillaGourmet"),
+  {
+    loading: () => <SkeletonCargaPlantilla />,
+  }
+);
+
 const MAPA_PLANTILLAS: Record<string, ComponentType<PlantillaProps>> = {
   basica: PlantillaBasica,
   "la-martina": PlantillaLaMartina,
   filomena: PlantillaFilomena,
+  minimalista: PlantillaMinimalista,
+  gourmet: PlantillaGourmet,
 };
 
 interface SelectorPlantillasProps extends PlantillaProps {
