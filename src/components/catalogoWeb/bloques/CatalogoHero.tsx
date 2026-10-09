@@ -33,6 +33,7 @@ export function CatalogoHero({
             sizes="100vw"
             className="object-cover opacity-50 transition-opacity duration-500"
           />
+          {/* Capa de gradiente para mejorar legibilidad del texto */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-900/20" />
         </div>
       ) : (
