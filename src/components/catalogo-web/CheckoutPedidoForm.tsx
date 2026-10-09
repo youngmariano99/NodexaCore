@@ -29,11 +29,13 @@ const CLAVE_STORAGE_CHECKOUT = "nodexa_pwa_checkout_cliente";
 interface CheckoutPedidoFormProps {
   onConfirmarPedido: (datos: DatosFormularioCheckout) => void;
   estaEnviando?: boolean;
+  estaCerrado?: boolean;
 }
 
 export function CheckoutPedidoForm({
   onConfirmarPedido,
   estaEnviando = false,
+  estaCerrado = false,
 }: CheckoutPedidoFormProps) {
   const { values, setFieldValue } = usePersistedForm<DatosFormularioCheckout>(
     CLAVE_STORAGE_CHECKOUT,
@@ -45,6 +47,8 @@ export function CheckoutPedidoForm({
   const manejarEnvio = (e: FormEvent) => {
     e.preventDefault();
     setCodigoError(null);
+
+    if (estaCerrado) return;
 
     if (!values.nombre.trim()) {
       setCodigoError("NX-SYS-006");
@@ -214,11 +218,17 @@ export function CheckoutPedidoForm({
 
       <button
         type="submit"
-        disabled={estaEnviando}
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#16D39A] px-4 font-bold text-slate-950 transition-colors hover:bg-[#16D39A]/90 disabled:opacity-50"
+        disabled={estaEnviando || estaCerrado}
+        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#16D39A] px-4 font-bold text-slate-950 transition-colors hover:bg-[#16D39A]/90 disabled:opacity-50 disabled:bg-slate-700 disabled:text-slate-400"
       >
         <Send className="h-4 w-4" />
-        <span>{estaEnviando ? "Enviando pedido..." : "Confirmar Pedido por WhatsApp"}</span>
+        <span>
+          {estaCerrado
+            ? "Comercio cerrado temporalmente"
+            : estaEnviando
+            ? "Enviando pedido..."
+            : "Confirmar Pedido"}
+        </span>
       </button>
     </form>
   );
