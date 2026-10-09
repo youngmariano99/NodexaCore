@@ -4,6 +4,7 @@ import { Check, Eye, EyeOff, Layout, Palette, Save, Smartphone, Monitor } from "
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SubidorImagen } from "@/components/catalogoWeb/SubidorImagen";
+import { ToggleEstadoComercio } from "./ToggleEstadoComercio";
 import { MensajeError } from "@/components/errores/MensajeError";
 import { COLORES_PRIMARIOS_PERMITIDOS } from "@/services/catalogoWeb/coloresPrimariosPermitidos";
 
@@ -16,6 +17,7 @@ interface EditorPersonalizacionDisenoProps {
     bannerUrl?: string | null;
     mensajeHero?: string;
     mostrarPrecios?: boolean;
+    aceptandoPedidos?: boolean;
   };
 }
 
@@ -164,6 +166,8 @@ export function EditorPersonalizacionDiseno({
             })}
           </div>
         </section>
+
+        <ToggleEstadoComercio estadoInicial={configuracionInicial?.aceptandoPedidos ?? true} />
 
         {/* Sección 3: Switch para Ocultar / Exponer Precios en Catálogo */}
         <section className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4">
