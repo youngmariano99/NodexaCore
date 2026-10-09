@@ -25,4 +25,4 @@ export interface PlantillaProps {
   preview?: boolean;
 }
 
-export type NombrePlantilla = "basica" | "la-martina" | "filomena" | string;
+export type NombrePlantilla = "basica" | "la-martina" | "filomena" | "minimalista" | "gourmet" | string;
