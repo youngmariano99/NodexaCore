@@ -39,6 +39,7 @@ CREATE TYPE origen_alta_producto AS ENUM ('manual', 'excel', 'ia_vision');
 | `telefono_whatsapp` | `text` | `NOT NULL` |
 | `plantilla_activa` | `text` | `NOT NULL`, `DEFAULT 'basica'` |
 | `configuracion_plantilla` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` |
+| `mensajes_kanban` | `jsonb` | `NOT NULL`, `DEFAULT '{...}'::jsonb` (plantillas de notificaciones de WhatsApp) |
 | `creado_en` | `timestamptz` | `NOT NULL`, `DEFAULT now()` |
 | `eliminado_en` | `timestamptz` | `NULL` |
 
@@ -484,12 +485,12 @@ CREATE POLICY productos_lectura_publica ON productos
 > Aplicar el mismo patrÃ³n (`cliente_id` del JWT) sobre: `movimientos_stock`, `ventas`, `venta_items`, `clientes_finales`, `cuentas_corrientes`, `movimientos_cuenta_corriente`, `imputaciones_comprobantes`, `devoluciones`, `devolucion_items`, `notas_credito`, `cargas_ia`, `configuracion_bot_whatsapp`, `tenant_modules`, `auditoria_diffs`, `repartidores`. Ninguna polÃ­tica de `INSERT`, `UPDATE` o `DELETE` utiliza `USING (true)`.
 >
 > `ajustes_facturacion` es un caso especial dentro de este patrÃ³n: `SELECT` sigue la regla genÃ©rica (`cliente_id = auth_cliente_id() OR es_admin_nodexa()`), pero `INSERT` es exclusivo de `es_admin_nodexa()` (nunca `cliente_id = auth_cliente_id()`) â€” un comercio nunca genera sus propios cargos, mismo criterio ya aplicado a `clientes_update_admin`.
-## 20. Módulo Gastronomía (Producción y Costeo)
+## 20. Mï¿½dulo Gastronomï¿½a (Producciï¿½n y Costeo)
 
-Entidades agregadas para soportar la manufactura y costeo de productos gastronómicos:
+Entidades agregadas para soportar la manufactura y costeo de productos gastronï¿½micos:
 
 ### Entidad: costos_indirectos
-Catálogo dinámico de costos por comercio (ej. Fritura, Horno).
+Catï¿½logo dinï¿½mico de costos por comercio (ej. Fritura, Horno).
 - costo_indirecto_id (uuid, PK)
 - cliente_id (uuid, FK)
 - 
@@ -499,7 +500,7 @@ ombre (text)
 - eliminado_en (timestamptz)
 
 ### Entidad: ecetas
-Encabezado de la fórmula de producción.
+Encabezado de la fï¿½rmula de producciï¿½n.
 - eceta_id (uuid, PK)
 - cliente_id (uuid, FK)
 - producto_id (uuid, FK a productos, UNIQUE) - El producto fabricado.
@@ -517,7 +518,7 @@ Detalle del Bill of Materials (BOM).
 ### Entidad: eceta_costos_indirectos
 Tabla pivot (receta_id, costo_indirecto_id).
 
-*Nota: Se agregó 	ipo_producto (ENUM: 'estandar', 'fabricado', 'insumo') a la tabla productos.*
+*Nota: Se agregï¿½ 	ipo_producto (ENUM: 'estandar', 'fabricado', 'insumo') a la tabla productos.*
 
 ## Entidad: configuracion_costos
 
