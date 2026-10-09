@@ -132,7 +132,7 @@ export function Paso3RecetaYVariantes({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
             type="button"
             onClick={() => manejarCambioModo(false)}
@@ -187,7 +187,7 @@ export function Paso3RecetaYVariantes({
           </div>
 
           {insumos.length > 0 && (
-            <div className="rounded-lg border border-[#222A27] bg-[#090B0B] overflow-hidden">
+            <div className="rounded-lg border border-[#222A27] bg-[#090B0B] overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-[#151A18] text-[#A6AEAA]">
                   <tr>
@@ -256,23 +256,25 @@ export function Paso3RecetaYVariantes({
               return (
                 <div key={variante.sku} className="rounded-md border border-[#222A27] bg-[#0D1110] overflow-hidden">
                   <div 
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#151A18] transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 cursor-pointer hover:bg-[#151A18] transition-colors gap-4 sm:gap-0"
                     onClick={() => toggleExpandir(variante.sku)}
                   >
-                    <div className="flex items-center gap-3">
-                      {expandido ? <ChevronDown className="h-5 w-5 text-[#A6AEAA]" /> : <ChevronRight className="h-5 w-5 text-[#A6AEAA]" />}
+                    <div className="flex items-start sm:items-center gap-3">
+                      <div className="mt-0.5 sm:mt-0">
+                        {expandido ? <ChevronDown className="h-5 w-5 text-[#A6AEAA]" /> : <ChevronRight className="h-5 w-5 text-[#A6AEAA]" />}
+                      </div>
                       <div>
-                        <div className="font-medium text-[#F3F5F4] flex items-center gap-2">
+                        <div className="font-medium text-[#F3F5F4] flex flex-wrap items-center gap-2">
                           {Object.values(variante.combinacion).join(" / ")}
                           {(variante.insumosExtra && variante.insumosExtra.length > 0) && (
-                            <span className="text-xs bg-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded-full">+ Insumos extra</span>
+                            <span className="text-xs bg-[#16D39A]/20 text-[#16D39A] px-2 py-0.5 rounded-full whitespace-nowrap">+ Insumos extra</span>
                           )}
                         </div>
-                        <div className="text-xs text-[#A6AEAA]">SKU: {variante.sku} | Costo Final: ${costoTotalVariante.toFixed(2)}</div>
+                        <div className="text-xs text-[#A6AEAA] mt-1 sm:mt-0">SKU: {variante.sku} | Costo Final: ${costoTotalVariante.toFixed(2)}</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 w-full sm:w-auto pl-8 sm:pl-0" onClick={e => e.stopPropagation()}>
                       <div className="flex flex-col items-end">
                         <span className="text-xs text-[#A6AEAA] mb-1">Precio Venta</span>
                         <div className="relative w-28">
@@ -308,7 +310,7 @@ export function Paso3RecetaYVariantes({
                       </div>
 
                       {variante.insumosExtra && variante.insumosExtra.length > 0 ? (
-                        <div className="rounded-md border border-[#222A27] bg-[#090B0B] overflow-hidden">
+                        <div className="rounded-md border border-[#222A27] bg-[#090B0B] overflow-x-auto">
                           <table className="w-full text-left text-sm">
                             <thead className="bg-[#151A18] text-[#A6AEAA]">
                               <tr>

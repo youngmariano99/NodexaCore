@@ -250,7 +250,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
         </button>
       </div>
 
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-2 overflow-x-auto pb-2 min-w-full">
         <div className="flex items-center gap-2">
           <span
             className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
