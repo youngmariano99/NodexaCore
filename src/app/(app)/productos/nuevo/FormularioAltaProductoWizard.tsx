@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { HelpCircle } from "lucide-react";
@@ -76,7 +76,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
   const [nuevoValorInputs, setNuevoValorInputs] = useState<Record<string, string>>({});
   const [errorPaso2, setErrorPaso2] = useState<string | null>(null);
 
-  // Datos GastronomÃ­a
+  // Datos Gastronomía
   const [insumos, setInsumos] = useState<InsumoReceta[]>([]);
   const [rendimiento, setRendimiento] = useState(1);
 
@@ -117,7 +117,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
     if (dimensiones.length > 0) {
       const dimensionesIncompletas = dimensiones.some((d) => d.valores.length === 0);
       if (dimensionesIncompletas) {
-        setErrorPaso2("CargÃ¡ al menos una opciÃ³n para cada dimensiÃ³n agregada.");
+        setErrorPaso2("Cargá al menos una opción para cada dimensión agregada.");
         return;
       }
     }
@@ -147,7 +147,6 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
       if (imagen) {
         formData.set("imagen", imagen, "foto.jpg");
       }
-
       if (dimensiones.length > 0) {
         formData.set("dimensiones", JSON.stringify(dimensiones));
         formData.set("variantes", JSON.stringify(matrizVariantes));
@@ -162,7 +161,6 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
 
       if (resultado.exito) {
         if (cargarOtro) {
-          // Resetear form para cargar otro
           setSku("");
           setNombre("");
           setPrecio(0);
@@ -200,8 +198,8 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           </svg>
         </div>
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold text-slate-50">Â¡Producto guardado exitosamente!</h2>
-          <p className="text-slate-400">Tu producto ya forma parte de tu catÃ¡logo.</p>
+          <h2 className="text-2xl font-bold text-slate-50">¡Producto guardado exitosamente!</h2>
+          <p className="text-slate-400">Tu producto ya forma parte de tu catálogo.</p>
         </div>
         <div className="flex gap-4 mt-4">
           <button
@@ -236,7 +234,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
       <div className="flex flex-row justify-between items-center bg-[#0D1110] border border-[#222A27] px-4 py-3 rounded-md">
         <div className="flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-[#16D39A]" />
-          <span className="text-sm font-medium text-slate-300">GuÃ­as y Consejos</span>
+          <span className="text-sm font-medium text-slate-300">Guías y Consejos</span>
         </div>
         <button
           onClick={() => setGuiasActivas(!guiasActivas)}
@@ -285,7 +283,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
           </span>
           <span className="text-xs font-semibold text-slate-300">{gastronomiaActivo ? "Receta y Costos" : "Matriz de Stock"}</span>
         </div>
-        {gastronomiaActivo || paso === 4 ? (
+        {!gastronomiaActivo ? (
           <>
             <div className="h-px flex-1 bg-[#222A27] mx-4" />
             <div className="flex items-center gap-2">
@@ -296,7 +294,7 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
               >
                 4
               </span>
-              <span className="text-xs font-semibold text-slate-300">{gastronomiaActivo ? "Matriz GastronÃ³mica" : "Resumen"}</span>
+              <span className="text-xs font-semibold text-slate-300">Resumen</span>
             </div>
           </>
         ) : null}
@@ -374,8 +372,6 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
         />
       )}
 
-      
-
       {paso === 4 && !gastronomiaActivo && (
         <Paso4Resumen
           sku={sku}
@@ -395,4 +391,3 @@ export function FormularioAltaProductoWizard({ catalogoWebActivo, gastronomiaAct
     </div>
   );
 }
-
