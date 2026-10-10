@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Loader2, AlertCircle, PackageOpen } from "lucide-react";
+import Link from "next/link";
+import { Plus, Trash2, Loader2, AlertCircle, PackageOpen, Settings2 } from "lucide-react";
 
 import { MensajeError } from "@/components/errores/MensajeError";
 import { useInsumosPaginados } from "@/hooks/useInsumosPaginados";
@@ -75,13 +76,23 @@ export function ListadoInsumos() {
               {total} insumo{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"}.
             </p>
           </div>
-          <button
-            onClick={() => setModalAbierto(true)}
-            className="flex h-11 items-center justify-center gap-2 rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo insumo
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/configuracion/gastronomia"
+              className="flex h-11 items-center justify-center gap-2 rounded-md border border-[#222A27] bg-[#111615] px-4 text-sm font-semibold text-[#F3F5F4] transition-colors duration-150 hover:bg-[#151A18]"
+              title="Configurar Gastronomía (Márgenes y Recargos)"
+            >
+              <Settings2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Configuración</span>
+            </Link>
+            <button
+              onClick={() => setModalAbierto(true)}
+              className="flex h-11 items-center justify-center gap-2 rounded-md bg-[#16D39A] px-4 text-sm font-semibold text-[#090B0B] transition-colors duration-150 hover:bg-[#16D39A]/90"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo insumo
+            </button>
+          </div>
         </header>
 
         {insumos.length === 0 ? (
