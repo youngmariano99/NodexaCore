@@ -42,10 +42,11 @@ export async function obtenerInsumosPaginados(
     .returns<FilaInsumoListado[]>();
 
   if (error || !data) {
-    return { error: { tipo: "error_bd", mensaje: "Error al obtener insumos paginados", original: error } };
+    return { ok: false, error: "Error al obtener insumos paginados" };
   }
 
   return {
+    ok: true,
     data: {
       insumos: data,
       total: count ?? 0,

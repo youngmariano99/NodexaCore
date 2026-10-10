@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
   const resultado = await obtenerInsumosPaginados(supabase, solicitante.cliente_id, page, INSUMOS_POR_PAGINA);
 
-  if (resultado.error || !resultado.data) {
+  if (!resultado.ok || !resultado.data) {
     return respuestaError("NX-SYS-001", 500);
   }
 
