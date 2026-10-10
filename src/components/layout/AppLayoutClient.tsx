@@ -135,8 +135,8 @@ export function AppLayoutClient({
         mostrar: modulosActivos.devoluciones,
       },
       {
-        titulo: "Gastronomía",
-        href: "/configuracion/gastronomia",
+          titulo: "Insumos y Recetas",
+          href: "/insumos",
         icon: Utensils,
         mostrar: modulosActivos.produccion_gastronomica,
       },
