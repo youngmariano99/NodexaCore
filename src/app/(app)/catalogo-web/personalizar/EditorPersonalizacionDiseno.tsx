@@ -112,9 +112,12 @@ export function EditorPersonalizacionDiseno({
             <Layout className="h-4 w-4 text-[#16D39A]" />
             <h2 className="text-sm font-semibold text-slate-100">Plantilla Visual Activa</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
+              { id: "gastronomica", nombre: "Gastronómica", desc: "Cálida & Menú WhatsApp" },
               { id: "basica", nombre: "Básica", desc: "Minimalista & limpia" },
+              { id: "gourmet", nombre: "Gourmet", desc: "Elegante & nocturna" },
+              { id: "minimalista", nombre: "Minimalista", desc: "Líneas puras" },
               { id: "la-martina", nombre: "La Martina", desc: "Boutique & exclusiva" },
               { id: "filomena", nombre: "Filomena", desc: "Fresca & moderna" },
             ].map((p) => {

@@ -100,6 +100,8 @@ export interface FilaClientePublico {
   logo_url: string | null;
   color_primario: string | null;
   telefono_whatsapp: string;
+  plantilla_activa?: string | null;
+  configuracion_plantilla?: Record<string, unknown> | null;
 }
 
 /**
@@ -120,7 +122,7 @@ export async function obtenerClientePublicoPorSlug(
 ): Promise<ResultadoRepositorio<FilaClientePublico>> {
   const { data, error } = await supabase
     .from("clientes")
-    .select("cliente_id, nombre_comercio, slug, logo_url, color_primario, telefono_whatsapp")
+    .select("cliente_id, nombre_comercio, slug, logo_url, color_primario, telefono_whatsapp, plantilla_activa, configuracion_plantilla")
     .eq("slug", clienteSlug)
     .eq("estado_pago", true)
     .is("eliminado_en", null)
