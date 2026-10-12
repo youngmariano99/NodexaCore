@@ -13,6 +13,10 @@ vi.mock("./filomena/PlantillaFilomena", () => ({
   default: () => <div data-testid="plantilla-filomena">Plantilla Filomena Renderizada</div>,
 }));
 
+vi.mock("./gastronomica/PlantillaGastronomica", () => ({
+  default: () => <div data-testid="plantilla-gastronomica">Plantilla Gastronomica Renderizada</div>,
+}));
+
 const MOCK_CLIENTE = {
   cliente_id: "cli-123",
   nombre_comercio: "Comercio Test",
@@ -60,9 +64,16 @@ describe("SelectorPlantillas Component", () => {
       plantillaActiva: "filomena",
     };
 
+    const propsGastronomica = {
+      cliente: MOCK_CLIENTE,
+      productos: MOCK_PRODUCTOS,
+      plantillaActiva: "gastronomica",
+    };
+
     expect(SelectorPlantillas(propsBasica)).toBeDefined();
     expect(SelectorPlantillas(propsMartina)).toBeDefined();
     expect(SelectorPlantillas(propsFilomena)).toBeDefined();
+    expect(SelectorPlantillas(propsGastronomica)).toBeDefined();
   });
 
   it("cae de forma segura a Plantilla Básica si la plantillaActiva no es reconocida", () => {
