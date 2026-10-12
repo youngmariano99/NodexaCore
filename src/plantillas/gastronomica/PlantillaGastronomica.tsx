@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo, useState } from "react";
 import type { PlantillaProps } from "../tipos";
 
@@ -22,14 +24,14 @@ export default function PlantillaGastronomica({ cliente, productos }: PlantillaP
   const config = (cliente.configuracion_plantilla as ConfigGastronomica | null) || {};
   const mostrarPrecios = config.mostrar_precios !== false;
 
-  const categorias = useMemo(() => {
-    const orden: string[] = [];
-    productos.forEach((p) => {
-      const c = p.categoria || "Otros";
-      if (!orden.includes(c)) orden.push(c);
-    });
-    return orden;
-  }, [productos]);
+const categorias = useMemo<string[]>(() => {
+  const orden: string[] = [];
+  productos.forEach((p) => {
+    const c = p.categoria || "Otros";
+    if (!orden.includes(c)) orden.push(c);
+  });
+  return orden;
+}, [productos]);
 
   const [activa, setActiva] = useState<string>("Todos");
   const visibles = activa === "Todos" ? categorias : categorias.filter((c) => c === activa);
