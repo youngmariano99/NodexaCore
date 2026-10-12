@@ -91,76 +91,46 @@ export function AppLayoutClient({
   }, [pathname, modulosActivos, rol, router]);
 
   // Estructura de links de navegaciÃ³n
-  const itemsNavegacion = [
+  const gruposNavegacion = [
     {
-      titulo: "Resumen",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-      mostrar: true,
+      header: 'PRINCIPAL',
+      items: [
+        { titulo: 'Resumen', href: '/dashboard', icon: LayoutDashboard, mostrar: true },
+        { titulo: 'Mostrador', href: '/mostrador', icon: ShoppingCart, mostrar: true },
+      ]
     },
     {
-      titulo: "Mostrador",
-      href: "/mostrador",
-      icon: ShoppingCart,
-      mostrar: true,
+      header: 'INVENTARIO Y PRODUCCIÓN',
+      items: [
+        { titulo: 'Productos', href: '/productos', icon: Package, mostrar: true },
+        { titulo: 'Stock', href: '/stock', icon: Layers, mostrar: true },
+        { titulo: 'Insumos y Recetas', href: '/insumos', icon: Utensils, mostrar: modulosActivos.produccion_gastronomica },
+      ]
     },
     {
-      titulo: "Productos",
-      href: "/productos",
-      icon: Package,
-      mostrar: true,
+      header: 'VENTAS Y PEDIDOS',
+      items: [
+        { titulo: 'Ventas', href: '/ventas', icon: TrendingUp, mostrar: true },
+        { titulo: 'Comandas', href: '/ventas/comandas', icon: LayoutDashboard, mostrar: modulosActivos.produccion_gastronomica },
+        { titulo: 'Devoluciones', href: '/devoluciones', icon: RefreshCcw, mostrar: modulosActivos.devoluciones },
+      ]
     },
     {
-      titulo: "Stock",
-      href: "/stock",
-      icon: Layers,
-      mostrar: true,
-    },
-    {
-      titulo: "Ventas",
-      href: "/ventas",
-      icon: TrendingUp,
-      mostrar: true,
-    },
-    {
-      titulo: "Clientes",
-      href: "/clientes",
-      icon: Users,
-      mostrar: modulosActivos.fiados,
-    },
-    {
-      titulo: "Devoluciones",
-      href: "/devoluciones",
-        icon: RefreshCcw,
-        mostrar: modulosActivos.devoluciones,
-      },
-      {
-        titulo: "Gastronomía",
-        href: "/configuracion/gastronomia",
-        icon: Utensils,
-        mostrar: modulosActivos.produccion_gastronomica,
-      },
-    {
-      titulo: "Comandas",
-      href: "/ventas/comandas",
-      icon: LayoutDashboard,
-      mostrar: modulosActivos.catalogo_web && modalidadCatalogo === "comandas_realtime",
-    },
-    {
-      titulo: "Catálogo Web",
-      href: "/catalogo-web",
-      icon: Globe,
-      mostrar: modulosActivos.catalogo_web && rol !== "empleado",
-    },
-    {
-      titulo: "Bot de WhatsApp",
-      href: "/whatsapp-bot",
-      icon: MessageSquare,
-      mostrar: modulosActivos.bot_whatsapp && rol !== "empleado",
-    },
+      header: 'CANALES DIGITALES',
+      items: [
+        { titulo: 'Catálogo Web', href: '/catalogo-web', icon: Globe, mostrar: modulosActivos.catalogo_web },
+        { titulo: 'Bot de WhatsApp', href: '/whatsapp-bot', icon: MessageSquare, mostrar: modulosActivos.bot_whatsapp },
+      ]
+    }
   ];
 
   const itemsSistema = [
+      {
+        titulo: "Clientes",
+        href: "/clientes",
+        icon: Users,
+        mostrar: modulosActivos.fiados,
+      },
     {
       titulo: "ConfiguraciÃ³n",
       href: "/configuracion",
@@ -175,7 +145,7 @@ export function AppLayoutClient({
     },
   ];
 
-  const renderLink = (item: typeof itemsNavegacion[number]) => {
+  const renderLink = (item: typeof gruposNavegacion[0]["items"][0]) => {
     if (!item.mostrar) return null;
 
     // Se considera activo si el pathname coincide exactamente, o si es una subruta (excepto para '/')
@@ -241,19 +211,23 @@ export function AppLayoutClient({
 
       {/* NavegaciÃ³n de MÃ³dulos */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-7">
-        <div className="space-y-1.5">
-          <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">
-            MÃ³dulos
-          </span>
-          <nav className="space-y-1" aria-label="MenÃº principal">
-            {itemsNavegacion.map(renderLink)}
-          </nav>
-        </div>
+        {gruposNavegacion.map((grupo, i) => {
+            const itemsMostrados = grupo.items.filter(item => item.mostrar !== false);
+            if (itemsMostrados.length === 0) return null;
+            return (
+              <div key={i} className="space-y-1.5 mt-6 first:mt-0">
+                <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">
+                  {grupo.header}
+                </span>
+                <nav className="space-y-1" aria-label={grupo.header}>
+                  {itemsMostrados.map(renderLink)}
+                </nav>
+              </div>
+            );
+          })}
 
         <div className="space-y-1.5">
-          <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">
-            Sistema
-          </span>
+          <span className="px-4 text-[10px] font-bold text-[#737C78] uppercase tracking-wider block">ADMINISTRACIÓN</span>
           <nav className="space-y-1" aria-label="MenÃº de sistema">
             {itemsSistema.map(renderLink)}
           </nav>
