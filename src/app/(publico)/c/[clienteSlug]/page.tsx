@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BotFaqCatalogo } from "@/components/catalogoWeb/BotFaqCatalogo";
@@ -9,9 +8,7 @@ import { crearClienteSupabaseServidor } from "@/lib/supabase/server";
 import { obtenerConfiguracionBotPublica } from "@/repositories/configuracionBotRepository";
 import { obtenerClientePublicoPorSlug } from "@/repositories/clientes";
 import { obtenerProductosPublicadosPaginados, PRODUCTOS_PUBLICOS_POR_PAGINA } from "@/repositories/productosRepository";
-
-const FORMATO_PRECIO = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
-const COLOR_POR_DEFECTO = "#3B82F6";
+import { SelectorPlantillas } from "@/plantillas/SelectorPlantillas";
 
 /**
  * ISR (docs/BACKLOG.md Paso 1 y 3): la página se regenera en segundo plano
@@ -74,7 +71,7 @@ export default async function VidrieraPublica({ params, searchParams }: PageProp
   const configuracionBot = await obtenerConfiguracionBotPublica(supabase, cliente.cliente_id);
   const preguntasBot = configuracionBot ? armarPreguntasBot(configuracionBot) : [];
 
-import { SelectorPlantillas } from "@/plantillas/SelectorPlantillas";
+
 
   return (
     <div className="flex flex-1 flex-col">
